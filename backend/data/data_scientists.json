@@ -1,0 +1,94 @@
+[
+  {
+    "name": "Alex Rivera",
+    "level": "Senior DS",
+    "max_concurrent_projects": 3,
+    "efficiency": 1.2,
+    "notes": "Team lead"
+  },
+  {
+    "name": "Jamie Patel",
+    "level": "Senior DS",
+    "max_concurrent_projects": 2,
+    "efficiency": 1.1
+  },
+  {
+    "name": "Taylor Chen",
+    "level": "Junior DS",
+    "max_concurrent_projects": 1,
+    "efficiency": 0.8
+  },
+  {
+    "name": "Morgan Lee",
+    "level": "Mid DS",
+    "max_concurrent_projects": 2,
+    "efficiency": 1.0
+  },
+  {
+    "name": "Jordan Kim",
+    "level": "Senior DS",
+    "max_concurrent_projects": 3,
+    "efficiency": 1.25
+  },
+  {
+    "name": "Casey Brooks",
+    "level": "Junior DS",
+    "max_concurrent_projects": 1,
+    "efficiency": 0.75
+  },
+  {
+    "name": "Riley Zhao",
+    "level": "Mid DS",
+    "max_concurrent_projects": 2,
+    "efficiency": 1.05
+  },
+  {
+    "name": "Sam Taylor",
+    "level": "Senior DS",
+    "max_concurrent_projects": 2,
+    "efficiency": 1.15
+  },
+  {
+    "name": "Avery Morgan",
+    "level": "Mid DS",
+    "max_concurrent_projects": 2,
+    "efficiency": 1.0
+  },
+  {
+    "name": "Cameron Diaz",
+    "level": "Junior DS",
+    "max_concurrent_projects": 1,
+    "efficiency": 0.85
+  },
+  {
+    "name": "Drew Wallace",
+    "level": "Mid DS",
+    "max_concurrent_projects": 2,
+    "efficiency": 1.0
+  },
+  {
+    "name": "Emerson Blake",
+    "level": "Senior DS",
+    "max_concurrent_projects": 3,
+    "efficiency": 1.3
+  },
+  {
+    "name": "Harper Woods",
+    "level": "Mid DS",
+    "max_concurrent_projects": 2,
+    "efficiency": 1.0
+  },
+  {
+    "name": "Parker Shaw",
+    "level": "Junior DS",
+    "max_concurrent_projects": 1,
+    "efficiency": 0.9
+  },
+  {
+    "name": "Reese Porter",
+    "level": "Senior DS",
+    "max_concurrent_projects": 2,
+    "efficiency": 1.2
+  }
+]
+

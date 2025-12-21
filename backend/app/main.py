@@ -126,15 +126,21 @@ def export_schedule() -> StreamingResponse:
     )
 
 
-@app.post("/import/excel", response_model=ImportResult)
+@app.post("/import/schedule", response_model=ImportResult)
 async def import_schedule(file: UploadFile = File(...)) -> ImportResult:
+    """Import schedule from Excel (.xlsx, .xls) or CSV file.
+    
+    This will replace all existing data_scientists, projects, and assignments.
+    """
     try:
-        suffix = Path(file.filename or "schedule.xlsx").suffix
+        suffix = Path(file.filename or "schedule.xlsx").suffix.lower()
+        if suffix not in (".csv", ".xlsx", ".xls"):
+            raise ValueError(f"Unsupported file type: {suffix}. Use .csv, .xlsx, or .xls")
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as temp:
             contents = await file.read()
             temp.write(contents)
             temp_path = Path(temp.name)
-        result = store.import_from_excel(temp_path)
+        result = store.import_from_file(temp_path)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     finally:
