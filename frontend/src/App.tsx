@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "./api";
+import { GanttChart } from "./GanttChart";
 import {
   Assignment,
   AssignmentPayload,
@@ -514,6 +515,22 @@ function App() {
               </button>
             </header>
 
+            <div className="card">
+              <div className="card__header">
+                <div>
+                  <p className="eyebrow">Schedule overview</p>
+                  <h3>Weekly assignments by person</h3>
+                </div>
+              </div>
+              <GanttChart
+                weeks={weeks}
+                assignments={assignments}
+                dataScientists={dataScientists}
+                projects={projects}
+                mode="by-person"
+              />
+            </div>
+
             <div className="form-grid">
               <label>
                 Name
@@ -626,6 +643,22 @@ function App() {
                 {editingProjectId ? "Update project" : "Add project"}
               </button>
             </header>
+
+            <div className="card">
+              <div className="card__header">
+                <div>
+                  <p className="eyebrow">Team allocation</p>
+                  <h3>Who's working on each project</h3>
+                </div>
+              </div>
+              <GanttChart
+                weeks={weeks}
+                assignments={assignments}
+                dataScientists={dataScientists}
+                projects={projects}
+                mode="by-project"
+              />
+            </div>
 
             <div className="form-grid">
               <label>
@@ -768,10 +801,10 @@ function App() {
                   Export CSV
                 </button>
                 <label className="file-button">
-                  Import Excel
+                  Import CSV/Excel
                   <input
                     type="file"
-                    accept=".xlsx,.xls"
+                    accept=".csv,.xlsx,.xls"
                     onChange={(e) => handleImport(e.target.files?.[0])}
                   />
                 </label>
