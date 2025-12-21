@@ -1,0 +1,875 @@
+{
+  "config": {
+    "granularity_weeks": 1,
+    "horizon_weeks": 26
+  },
+  "data_scientists": [
+    {
+      "id": 1,
+      "name": "Alex Rivera",
+      "level": "Senior DS",
+      "max_concurrent_projects": 3,
+      "efficiency": 1.2,
+      "notes": "Team lead"
+    },
+    {
+      "id": 2,
+      "name": "Jamie Patel",
+      "level": "Senior DS",
+      "max_concurrent_projects": 2,
+      "efficiency": 1.1
+    },
+    {
+      "id": 3,
+      "name": "Taylor Chen",
+      "level": "Junior DS",
+      "max_concurrent_projects": 1,
+      "efficiency": 0.8
+    },
+    {
+      "id": 4,
+      "name": "Morgan Lee",
+      "level": "Mid DS",
+      "max_concurrent_projects": 2,
+      "efficiency": 1.0
+    },
+    {
+      "id": 5,
+      "name": "Jordan Kim",
+      "level": "Senior DS",
+      "max_concurrent_projects": 3,
+      "efficiency": 1.25
+    },
+    {
+      "id": 6,
+      "name": "Casey Brooks",
+      "level": "Junior DS",
+      "max_concurrent_projects": 1,
+      "efficiency": 0.75
+    },
+    {
+      "id": 7,
+      "name": "Riley Zhao",
+      "level": "Mid DS",
+      "max_concurrent_projects": 2,
+      "efficiency": 1.05
+    },
+    {
+      "id": 8,
+      "name": "Sam Taylor",
+      "level": "Senior DS",
+      "max_concurrent_projects": 2,
+      "efficiency": 1.15
+    },
+    {
+      "id": 9,
+      "name": "Avery Morgan",
+      "level": "Mid DS",
+      "max_concurrent_projects": 2,
+      "efficiency": 1.0
+    },
+    {
+      "id": 10,
+      "name": "Cameron Diaz",
+      "level": "Junior DS",
+      "max_concurrent_projects": 1,
+      "efficiency": 0.85
+    },
+    {
+      "id": 11,
+      "name": "Drew Wallace",
+      "level": "Mid DS",
+      "max_concurrent_projects": 2,
+      "efficiency": 1.0
+    },
+    {
+      "id": 12,
+      "name": "Emerson Blake",
+      "level": "Senior DS",
+      "max_concurrent_projects": 3,
+      "efficiency": 1.3
+    },
+    {
+      "id": 13,
+      "name": "Harper Woods",
+      "level": "Mid DS",
+      "max_concurrent_projects": 2,
+      "efficiency": 1.0
+    },
+    {
+      "id": 14,
+      "name": "Parker Shaw",
+      "level": "Junior DS",
+      "max_concurrent_projects": 1,
+      "efficiency": 0.9
+    },
+    {
+      "id": 15,
+      "name": "Reese Porter",
+      "level": "Senior DS",
+      "max_concurrent_projects": 2,
+      "efficiency": 1.2
+    }
+  ],
+  "projects": [
+    {
+      "id": 1,
+      "name": "Customer 360",
+      "start_date": "2025-12-15",
+      "end_date": "2026-04-13",
+      "fte_requirements": [
+        {
+          "week_start": "2025-12-15",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2025-12-22",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2025-12-29",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-01-05",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-01-12",
+          "fte": 1.75
+        },
+        {
+          "week_start": "2026-01-19",
+          "fte": 1.75
+        },
+        {
+          "week_start": "2026-01-26",
+          "fte": 1.75
+        },
+        {
+          "week_start": "2026-02-02",
+          "fte": 1.75
+        },
+        {
+          "week_start": "2026-02-09",
+          "fte": 1.75
+        },
+        {
+          "week_start": "2026-02-16",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-02-23",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-03-02",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-03-09",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-03-16",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-03-23",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-03-30",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-04-06",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-04-13",
+          "fte": 1.5
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Pricing Optimization",
+      "start_date": "2026-01-05",
+      "end_date": "2026-04-20",
+      "fte_requirements": [
+        {
+          "week_start": "2026-01-05",
+          "fte": 2.0
+        },
+        {
+          "week_start": "2026-01-12",
+          "fte": 2.0
+        },
+        {
+          "week_start": "2026-01-19",
+          "fte": 2.0
+        },
+        {
+          "week_start": "2026-01-26",
+          "fte": 2.0
+        },
+        {
+          "week_start": "2026-02-02",
+          "fte": 2.25
+        },
+        {
+          "week_start": "2026-02-09",
+          "fte": 2.25
+        },
+        {
+          "week_start": "2026-02-16",
+          "fte": 2.25
+        },
+        {
+          "week_start": "2026-02-23",
+          "fte": 2.25
+        },
+        {
+          "week_start": "2026-03-02",
+          "fte": 2.25
+        },
+        {
+          "week_start": "2026-03-09",
+          "fte": 2.0
+        },
+        {
+          "week_start": "2026-03-16",
+          "fte": 2.0
+        },
+        {
+          "week_start": "2026-03-23",
+          "fte": 2.0
+        },
+        {
+          "week_start": "2026-03-30",
+          "fte": 2.0
+        },
+        {
+          "week_start": "2026-04-06",
+          "fte": 2.0
+        },
+        {
+          "week_start": "2026-04-13",
+          "fte": 2.0
+        },
+        {
+          "week_start": "2026-04-20",
+          "fte": 2.0
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Recommendation Engine",
+      "start_date": "2026-01-26",
+      "end_date": "2026-06-08",
+      "fte_requirements": [
+        {
+          "week_start": "2026-01-26",
+          "fte": 2.5
+        },
+        {
+          "week_start": "2026-02-02",
+          "fte": 2.5
+        },
+        {
+          "week_start": "2026-02-09",
+          "fte": 2.5
+        },
+        {
+          "week_start": "2026-02-16",
+          "fte": 2.5
+        },
+        {
+          "week_start": "2026-02-23",
+          "fte": 2.75
+        },
+        {
+          "week_start": "2026-03-02",
+          "fte": 2.75
+        },
+        {
+          "week_start": "2026-03-09",
+          "fte": 2.75
+        },
+        {
+          "week_start": "2026-03-16",
+          "fte": 2.75
+        },
+        {
+          "week_start": "2026-03-23",
+          "fte": 2.75
+        },
+        {
+          "week_start": "2026-03-30",
+          "fte": 2.5
+        },
+        {
+          "week_start": "2026-04-06",
+          "fte": 2.5
+        },
+        {
+          "week_start": "2026-04-13",
+          "fte": 2.5
+        },
+        {
+          "week_start": "2026-04-20",
+          "fte": 2.5
+        },
+        {
+          "week_start": "2026-04-27",
+          "fte": 2.5
+        },
+        {
+          "week_start": "2026-05-04",
+          "fte": 2.5
+        },
+        {
+          "week_start": "2026-05-11",
+          "fte": 2.5
+        },
+        {
+          "week_start": "2026-05-18",
+          "fte": 2.5
+        },
+        {
+          "week_start": "2026-05-25",
+          "fte": 2.5
+        },
+        {
+          "week_start": "2026-06-01",
+          "fte": 2.5
+        },
+        {
+          "week_start": "2026-06-08",
+          "fte": 2.5
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Forecasting Revamp",
+      "start_date": "2026-02-16",
+      "end_date": "2026-05-04",
+      "fte_requirements": [
+        {
+          "week_start": "2026-02-16",
+          "fte": 1.2
+        },
+        {
+          "week_start": "2026-02-23",
+          "fte": 1.2
+        },
+        {
+          "week_start": "2026-03-02",
+          "fte": 1.2
+        },
+        {
+          "week_start": "2026-03-09",
+          "fte": 1.2
+        },
+        {
+          "week_start": "2026-03-16",
+          "fte": 1.45
+        },
+        {
+          "week_start": "2026-03-23",
+          "fte": 1.45
+        },
+        {
+          "week_start": "2026-03-30",
+          "fte": 1.45
+        },
+        {
+          "week_start": "2026-04-06",
+          "fte": 1.45
+        },
+        {
+          "week_start": "2026-04-13",
+          "fte": 1.45
+        },
+        {
+          "week_start": "2026-04-20",
+          "fte": 1.2
+        },
+        {
+          "week_start": "2026-04-27",
+          "fte": 1.2
+        },
+        {
+          "week_start": "2026-05-04",
+          "fte": 1.2
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Churn Reduction",
+      "start_date": "2025-12-29",
+      "end_date": "2026-03-30",
+      "fte_requirements": [
+        {
+          "week_start": "2025-12-29",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-01-05",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-01-12",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-01-19",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-01-26",
+          "fte": 1.25
+        },
+        {
+          "week_start": "2026-02-02",
+          "fte": 1.25
+        },
+        {
+          "week_start": "2026-02-09",
+          "fte": 1.25
+        },
+        {
+          "week_start": "2026-02-16",
+          "fte": 1.25
+        },
+        {
+          "week_start": "2026-02-23",
+          "fte": 1.25
+        },
+        {
+          "week_start": "2026-03-02",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-03-09",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-03-16",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-03-23",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-03-30",
+          "fte": 1.0
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "NLP Assistant",
+      "start_date": "2026-01-19",
+      "end_date": "2026-03-23",
+      "fte_requirements": [
+        {
+          "week_start": "2026-01-19",
+          "fte": 1.1
+        },
+        {
+          "week_start": "2026-01-26",
+          "fte": 1.1
+        },
+        {
+          "week_start": "2026-02-02",
+          "fte": 1.1
+        },
+        {
+          "week_start": "2026-02-09",
+          "fte": 1.1
+        },
+        {
+          "week_start": "2026-02-16",
+          "fte": 1.35
+        },
+        {
+          "week_start": "2026-02-23",
+          "fte": 1.35
+        },
+        {
+          "week_start": "2026-03-02",
+          "fte": 1.35
+        },
+        {
+          "week_start": "2026-03-09",
+          "fte": 1.35
+        },
+        {
+          "week_start": "2026-03-16",
+          "fte": 1.35
+        },
+        {
+          "week_start": "2026-03-23",
+          "fte": 1.1
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Anomaly Detection",
+      "start_date": "2026-02-09",
+      "end_date": "2026-03-30",
+      "fte_requirements": [
+        {
+          "week_start": "2026-02-09",
+          "fte": 0.8
+        },
+        {
+          "week_start": "2026-02-16",
+          "fte": 0.8
+        },
+        {
+          "week_start": "2026-02-23",
+          "fte": 0.8
+        },
+        {
+          "week_start": "2026-03-02",
+          "fte": 0.8
+        },
+        {
+          "week_start": "2026-03-09",
+          "fte": 1.05
+        },
+        {
+          "week_start": "2026-03-16",
+          "fte": 1.05
+        },
+        {
+          "week_start": "2026-03-23",
+          "fte": 1.05
+        },
+        {
+          "week_start": "2026-03-30",
+          "fte": 1.05
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Experimentation Platform",
+      "start_date": "2025-12-22",
+      "end_date": "2026-05-18",
+      "fte_requirements": [
+        {
+          "week_start": "2025-12-22",
+          "fte": 2.2
+        },
+        {
+          "week_start": "2025-12-29",
+          "fte": 2.2
+        },
+        {
+          "week_start": "2026-01-05",
+          "fte": 2.2
+        },
+        {
+          "week_start": "2026-01-12",
+          "fte": 2.2
+        },
+        {
+          "week_start": "2026-01-19",
+          "fte": 2.45
+        },
+        {
+          "week_start": "2026-01-26",
+          "fte": 2.45
+        },
+        {
+          "week_start": "2026-02-02",
+          "fte": 2.45
+        },
+        {
+          "week_start": "2026-02-09",
+          "fte": 2.45
+        },
+        {
+          "week_start": "2026-02-16",
+          "fte": 2.45
+        },
+        {
+          "week_start": "2026-02-23",
+          "fte": 2.2
+        },
+        {
+          "week_start": "2026-03-02",
+          "fte": 2.2
+        },
+        {
+          "week_start": "2026-03-09",
+          "fte": 2.2
+        },
+        {
+          "week_start": "2026-03-16",
+          "fte": 2.2
+        },
+        {
+          "week_start": "2026-03-23",
+          "fte": 2.2
+        },
+        {
+          "week_start": "2026-03-30",
+          "fte": 2.2
+        },
+        {
+          "week_start": "2026-04-06",
+          "fte": 2.2
+        },
+        {
+          "week_start": "2026-04-13",
+          "fte": 2.2
+        },
+        {
+          "week_start": "2026-04-20",
+          "fte": 2.2
+        },
+        {
+          "week_start": "2026-04-27",
+          "fte": 2.2
+        },
+        {
+          "week_start": "2026-05-04",
+          "fte": 2.2
+        },
+        {
+          "week_start": "2026-05-11",
+          "fte": 2.2
+        },
+        {
+          "week_start": "2026-05-18",
+          "fte": 2.2
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Data Quality Initiative",
+      "start_date": "2026-01-12",
+      "end_date": "2026-04-20",
+      "fte_requirements": [
+        {
+          "week_start": "2026-01-12",
+          "fte": 1.4
+        },
+        {
+          "week_start": "2026-01-19",
+          "fte": 1.4
+        },
+        {
+          "week_start": "2026-01-26",
+          "fte": 1.4
+        },
+        {
+          "week_start": "2026-02-02",
+          "fte": 1.4
+        },
+        {
+          "week_start": "2026-02-09",
+          "fte": 1.65
+        },
+        {
+          "week_start": "2026-02-16",
+          "fte": 1.65
+        },
+        {
+          "week_start": "2026-02-23",
+          "fte": 1.65
+        },
+        {
+          "week_start": "2026-03-02",
+          "fte": 1.65
+        },
+        {
+          "week_start": "2026-03-09",
+          "fte": 1.65
+        },
+        {
+          "week_start": "2026-03-16",
+          "fte": 1.4
+        },
+        {
+          "week_start": "2026-03-23",
+          "fte": 1.4
+        },
+        {
+          "week_start": "2026-03-30",
+          "fte": 1.4
+        },
+        {
+          "week_start": "2026-04-06",
+          "fte": 1.4
+        },
+        {
+          "week_start": "2026-04-13",
+          "fte": 1.4
+        },
+        {
+          "week_start": "2026-04-20",
+          "fte": 1.4
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Model Governance",
+      "start_date": "2026-02-02",
+      "end_date": "2026-04-20",
+      "fte_requirements": [
+        {
+          "week_start": "2026-02-02",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-02-09",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-02-16",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-02-23",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-03-02",
+          "fte": 1.25
+        },
+        {
+          "week_start": "2026-03-09",
+          "fte": 1.25
+        },
+        {
+          "week_start": "2026-03-16",
+          "fte": 1.25
+        },
+        {
+          "week_start": "2026-03-23",
+          "fte": 1.25
+        },
+        {
+          "week_start": "2026-03-30",
+          "fte": 1.25
+        },
+        {
+          "week_start": "2026-04-06",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-04-13",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-04-20",
+          "fte": 1.0
+        }
+      ]
+    }
+  ],
+  "assignments": [
+    {
+      "id": 1,
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2025-12-15",
+      "allocation": 0.5
+    },
+    {
+      "id": 2,
+      "data_scientist_id": 6,
+      "project_id": 4,
+      "week_start": "2025-12-15",
+      "allocation": 0.4
+    },
+    {
+      "id": 3,
+      "data_scientist_id": 2,
+      "project_id": 2,
+      "week_start": "2025-12-22",
+      "allocation": 0.5
+    },
+    {
+      "id": 4,
+      "data_scientist_id": 7,
+      "project_id": 5,
+      "week_start": "2025-12-22",
+      "allocation": 0.4
+    },
+    {
+      "id": 5,
+      "data_scientist_id": 3,
+      "project_id": 3,
+      "week_start": "2025-12-29",
+      "allocation": 0.5
+    },
+    {
+      "id": 6,
+      "data_scientist_id": 8,
+      "project_id": 6,
+      "week_start": "2025-12-29",
+      "allocation": 0.4
+    },
+    {
+      "id": 7,
+      "data_scientist_id": 4,
+      "project_id": 1,
+      "week_start": "2026-01-05",
+      "allocation": 0.5
+    },
+    {
+      "id": 8,
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-01-05",
+      "allocation": 0.4
+    },
+    {
+      "id": 9,
+      "data_scientist_id": 5,
+      "project_id": 2,
+      "week_start": "2026-01-12",
+      "allocation": 0.5
+    },
+    {
+      "id": 10,
+      "data_scientist_id": 6,
+      "project_id": 5,
+      "week_start": "2026-01-12",
+      "allocation": 0.4
+    },
+    {
+      "id": 11,
+      "data_scientist_id": 1,
+      "project_id": 3,
+      "week_start": "2026-01-19",
+      "allocation": 0.5
+    },
+    {
+      "id": 12,
+      "data_scientist_id": 7,
+      "project_id": 6,
+      "week_start": "2026-01-19",
+      "allocation": 0.4
+    }
+  ],
+  "counters": {
+    "data_scientists": 15,
+    "projects": 10,
+    "assignments": 12
+  }
+}

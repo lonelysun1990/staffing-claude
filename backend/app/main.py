@@ -66,7 +66,7 @@ def update_data_scientist(ds_id: int, payload: DataScientistCreate) -> DataScien
         raise HTTPException(status_code=404, detail=str(exc))
 
 
-@app.delete("/data-scientists/{ds_id}", status_code=204)
+@app.delete("/data-scientists/{ds_id}", status_code=204, response_model=None)
 def delete_data_scientist(ds_id: int) -> None:
     try:
         store.delete_data_scientist(ds_id)
@@ -93,7 +93,7 @@ def update_project(project_id: int, payload: ProjectCreate) -> Project:
         raise HTTPException(status_code=404, detail=str(exc))
 
 
-@app.delete("/projects/{project_id}", status_code=204)
+@app.delete("/projects/{project_id}", status_code=204, response_model=None)
 def delete_project(project_id: int) -> None:
     try:
         store.delete_project(project_id)
