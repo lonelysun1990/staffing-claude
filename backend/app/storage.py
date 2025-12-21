@@ -274,70 +274,114 @@ class Store:
         df = pd.DataFrame(rows)
         return df.to_csv(index=False)
 
-    def import_from_excel(self, file_path: Path) -> ImportResult:
-        df = pd.read_excel(file_path)
+    def import_from_file(self, file_path: Path) -> ImportResult:
+        """Import schedule from Excel (.xlsx, .xls) or CSV file.
+        
+        This will clear all existing data_scientists, projects, and assignments
+        to avoid conflicts with seed data.
+        """
+        # Detect file type and read accordingly
+        suffix = file_path.suffix.lower()
+        if suffix == ".csv":
+            df = pd.read_csv(file_path)
+        elif suffix in (".xlsx", ".xls"):
+            df = pd.read_excel(file_path)
+        else:
+            raise ValueError(f"Unsupported file type: {suffix}. Use .csv, .xlsx, or .xls")
+
         required_columns = {"week_start", "data_scientist", "project", "allocation"}
         missing_columns = required_columns - set(df.columns)
         if missing_columns:
             raise ValueError(f"Missing required columns: {', '.join(sorted(missing_columns))}")
 
-        created_ds = created_projects = 0
-        new_assignments: List[AssignmentCreate] = []
+        with self.lock:
+            # Clear all existing data to avoid conflicts with seed data
+            replaced_ds = len(self.data_scientists)
+            replaced_projects = len(self.projects)
+            replaced_assignments = len(self.assignments)
+            
+            self.data_scientists = []
+            self.projects = []
+            self.assignments = []
+            self.counters = {"data_scientists": 0, "projects": 0, "assignments": 0}
 
-        for _, row in df.iterrows():
-            week_start = pd.to_datetime(row["week_start"]).date()
-            allocation = float(row["allocation"])
-            ds_name = str(row["data_scientist"]).strip()
-            project_name = str(row["project"]).strip()
+            created_ds = created_projects = 0
+            new_assignments: List[AssignmentCreate] = []
 
-            ds = next((d for d in self.data_scientists if d.name == ds_name), None)
-            if not ds:
-                ds_payload = DataScientistCreate(
-                    name=ds_name,
-                    level=str(row.get("level", "Imported DS")),
-                    max_concurrent_projects=int(row.get("max_concurrent_projects", 1)),
-                    efficiency=float(row.get("efficiency", 1.0)),
-                )
-                ds = self.create_data_scientist(ds_payload)
-                created_ds += 1
+            # Track unique data scientists and projects for creation
+            ds_map: Dict[str, DataScientist] = {}
+            project_map: Dict[str, Project] = {}
 
-            project = next((p for p in self.projects if p.name == project_name), None)
-            if not project:
-                start_date = row.get("project_start") or week_start
-                start_date = pd.to_datetime(start_date).date()
-                end_date = row.get("project_end") or (start_date + timedelta(weeks=4))
-                end_date = pd.to_datetime(end_date).date()
-                fte_value = float(row.get("fte", allocation))
-                project_payload = ProjectCreate(
-                    name=project_name,
-                    start_date=start_date,
-                    end_date=end_date,
-                    fte_requirements=[
+            for _, row in df.iterrows():
+                week_start = pd.to_datetime(row["week_start"]).date()
+                allocation = float(row["allocation"])
+                ds_name = str(row["data_scientist"]).strip()
+                project_name = str(row["project"]).strip()
+
+                # Get or create data scientist
+                if ds_name not in ds_map:
+                    ds_payload = DataScientistCreate(
+                        name=ds_name,
+                        level=str(row.get("level", "Imported DS")) if pd.notna(row.get("level")) else "Imported DS",
+                        max_concurrent_projects=int(row.get("max_concurrent_projects", 2)) if pd.notna(row.get("max_concurrent_projects")) else 2,
+                        efficiency=float(row.get("efficiency", 1.0)) if pd.notna(row.get("efficiency")) else 1.0,
+                    )
+                    new_ds = DataScientist(id=self._next_id("data_scientists"), **ds_payload.model_dump())
+                    self.data_scientists.append(new_ds)
+                    ds_map[ds_name] = new_ds
+                    created_ds += 1
+                ds = ds_map[ds_name]
+
+                # Get or create project
+                if project_name not in project_map:
+                    start_date = pd.to_datetime(row.get("project_start")).date() if pd.notna(row.get("project_start")) else week_start
+                    end_date = pd.to_datetime(row.get("project_end")).date() if pd.notna(row.get("project_end")) else (start_date + timedelta(weeks=12))
+                    fte_value = float(row.get("fte", allocation)) if pd.notna(row.get("fte")) else allocation
+
+                    fte_requirements = [
                         ProjectWeek(week_start=start_date + timedelta(weeks=i), fte=fte_value)
-                        for i in range(
-                            max(1, int(((end_date - start_date).days // 7) + 1))
-                        )
-                    ],
-                )
-                project = self.create_project(project_payload)
-                created_projects += 1
+                        for i in range(max(1, int(((end_date - start_date).days // 7) + 1)))
+                    ]
+                    new_project = Project(
+                        id=self._next_id("projects"),
+                        name=project_name,
+                        start_date=start_date,
+                        end_date=end_date,
+                        fte_requirements=fte_requirements,
+                    )
+                    self.projects.append(new_project)
+                    project_map[project_name] = new_project
+                    created_projects += 1
+                project = project_map[project_name]
 
-            new_assignments.append(
-                AssignmentCreate(
-                    data_scientist_id=ds.id,
-                    project_id=project.id,
-                    week_start=week_start,
-                    allocation=allocation,
+                new_assignments.append(
+                    AssignmentCreate(
+                        data_scientist_id=ds.id,
+                        project_id=project.id,
+                        week_start=week_start,
+                        allocation=allocation,
+                    )
                 )
-            )
 
-        replaced_existing = len(self.assignments)
-        self.replace_assignments(AssignmentsPayload(assignments=new_assignments))
+            # Create assignments
+            self.assignments = [
+                Assignment(
+                    id=index + 1,
+                    data_scientist_id=item.data_scientist_id,
+                    project_id=item.project_id,
+                    week_start=item.week_start,
+                    allocation=item.allocation,
+                )
+                for index, item in enumerate(new_assignments)
+            ]
+            self.counters["assignments"] = len(self.assignments)
+            self._save()
+
         return ImportResult(
             created_data_scientists=created_ds,
             created_projects=created_projects,
             created_assignments=len(new_assignments),
-            replaced_existing_assignments=replaced_existing,
+            replaced_existing_assignments=replaced_assignments,
         )
 
 
