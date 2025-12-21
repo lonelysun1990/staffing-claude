@@ -1,0 +1,53 @@
+[
+  {
+    "name": "Customer 360",
+    "duration_weeks": 18,
+    "base_fte": 1.5
+  },
+  {
+    "name": "Pricing Optimization",
+    "duration_weeks": 16,
+    "base_fte": 2.0
+  },
+  {
+    "name": "Recommendation Engine",
+    "duration_weeks": 20,
+    "base_fte": 2.5
+  },
+  {
+    "name": "Forecasting Revamp",
+    "duration_weeks": 12,
+    "base_fte": 1.2
+  },
+  {
+    "name": "Churn Reduction",
+    "duration_weeks": 14,
+    "base_fte": 1.0
+  },
+  {
+    "name": "NLP Assistant",
+    "duration_weeks": 10,
+    "base_fte": 1.1
+  },
+  {
+    "name": "Anomaly Detection",
+    "duration_weeks": 8,
+    "base_fte": 0.8
+  },
+  {
+    "name": "Experimentation Platform",
+    "duration_weeks": 22,
+    "base_fte": 2.2
+  },
+  {
+    "name": "Data Quality Initiative",
+    "duration_weeks": 15,
+    "base_fte": 1.4
+  },
+  {
+    "name": "Model Governance",
+    "duration_weeks": 12,
+    "base_fte": 1.0
+  }
+]
+
