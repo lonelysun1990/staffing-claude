@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date
 from typing import List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, FieldValidationInfo, field_validator
 
 
 class ConfigModel(BaseModel):
@@ -55,8 +55,14 @@ class ProjectBase(BaseModel):
 
     @field_validator("end_date")
     @classmethod
-    def validate_dates(cls, end_date: date, values: dict) -> date:
-        start_date = values.get("start_date")
+    def validate_dates(cls, end_date: date, info: FieldValidationInfo) -> date:
+        """
+        Ensure the project end_date is not before the start_date.
+
+        In Pydantic v2, field validators receive a ValidationInfo object instead of a values
+        dict, so we must pull the already-validated fields from `info.data`.
+        """
+        start_date = info.data.get("start_date")
         if start_date and end_date < start_date:
             raise ValueError("end_date must be on or after start_date")
         return end_date
@@ -99,4 +105,3 @@ class ImportResult(BaseModel):
     created_projects: int = 0
     created_assignments: int = 0
     replaced_existing_assignments: int = 0
-
