@@ -20,3 +20,528 @@ week_start,data_scientist,project,allocation,efficiency
 2025-12-22,Priyanka Rotte,Cargill PSO CoE,1,1
 2025-12-22,Margaret Redfield,NNS PSO,0.9,1
 2025-12-22,Margaret Redfield,Ingalls PSO,0.1,1
+2025-12-29,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2025-12-29,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2025-12-29,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2025-12-29,Josh Zhang,Signature Aviation IPD,0.55,1
+2025-12-29,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2025-12-29,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2025-12-29,Nancy Ning,Nucor network optimization IPD,0.75,1
+2025-12-29,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2025-12-29,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2025-12-29,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2025-12-29,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2025-12-29,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2025-12-29,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2025-12-29,Yifan Lin,Gategroup PSO IPD,1,1
+2025-12-29,Meng Li,Cargill PSO PES Feature,1,1
+2025-12-29,Yueqi Shen,Signature Aviation IPD,1,1
+2025-12-29,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2025-12-29,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2025-12-29,Priyanka Rotte,Cargill PSO CoE,1,1
+2025-12-29,Margaret Redfield,NNS PSO,0.9,1
+2025-12-29,Margaret Redfield,Ingalls PSO,0.1,1
+2026-01-05,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-01-05,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-01-05,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-01-05,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-01-05,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-01-05,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-01-05,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-01-05,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-01-05,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-01-05,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-01-05,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-01-05,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-01-05,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-01-05,Yifan Lin,Gategroup PSO IPD,1,1
+2026-01-05,Meng Li,Cargill PSO PES Feature,1,1
+2026-01-05,Yueqi Shen,Signature Aviation IPD,1,1
+2026-01-05,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-01-05,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-01-05,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-01-05,Margaret Redfield,NNS PSO,0.9,1
+2026-01-05,Margaret Redfield,Ingalls PSO,0.1,1
+2026-01-12,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-01-12,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-01-12,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-01-12,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-01-12,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-01-12,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-01-12,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-01-12,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-01-12,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-01-12,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-01-12,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-01-12,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-01-12,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-01-12,Yifan Lin,Gategroup PSO IPD,1,1
+2026-01-12,Meng Li,Cargill PSO PES Feature,1,1
+2026-01-12,Yueqi Shen,Signature Aviation IPD,1,1
+2026-01-12,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-01-12,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-01-12,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-01-12,Margaret Redfield,NNS PSO,0.9,1
+2026-01-12,Margaret Redfield,Ingalls PSO,0.1,1
+2026-01-19,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-01-19,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-01-19,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-01-19,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-01-19,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-01-19,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-01-19,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-01-19,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-01-19,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-01-19,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-01-19,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-01-19,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-01-19,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-01-19,Yifan Lin,Gategroup PSO IPD,1,1
+2026-01-19,Meng Li,Cargill PSO PES Feature,1,1
+2026-01-19,Yueqi Shen,Signature Aviation IPD,1,1
+2026-01-19,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-01-19,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-01-19,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-01-19,Margaret Redfield,NNS PSO,0.9,1
+2026-01-19,Margaret Redfield,Ingalls PSO,0.1,1
+2026-01-26,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-01-26,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-01-26,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-01-26,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-01-26,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-01-26,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-01-26,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-01-26,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-01-26,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-01-26,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-01-26,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-01-26,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-01-26,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-01-26,Yifan Lin,Gategroup PSO IPD,1,1
+2026-01-26,Meng Li,Cargill PSO PES Feature,1,1
+2026-01-26,Yueqi Shen,Signature Aviation IPD,1,1
+2026-01-26,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-01-26,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-01-26,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-01-26,Margaret Redfield,NNS PSO,0.9,1
+2026-01-26,Margaret Redfield,Ingalls PSO,0.1,1
+2026-02-02,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-02-02,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-02-02,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-02-02,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-02-02,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-02-02,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-02-02,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-02-02,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-02-02,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-02-02,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-02-02,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-02-02,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-02-02,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-02-02,Yifan Lin,Gategroup PSO IPD,1,1
+2026-02-02,Meng Li,Cargill PSO PES Feature,1,1
+2026-02-02,Yueqi Shen,Signature Aviation IPD,1,1
+2026-02-02,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-02-02,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-02-02,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-02-02,Margaret Redfield,NNS PSO,0.9,1
+2026-02-02,Margaret Redfield,Ingalls PSO,0.1,1
+2026-02-09,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-02-09,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-02-09,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-02-09,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-02-09,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-02-09,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-02-09,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-02-09,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-02-09,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-02-09,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-02-09,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-02-09,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-02-09,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-02-09,Yifan Lin,Gategroup PSO IPD,1,1
+2026-02-09,Meng Li,Cargill PSO PES Feature,1,1
+2026-02-09,Yueqi Shen,Signature Aviation IPD,1,1
+2026-02-09,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-02-09,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-02-09,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-02-09,Margaret Redfield,NNS PSO,0.9,1
+2026-02-09,Margaret Redfield,Ingalls PSO,0.1,1
+2026-02-16,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-02-16,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-02-16,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-02-16,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-02-16,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-02-16,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-02-16,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-02-16,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-02-16,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-02-16,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-02-16,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-02-16,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-02-16,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-02-16,Yifan Lin,Gategroup PSO IPD,1,1
+2026-02-16,Meng Li,Cargill PSO PES Feature,1,1
+2026-02-16,Yueqi Shen,Signature Aviation IPD,1,1
+2026-02-16,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-02-16,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-02-16,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-02-16,Margaret Redfield,NNS PSO,0.9,1
+2026-02-16,Margaret Redfield,Ingalls PSO,0.1,1
+2026-02-23,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-02-23,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-02-23,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-02-23,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-02-23,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-02-23,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-02-23,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-02-23,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-02-23,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-02-23,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-02-23,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-02-23,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-02-23,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-02-23,Yifan Lin,Gategroup PSO IPD,1,1
+2026-02-23,Meng Li,Cargill PSO PES Feature,1,1
+2026-02-23,Yueqi Shen,Signature Aviation IPD,1,1
+2026-02-23,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-02-23,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-02-23,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-02-23,Margaret Redfield,NNS PSO,0.9,1
+2026-02-23,Margaret Redfield,Ingalls PSO,0.1,1
+2026-03-02,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-03-02,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-03-02,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-03-02,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-03-02,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-03-02,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-03-02,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-03-02,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-03-02,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-03-02,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-03-02,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-03-02,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-03-02,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-03-02,Yifan Lin,Gategroup PSO IPD,1,1
+2026-03-02,Meng Li,Cargill PSO PES Feature,1,1
+2026-03-02,Yueqi Shen,Signature Aviation IPD,1,1
+2026-03-02,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-03-02,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-03-02,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-03-02,Margaret Redfield,NNS PSO,0.9,1
+2026-03-02,Margaret Redfield,Ingalls PSO,0.1,1
+2026-03-09,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-03-09,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-03-09,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-03-09,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-03-09,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-03-09,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-03-09,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-03-09,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-03-09,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-03-09,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-03-09,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-03-09,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-03-09,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-03-09,Yifan Lin,Gategroup PSO IPD,1,1
+2026-03-09,Meng Li,Cargill PSO PES Feature,1,1
+2026-03-09,Yueqi Shen,Signature Aviation IPD,1,1
+2026-03-09,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-03-09,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-03-09,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-03-09,Margaret Redfield,NNS PSO,0.9,1
+2026-03-09,Margaret Redfield,Ingalls PSO,0.1,1
+2026-03-16,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-03-16,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-03-16,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-03-16,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-03-16,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-03-16,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-03-16,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-03-16,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-03-16,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-03-16,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-03-16,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-03-16,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-03-16,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-03-16,Yifan Lin,Gategroup PSO IPD,1,1
+2026-03-16,Meng Li,Cargill PSO PES Feature,1,1
+2026-03-16,Yueqi Shen,Signature Aviation IPD,1,1
+2026-03-16,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-03-16,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-03-16,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-03-16,Margaret Redfield,NNS PSO,0.9,1
+2026-03-16,Margaret Redfield,Ingalls PSO,0.1,1
+2026-03-23,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-03-23,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-03-23,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-03-23,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-03-23,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-03-23,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-03-23,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-03-23,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-03-23,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-03-23,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-03-23,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-03-23,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-03-23,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-03-23,Yifan Lin,Gategroup PSO IPD,1,1
+2026-03-23,Meng Li,Cargill PSO PES Feature,1,1
+2026-03-23,Yueqi Shen,Signature Aviation IPD,1,1
+2026-03-23,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-03-23,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-03-23,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-03-23,Margaret Redfield,NNS PSO,0.9,1
+2026-03-23,Margaret Redfield,Ingalls PSO,0.1,1
+2026-03-30,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-03-30,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-03-30,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-03-30,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-03-30,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-03-30,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-03-30,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-03-30,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-03-30,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-03-30,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-03-30,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-03-30,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-03-30,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-03-30,Yifan Lin,Gategroup PSO IPD,1,1
+2026-03-30,Meng Li,Cargill PSO PES Feature,1,1
+2026-03-30,Yueqi Shen,Signature Aviation IPD,1,1
+2026-03-30,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-03-30,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-03-30,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-03-30,Margaret Redfield,NNS PSO,0.9,1
+2026-03-30,Margaret Redfield,Ingalls PSO,0.1,1
+2026-04-06,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-04-06,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-04-06,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-04-06,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-04-06,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-04-06,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-04-06,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-04-06,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-04-06,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-04-06,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-04-06,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-04-06,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-04-06,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-04-06,Yifan Lin,Gategroup PSO IPD,1,1
+2026-04-06,Meng Li,Cargill PSO PES Feature,1,1
+2026-04-06,Yueqi Shen,Signature Aviation IPD,1,1
+2026-04-06,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-04-06,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-04-06,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-04-06,Margaret Redfield,NNS PSO,0.9,1
+2026-04-06,Margaret Redfield,Ingalls PSO,0.1,1
+2026-04-13,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-04-13,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-04-13,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-04-13,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-04-13,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-04-13,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-04-13,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-04-13,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-04-13,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-04-13,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-04-13,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-04-13,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-04-13,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-04-13,Yifan Lin,Gategroup PSO IPD,1,1
+2026-04-13,Meng Li,Cargill PSO PES Feature,1,1
+2026-04-13,Yueqi Shen,Signature Aviation IPD,1,1
+2026-04-13,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-04-13,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-04-13,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-04-13,Margaret Redfield,NNS PSO,0.9,1
+2026-04-13,Margaret Redfield,Ingalls PSO,0.1,1
+2026-04-20,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-04-20,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-04-20,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-04-20,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-04-20,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-04-20,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-04-20,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-04-20,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-04-20,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-04-20,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-04-20,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-04-20,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-04-20,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-04-20,Yifan Lin,Gategroup PSO IPD,1,1
+2026-04-20,Meng Li,Cargill PSO PES Feature,1,1
+2026-04-20,Yueqi Shen,Signature Aviation IPD,1,1
+2026-04-20,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-04-20,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-04-20,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-04-20,Margaret Redfield,NNS PSO,0.9,1
+2026-04-20,Margaret Redfield,Ingalls PSO,0.1,1
+2026-04-27,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-04-27,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-04-27,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-04-27,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-04-27,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-04-27,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-04-27,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-04-27,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-04-27,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-04-27,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-04-27,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-04-27,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-04-27,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-04-27,Yifan Lin,Gategroup PSO IPD,1,1
+2026-04-27,Meng Li,Cargill PSO PES Feature,1,1
+2026-04-27,Yueqi Shen,Signature Aviation IPD,1,1
+2026-04-27,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-04-27,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-04-27,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-04-27,Margaret Redfield,NNS PSO,0.9,1
+2026-04-27,Margaret Redfield,Ingalls PSO,0.1,1
+2026-05-04,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-05-04,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-05-04,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-05-04,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-05-04,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-05-04,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-05-04,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-05-04,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-05-04,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-05-04,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-05-04,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-05-04,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-05-04,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-05-04,Yifan Lin,Gategroup PSO IPD,1,1
+2026-05-04,Meng Li,Cargill PSO PES Feature,1,1
+2026-05-04,Yueqi Shen,Signature Aviation IPD,1,1
+2026-05-04,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-05-04,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-05-04,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-05-04,Margaret Redfield,NNS PSO,0.9,1
+2026-05-04,Margaret Redfield,Ingalls PSO,0.1,1
+2026-05-11,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-05-11,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-05-11,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-05-11,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-05-11,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-05-11,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-05-11,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-05-11,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-05-11,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-05-11,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-05-11,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-05-11,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-05-11,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-05-11,Yifan Lin,Gategroup PSO IPD,1,1
+2026-05-11,Meng Li,Cargill PSO PES Feature,1,1
+2026-05-11,Yueqi Shen,Signature Aviation IPD,1,1
+2026-05-11,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-05-11,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-05-11,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-05-11,Margaret Redfield,NNS PSO,0.9,1
+2026-05-11,Margaret Redfield,Ingalls PSO,0.1,1
+2026-05-18,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-05-18,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-05-18,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-05-18,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-05-18,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-05-18,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-05-18,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-05-18,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-05-18,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-05-18,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-05-18,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-05-18,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-05-18,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-05-18,Yifan Lin,Gategroup PSO IPD,1,1
+2026-05-18,Meng Li,Cargill PSO PES Feature,1,1
+2026-05-18,Yueqi Shen,Signature Aviation IPD,1,1
+2026-05-18,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-05-18,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-05-18,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-05-18,Margaret Redfield,NNS PSO,0.9,1
+2026-05-18,Margaret Redfield,Ingalls PSO,0.1,1
+2026-05-25,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-05-25,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-05-25,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-05-25,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-05-25,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-05-25,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-05-25,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-05-25,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-05-25,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-05-25,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-05-25,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-05-25,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-05-25,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-05-25,Yifan Lin,Gategroup PSO IPD,1,1
+2026-05-25,Meng Li,Cargill PSO PES Feature,1,1
+2026-05-25,Yueqi Shen,Signature Aviation IPD,1,1
+2026-05-25,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-05-25,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-05-25,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-05-25,Margaret Redfield,NNS PSO,0.9,1
+2026-05-25,Margaret Redfield,Ingalls PSO,0.1,1
+2026-06-01,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-06-01,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-06-01,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-06-01,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-06-01,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-06-01,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-06-01,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-06-01,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-06-01,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-06-01,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-06-01,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-06-01,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-06-01,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-06-01,Yifan Lin,Gategroup PSO IPD,1,1
+2026-06-01,Meng Li,Cargill PSO PES Feature,1,1
+2026-06-01,Yueqi Shen,Signature Aviation IPD,1,1
+2026-06-01,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-06-01,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-06-01,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-06-01,Margaret Redfield,NNS PSO,0.9,1
+2026-06-01,Margaret Redfield,Ingalls PSO,0.1,1
+2026-06-08,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-06-08,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-06-08,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-06-08,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-06-08,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-06-08,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-06-08,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-06-08,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-06-08,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-06-08,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-06-08,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-06-08,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-06-08,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-06-08,Yifan Lin,Gategroup PSO IPD,1,1
+2026-06-08,Meng Li,Cargill PSO PES Feature,1,1
+2026-06-08,Yueqi Shen,Signature Aviation IPD,1,1
+2026-06-08,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-06-08,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-06-08,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-06-08,Margaret Redfield,NNS PSO,0.9,1
+2026-06-08,Margaret Redfield,Ingalls PSO,0.1,1
+2026-06-15,Anshuman Pradhan,Cargill PSO PES Feature,0.5,1
+2026-06-15,Anshuman Pradhan,Cargill PSO CoE,0.2,1
+2026-06-15,Anshuman Pradhan,Flex PSO CoE,0.5,1
+2026-06-15,Josh Zhang,Signature Aviation IPD,0.55,1
+2026-06-15,Josh Zhang,Base PSO App + optim maintainance,0.2,1
+2026-06-15,Josh Zhang,Cargill PSO PES Feature,0.25,1
+2026-06-15,Nancy Ning,Nucor network optimization IPD,0.75,1
+2026-06-15,Nancy Ning,Pantaleon PSO CoE,0.25,1
+2026-06-15,Shivarjun Sarkar,Nucor NSBC + NSAR,1,1
+2026-06-15,Manqi Cai,Cargill PSO PES Feature,0.5,1
+2026-06-15,Manqi Cai,Nucor NSBC + NSAR,0.5,1
+2026-06-15,Yunxuan Jiang,Cargill PSO PES Feature,0.3,1
+2026-06-15,Yunxuan Jiang,Nucor Bar mill + MO,0.7,1
+2026-06-15,Yifan Lin,Gategroup PSO IPD,1,1
+2026-06-15,Meng Li,Cargill PSO PES Feature,1,1
+2026-06-15,Yueqi Shen,Signature Aviation IPD,1,1
+2026-06-15,Anubhav Nehru,Cargill PSO CoE,0.5,1
+2026-06-15,Anubhav Nehru,Pantaleon PSO CoE,0.5,1
+2026-06-15,Priyanka Rotte,Cargill PSO CoE,1,1
+2026-06-15,Margaret Redfield,NNS PSO,0.9,1
+2026-06-15,Margaret Redfield,Ingalls PSO,0.1,1

@@ -253,6 +253,191 @@ button.ghost.danger {
   width: 100%;
 }
 
+/* Gantt Chart Styles */
+.gantt-container {
+  margin: 16px 0;
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.gantt-chart {
+  overflow-x: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gantt-header,
+.gantt-row {
+  display: flex;
+  min-width: max-content;
+}
+
+.gantt-header {
+  position: sticky;
+  top: 0;
+  background: #f3f4f6;
+  border-radius: 8px 8px 0 0;
+  font-weight: 600;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.gantt-label-cell {
+  flex: 0 0 160px;
+  padding: 10px 12px;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: inherit;
+  border-right: 1px solid #e5e7eb;
+}
+
+.gantt-week-header {
+  flex: 0 0 80px;
+  padding: 8px 4px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  border-right: 1px solid #f0f0f0;
+}
+
+.gantt-week-label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.gantt-week-year {
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+.gantt-row {
+  background: #fff;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.gantt-row:hover {
+  background: #f9fafb;
+}
+
+.gantt-row:nth-child(even) {
+  background: #fefefe;
+}
+
+.gantt-row:nth-child(even):hover {
+  background: #f9fafb;
+}
+
+.gantt-cell {
+  flex: 0 0 80px;
+  min-height: 48px;
+  padding: 4px 2px;
+  border-right: 1px solid #f3f4f6;
+  display: flex;
+  align-items: stretch;
+}
+
+.gantt-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  min-height: 100%;
+}
+
+.gantt-bar {
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 4px;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  cursor: default;
+  min-height: 18px;
+  flex: 1;
+}
+
+.gantt-bar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1;
+}
+
+.gantt-bar-text {
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.gantt-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.gantt-legend-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.gantt-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gantt-legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.gantt-legend-label {
+  font-size: 11px;
+  color: #4b5563;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gantt-legend-label strong {
+  color: #1f2937;
+  font-weight: 700;
+}
+
+.gantt-legend-more {
+  font-size: 11px;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.gantt-empty {
+  padding: 32px;
+  text-align: center;
+  color: #9ca3af;
+  font-style: italic;
+}
+
 @media (max-width: 768px) {
   .app {
     padding: 16px;
@@ -261,6 +446,16 @@ button.ghost.danger {
   .app__header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .gantt-label-cell {
+    flex: 0 0 100px;
+    font-size: 12px;
+  }
+
+  .gantt-week-header,
+  .gantt-cell {
+    flex: 0 0 50px;
   }
 }
 
