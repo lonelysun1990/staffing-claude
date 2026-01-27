@@ -25,3 +25,4 @@ npm run dev
 ```
 
 The frontend expects `VITE_API_BASE_URL` (default `http://localhost:8000`) to reach the API.
+This is only a draft.
