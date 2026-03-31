@@ -10,6 +10,7 @@ export interface DataScientist {
   max_concurrent_projects: number;
   efficiency: number;
   notes?: string | null;
+  skills: string[];
 }
 
 export interface DataScientistPayload {
@@ -18,6 +19,7 @@ export interface DataScientistPayload {
   max_concurrent_projects: number;
   efficiency: number;
   notes?: string | null;
+  skills: string[];
 }
 
 export interface ProjectWeek {
@@ -31,6 +33,7 @@ export interface Project {
   start_date: string;
   end_date: string;
   fte_requirements: ProjectWeek[];
+  required_skills: string[];
 }
 
 export interface ProjectPayload {
@@ -38,6 +41,7 @@ export interface ProjectPayload {
   start_date: string;
   end_date: string;
   fte_requirements: ProjectWeek[];
+  required_skills: string[];
 }
 
 export interface Assignment {
@@ -55,6 +59,14 @@ export interface AssignmentPayload {
   allocation: number;
 }
 
+export interface BulkAssignPayload {
+  data_scientist_id: number;
+  project_id: number;
+  start_date: string;
+  end_date: string;
+  allocation: number;
+}
+
 export interface ImportResult {
   created_data_scientists: number;
   created_projects: number;
@@ -62,3 +74,19 @@ export interface ImportResult {
   replaced_existing_assignments: number;
 }
 
+export interface ConflictItem {
+  data_scientist_id: number;
+  data_scientist_name: string;
+  week_start: string;
+  total_allocation: number;
+  over_by: number;
+}
+
+export interface AuditLogItem {
+  id: number;
+  assignment_id: number | null;
+  action: string;
+  changed_by: string | null;
+  changed_at: string;
+  details: Record<string, unknown> | null;
+}

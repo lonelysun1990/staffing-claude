@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import json
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
-from threading import Lock
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import pandas as pd
+from sqlalchemy.orm import Session
 
 from .models import (
     Assignment,
@@ -21,377 +21,431 @@ from .models import (
     ProjectCreate,
     ProjectWeek,
 )
-from .seed import build_seed_data, start_of_week
+from .orm_models import (
+    AssignmentORM,
+    AuditLogORM,
+    ConfigORM,
+    DataScientistORM,
+    DataScientistSkillORM,
+    ProjectORM,
+    ProjectSkillORM,
+    ProjectWeekORM,
+)
 
 
-class Store:
-    """Lightweight JSON-backed persistence layer."""
+# ------------------------------------------------------------------ #
+# Helpers to convert ORM → Pydantic
+# ------------------------------------------------------------------ #
 
-    def __init__(self, path: Path) -> None:
-        self.path = path
-        self.lock = Lock()
-        self._ensure_seed_file()
-        self._load()
+def _ds_to_schema(orm: DataScientistORM) -> DataScientist:
+    return DataScientist(
+        id=orm.id,
+        name=orm.name,
+        level=orm.level,
+        max_concurrent_projects=orm.max_concurrent_projects,
+        efficiency=orm.efficiency,
+        notes=orm.notes,
+        skills=[s.skill for s in (orm.skills or [])],
+    )
 
-    # ------------------------------------------------------------------ #
-    # Internal helpers
-    # ------------------------------------------------------------------ #
-    def _ensure_seed_file(self) -> None:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        if self.path.exists():
-            return
 
-        seed = build_seed_data()
-        data_scientists = [
-            {"id": idx + 1, **payload} for idx, payload in enumerate(seed["data_scientists"])
-        ]
-        projects = [{"id": idx + 1, **payload} for idx, payload in enumerate(seed["projects"])]
-        assignments = [
-            {"id": idx + 1, **payload} for idx, payload in enumerate(seed["assignments"])
-        ]
+def _project_to_schema(orm: ProjectORM) -> Project:
+    return Project(
+        id=orm.id,
+        name=orm.name,
+        start_date=orm.start_date,
+        end_date=orm.end_date,
+        fte_requirements=[
+            ProjectWeek(week_start=w.week_start, fte=w.fte)
+            for w in sorted(orm.fte_requirements, key=lambda x: x.week_start)
+        ],
+        required_skills=[s.skill for s in (orm.required_skills or [])],
+    )
 
-        state = {
-            "config": seed["config"],
-            "data_scientists": data_scientists,
-            "projects": projects,
-            "assignments": assignments,
-            "counters": {
-                "data_scientists": len(data_scientists),
-                "projects": len(projects),
-                "assignments": len(assignments),
-            },
-        }
-        self.path.write_text(json.dumps(state, indent=2))
 
-    def _load(self) -> None:
-        state = json.loads(self.path.read_text())
-        counters = state.get("counters") or {}
-        self.config = ConfigModel.model_validate(state.get("config", {}))
-        self.data_scientists: List[DataScientist] = [
-            DataScientist.model_validate(ds) for ds in state.get("data_scientists", [])
-        ]
-        self.projects: List[Project] = [
-            Project.model_validate(
-                {**project, "fte_requirements": project.get("fte_requirements", [])}
-            )
-            for project in state.get("projects", [])
-        ]
-        self.assignments: List[Assignment] = [
-            Assignment.model_validate(a) for a in state.get("assignments", [])
-        ]
-        self.counters = {
-            "data_scientists": counters.get("data_scientists", len(self.data_scientists)),
-            "projects": counters.get("projects", len(self.projects)),
-            "assignments": counters.get("assignments", len(self.assignments)),
-        }
+def _assignment_to_schema(orm: AssignmentORM) -> Assignment:
+    return Assignment(
+        id=orm.id,
+        data_scientist_id=orm.data_scientist_id,
+        project_id=orm.project_id,
+        week_start=orm.week_start,
+        allocation=orm.allocation,
+    )
 
-    def _save(self) -> None:
-        state = {
-            "config": self.config.model_dump(),
-            "data_scientists": [ds.model_dump() for ds in self.data_scientists],
-            "projects": [
-                {
-                    **project.model_dump(),
-                    "fte_requirements": [
-                        {"week_start": week.week_start.isoformat(), "fte": week.fte}
-                        for week in project.fte_requirements
-                    ],
-                }
-                for project in self.projects
-            ],
-            "assignments": [
-                {**assignment.model_dump(), "week_start": assignment.week_start.isoformat()}
-                for assignment in self.assignments
-            ],
-            "counters": self.counters,
-        }
-        self.path.write_text(json.dumps(state, indent=2))
 
-    def _next_id(self, key: str) -> int:
-        self.counters[key] += 1
-        return self.counters[key]
+# ------------------------------------------------------------------ #
+# Config
+# ------------------------------------------------------------------ #
 
-    def _require_data_scientist(self, ds_id: int) -> DataScientist:
-        for ds in self.data_scientists:
-            if ds.id == ds_id:
-                return ds
+def get_config(db: Session) -> ConfigModel:
+    cfg = db.query(ConfigORM).first()
+    if not cfg:
+        cfg = ConfigORM(id=1, granularity_weeks=1, horizon_weeks=26)
+        db.add(cfg)
+        db.commit()
+        db.refresh(cfg)
+    return ConfigModel(granularity_weeks=cfg.granularity_weeks, horizon_weeks=cfg.horizon_weeks)
+
+
+def update_config(db: Session, payload: ConfigUpdate) -> ConfigModel:
+    cfg = db.query(ConfigORM).first()
+    if not cfg:
+        cfg = ConfigORM(id=1, granularity_weeks=1, horizon_weeks=26)
+        db.add(cfg)
+    if payload.granularity_weeks is not None:
+        cfg.granularity_weeks = payload.granularity_weeks
+    if payload.horizon_weeks is not None:
+        cfg.horizon_weeks = payload.horizon_weeks
+    db.commit()
+    db.refresh(cfg)
+    return ConfigModel(granularity_weeks=cfg.granularity_weeks, horizon_weeks=cfg.horizon_weeks)
+
+
+# ------------------------------------------------------------------ #
+# Data scientists
+# ------------------------------------------------------------------ #
+
+def list_data_scientists(db: Session) -> List[DataScientist]:
+    return [_ds_to_schema(ds) for ds in db.query(DataScientistORM).all()]
+
+
+def create_data_scientist(db: Session, payload: DataScientistCreate) -> DataScientist:
+    orm = DataScientistORM(
+        name=payload.name,
+        level=payload.level,
+        max_concurrent_projects=payload.max_concurrent_projects,
+        efficiency=payload.efficiency,
+        notes=payload.notes,
+    )
+    db.add(orm)
+    db.flush()
+    for skill in (payload.skills or []):
+        db.add(DataScientistSkillORM(data_scientist_id=orm.id, skill=skill))
+    db.commit()
+    db.refresh(orm)
+    return _ds_to_schema(orm)
+
+
+def update_data_scientist(db: Session, ds_id: int, payload: DataScientistCreate) -> DataScientist:
+    orm = db.query(DataScientistORM).filter(DataScientistORM.id == ds_id).first()
+    if not orm:
         raise KeyError(f"Data scientist {ds_id} not found")
+    orm.name = payload.name
+    orm.level = payload.level
+    orm.max_concurrent_projects = payload.max_concurrent_projects
+    orm.efficiency = payload.efficiency
+    orm.notes = payload.notes
+    db.query(DataScientistSkillORM).filter(DataScientistSkillORM.data_scientist_id == ds_id).delete()
+    for skill in (payload.skills or []):
+        db.add(DataScientistSkillORM(data_scientist_id=ds_id, skill=skill))
+    db.commit()
+    db.refresh(orm)
+    return _ds_to_schema(orm)
 
-    def _require_project(self, project_id: int) -> Project:
-        for project in self.projects:
-            if project.id == project_id:
-                return project
+
+def delete_data_scientist(db: Session, ds_id: int) -> None:
+    orm = db.query(DataScientistORM).filter(DataScientistORM.id == ds_id).first()
+    if not orm:
+        raise KeyError(f"Data scientist {ds_id} not found")
+    db.delete(orm)
+    db.commit()
+
+
+# ------------------------------------------------------------------ #
+# Projects
+# ------------------------------------------------------------------ #
+
+def list_projects(db: Session) -> List[Project]:
+    return [_project_to_schema(p) for p in db.query(ProjectORM).all()]
+
+
+def create_project(db: Session, payload: ProjectCreate) -> Project:
+    orm = ProjectORM(
+        name=payload.name,
+        start_date=payload.start_date,
+        end_date=payload.end_date,
+    )
+    db.add(orm)
+    db.flush()
+    for week in payload.fte_requirements:
+        db.add(ProjectWeekORM(project_id=orm.id, week_start=week.week_start, fte=week.fte))
+    for skill in (payload.required_skills or []):
+        db.add(ProjectSkillORM(project_id=orm.id, skill=skill))
+    db.commit()
+    db.refresh(orm)
+    return _project_to_schema(orm)
+
+
+def update_project(db: Session, project_id: int, payload: ProjectCreate) -> Project:
+    orm = db.query(ProjectORM).filter(ProjectORM.id == project_id).first()
+    if not orm:
+        raise KeyError(f"Project {project_id} not found")
+    orm.name = payload.name
+    orm.start_date = payload.start_date
+    orm.end_date = payload.end_date
+    db.query(ProjectWeekORM).filter(ProjectWeekORM.project_id == project_id).delete()
+    for week in payload.fte_requirements:
+        db.add(ProjectWeekORM(project_id=project_id, week_start=week.week_start, fte=week.fte))
+    db.query(ProjectSkillORM).filter(ProjectSkillORM.project_id == project_id).delete()
+    for skill in (payload.required_skills or []):
+        db.add(ProjectSkillORM(project_id=project_id, skill=skill))
+    db.commit()
+    db.refresh(orm)
+    return _project_to_schema(orm)
+
+
+def delete_project(db: Session, project_id: int) -> None:
+    orm = db.query(ProjectORM).filter(ProjectORM.id == project_id).first()
+    if not orm:
+        raise KeyError(f"Project {project_id} not found")
+    db.delete(orm)
+    db.commit()
+
+
+# ------------------------------------------------------------------ #
+# Assignments
+# ------------------------------------------------------------------ #
+
+def list_assignments(db: Session) -> List[Assignment]:
+    return [_assignment_to_schema(a) for a in db.query(AssignmentORM).all()]
+
+
+def add_assignment(db: Session, payload: AssignmentCreate, changed_by: str = "system") -> Assignment:
+    ds = db.query(DataScientistORM).filter(DataScientistORM.id == payload.data_scientist_id).first()
+    if not ds:
+        raise KeyError(f"Data scientist {payload.data_scientist_id} not found")
+    project = db.query(ProjectORM).filter(ProjectORM.id == payload.project_id).first()
+    if not project:
+        raise KeyError(f"Project {payload.project_id} not found")
+
+    orm = AssignmentORM(
+        data_scientist_id=payload.data_scientist_id,
+        project_id=payload.project_id,
+        week_start=payload.week_start,
+        allocation=payload.allocation,
+    )
+    db.add(orm)
+    db.flush()
+    db.add(AuditLogORM(
+        assignment_id=orm.id,
+        action="created",
+        changed_by=changed_by,
+        changed_at=datetime.utcnow().isoformat(),
+        details=json.dumps(payload.model_dump(mode="json")),
+    ))
+    db.commit()
+    db.refresh(orm)
+    return _assignment_to_schema(orm)
+
+
+def delete_assignment(db: Session, assignment_id: int, changed_by: str = "system") -> None:
+    orm = db.query(AssignmentORM).filter(AssignmentORM.id == assignment_id).first()
+    if not orm:
+        raise KeyError(f"Assignment {assignment_id} not found")
+    db.add(AuditLogORM(
+        assignment_id=None,
+        action="deleted",
+        changed_by=changed_by,
+        changed_at=datetime.utcnow().isoformat(),
+        details=json.dumps(_assignment_to_schema(orm).model_dump(mode="json")),
+    ))
+    db.delete(orm)
+    db.commit()
+
+
+def replace_assignments(db: Session, payload: AssignmentsPayload) -> List[Assignment]:
+    for item in payload.assignments:
+        if not db.query(DataScientistORM).filter(DataScientistORM.id == item.data_scientist_id).first():
+            raise KeyError(f"Data scientist {item.data_scientist_id} not found")
+        if not db.query(ProjectORM).filter(ProjectORM.id == item.project_id).first():
+            raise KeyError(f"Project {item.project_id} not found")
+
+    db.query(AssignmentORM).delete()
+    new_assignments = []
+    for item in payload.assignments:
+        orm = AssignmentORM(
+            data_scientist_id=item.data_scientist_id,
+            project_id=item.project_id,
+            week_start=item.week_start,
+            allocation=item.allocation,
+        )
+        db.add(orm)
+        new_assignments.append(orm)
+    db.commit()
+    return [_assignment_to_schema(a) for a in new_assignments]
+
+
+# ------------------------------------------------------------------ #
+# Capacity conflict detection
+# ------------------------------------------------------------------ #
+
+def get_conflicts(db: Session) -> List[dict]:
+    """Return weeks where a DS is assigned > 100% total allocation."""
+    assignments = db.query(AssignmentORM).all()
+    weekly: Dict[tuple, float] = {}
+    for a in assignments:
+        key = (a.data_scientist_id, a.week_start)
+        weekly[key] = weekly.get(key, 0.0) + a.allocation
+
+    conflicts = []
+    for (ds_id, week_start), total in weekly.items():
+        if total > 1.0:
+            ds = db.query(DataScientistORM).filter(DataScientistORM.id == ds_id).first()
+            conflicts.append({
+                "data_scientist_id": ds_id,
+                "data_scientist_name": ds.name if ds else str(ds_id),
+                "week_start": week_start.isoformat(),
+                "total_allocation": round(total, 3),
+                "over_by": round(total - 1.0, 3),
+            })
+    return sorted(conflicts, key=lambda x: (x["week_start"], x["data_scientist_name"]))
+
+
+# ------------------------------------------------------------------ #
+# Skills
+# ------------------------------------------------------------------ #
+
+def list_skills(db: Session) -> List[str]:
+    rows = db.query(DataScientistSkillORM.skill).distinct().all()
+    return sorted(set(r.skill for r in rows))
+
+
+def get_skill_suggestions(db: Session, project_id: int) -> List[DataScientist]:
+    """Return DSs whose skills match the project's required skills, ordered by availability."""
+    project = db.query(ProjectORM).filter(ProjectORM.id == project_id).first()
+    if not project:
         raise KeyError(f"Project {project_id} not found")
 
-    # ------------------------------------------------------------------ #
-    # Config operations
-    # ------------------------------------------------------------------ #
-    def get_config(self) -> ConfigModel:
-        return self.config
+    required = {s.skill for s in project.required_skills}
+    all_ds = db.query(DataScientistORM).all()
 
-    def update_config(self, payload: ConfigUpdate) -> ConfigModel:
-        with self.lock:
-            new_config = self.config.model_copy(update=payload.model_dump(exclude_unset=True))
-            self.config = ConfigModel.model_validate(new_config)
-            self._save()
-        return self.config
+    scored = []
+    for ds in all_ds:
+        ds_skills = {s.skill for s in ds.skills}
+        match_count = len(required & ds_skills) if required else 0
+        scored.append((match_count, ds))
 
-    # ------------------------------------------------------------------ #
-    # Data scientist operations
-    # ------------------------------------------------------------------ #
-    def list_data_scientists(self) -> List[DataScientist]:
-        return self.data_scientists
+    scored.sort(key=lambda x: -x[0])
+    return [_ds_to_schema(ds) for _, ds in scored]
 
-    def create_data_scientist(self, payload: DataScientistCreate) -> DataScientist:
-        with self.lock:
-            new_ds = DataScientist(id=self._next_id("data_scientists"), **payload.model_dump())
-            self.data_scientists.append(new_ds)
-            self._save()
-        return new_ds
 
-    def update_data_scientist(self, ds_id: int, payload: DataScientistCreate) -> DataScientist:
-        with self.lock:
-            updated = None
-            for idx, ds in enumerate(self.data_scientists):
-                if ds.id == ds_id:
-                    updated = DataScientist(id=ds_id, **payload.model_dump())
-                    self.data_scientists[idx] = updated
-                    break
-            if not updated:
-                raise KeyError(f"Data scientist {ds_id} not found")
-            self._save()
-        return updated
+# ------------------------------------------------------------------ #
+# Audit log
+# ------------------------------------------------------------------ #
 
-    def delete_data_scientist(self, ds_id: int) -> None:
-        with self.lock:
-            before = len(self.data_scientists)
-            self.data_scientists = [ds for ds in self.data_scientists if ds.id != ds_id]
-            if before == len(self.data_scientists):
-                raise KeyError(f"Data scientist {ds_id} not found")
-            self.assignments = [a for a in self.assignments if a.data_scientist_id != ds_id]
-            self._save()
+def list_audit_logs(db: Session, limit: int = 100) -> List[dict]:
+    rows = (
+        db.query(AuditLogORM)
+        .order_by(AuditLogORM.changed_at.desc())
+        .limit(limit)
+        .all()
+    )
+    return [
+        {
+            "id": r.id,
+            "assignment_id": r.assignment_id,
+            "action": r.action,
+            "changed_by": r.changed_by,
+            "changed_at": r.changed_at,
+            "details": json.loads(r.details) if r.details else None,
+        }
+        for r in rows
+    ]
 
-    # ------------------------------------------------------------------ #
-    # Project operations
-    # ------------------------------------------------------------------ #
-    def list_projects(self) -> List[Project]:
-        return self.projects
 
-    def create_project(self, payload: ProjectCreate) -> Project:
-        with self.lock:
-            fte_requirements = [
-                ProjectWeek.model_validate(week) for week in payload.fte_requirements
-            ]
-            new_project = Project(
-                id=self._next_id("projects"),
-                name=payload.name,
-                start_date=payload.start_date,
-                end_date=payload.end_date,
-                fte_requirements=fte_requirements,
+# ------------------------------------------------------------------ #
+# Import/export
+# ------------------------------------------------------------------ #
+
+def export_assignments(db: Session) -> str:
+    assignments = db.query(AssignmentORM).all()
+    ds_lookup = {ds.id: ds for ds in db.query(DataScientistORM).all()}
+    project_lookup = {p.id: p for p in db.query(ProjectORM).all()}
+    rows = []
+    for a in assignments:
+        ds = ds_lookup.get(a.data_scientist_id)
+        project = project_lookup.get(a.project_id)
+        rows.append({
+            "week_start": a.week_start.isoformat(),
+            "data_scientist": ds.name if ds else a.data_scientist_id,
+            "project": project.name if project else a.project_id,
+            "allocation": a.allocation,
+            "efficiency": ds.efficiency if ds else None,
+        })
+    return pd.DataFrame(rows).to_csv(index=False)
+
+
+def import_from_file(db: Session, file_path: Path) -> ImportResult:
+    suffix = file_path.suffix.lower()
+    if suffix == ".csv":
+        df = pd.read_csv(file_path)
+    elif suffix in (".xlsx", ".xls"):
+        df = pd.read_excel(file_path)
+    else:
+        raise ValueError(f"Unsupported file type: {suffix}")
+
+    required_columns = {"week_start", "data_scientist", "project", "allocation"}
+    missing = required_columns - set(df.columns)
+    if missing:
+        raise ValueError(f"Missing required columns: {', '.join(sorted(missing))}")
+
+    replaced_ds = db.query(DataScientistORM).count()
+    replaced_projects = db.query(ProjectORM).count()
+    replaced_assignments = db.query(AssignmentORM).count()
+
+    db.query(AssignmentORM).delete()
+    db.query(ProjectWeekORM).delete()
+    db.query(ProjectORM).delete()
+    db.query(DataScientistORM).delete()
+    db.commit()
+
+    ds_map: Dict[str, DataScientistORM] = {}
+    project_map: Dict[str, ProjectORM] = {}
+    created_ds = created_projects = 0
+
+    for _, row in df.iterrows():
+        week_start = pd.to_datetime(row["week_start"]).date()
+        allocation = float(row["allocation"])
+        ds_name = str(row["data_scientist"]).strip()
+        project_name = str(row["project"]).strip()
+
+        if ds_name not in ds_map:
+            orm = DataScientistORM(
+                name=ds_name,
+                level=str(row.get("level", "Imported DS")) if pd.notna(row.get("level")) else "Imported DS",
+                max_concurrent_projects=int(row.get("max_concurrent_projects", 2)) if pd.notna(row.get("max_concurrent_projects")) else 2,
+                efficiency=float(row.get("efficiency", 1.0)) if pd.notna(row.get("efficiency")) else 1.0,
             )
-            self.projects.append(new_project)
-            self._save()
-        return new_project
+            db.add(orm)
+            db.flush()
+            ds_map[ds_name] = orm
+            created_ds += 1
 
-    def update_project(self, project_id: int, payload: ProjectCreate) -> Project:
-        with self.lock:
-            updated = None
-            for idx, project in enumerate(self.projects):
-                if project.id == project_id:
-                    updated = Project(
-                        id=project_id,
-                        name=payload.name,
-                        start_date=payload.start_date,
-                        end_date=payload.end_date,
-                        fte_requirements=[
-                            ProjectWeek.model_validate(week) for week in payload.fte_requirements
-                        ],
-                    )
-                    self.projects[idx] = updated
-                    break
-            if not updated:
-                raise KeyError(f"Project {project_id} not found")
-            self._save()
-        return updated
+        if project_name not in project_map:
+            start_date = pd.to_datetime(row.get("project_start")).date() if pd.notna(row.get("project_start")) else week_start
+            end_date = pd.to_datetime(row.get("project_end")).date() if pd.notna(row.get("project_end")) else (start_date + timedelta(weeks=12))
+            fte_value = float(row.get("fte", allocation)) if pd.notna(row.get("fte")) else allocation
+            project_orm = ProjectORM(name=project_name, start_date=start_date, end_date=end_date)
+            db.add(project_orm)
+            db.flush()
+            for i in range(max(1, int(((end_date - start_date).days // 7) + 1))):
+                db.add(ProjectWeekORM(project_id=project_orm.id, week_start=start_date + timedelta(weeks=i), fte=fte_value))
+            project_map[project_name] = project_orm
+            created_projects += 1
 
-    def delete_project(self, project_id: int) -> None:
-        with self.lock:
-            before = len(self.projects)
-            self.projects = [p for p in self.projects if p.id != project_id]
-            if before == len(self.projects):
-                raise KeyError(f"Project {project_id} not found")
-            self.assignments = [a for a in self.assignments if a.project_id != project_id]
-            self._save()
+        db.add(AssignmentORM(
+            data_scientist_id=ds_map[ds_name].id,
+            project_id=project_map[project_name].id,
+            week_start=week_start,
+            allocation=allocation,
+        ))
 
-    # ------------------------------------------------------------------ #
-    # Assignment operations
-    # ------------------------------------------------------------------ #
-    def list_assignments(self) -> List[Assignment]:
-        return self.assignments
+    db.commit()
+    created_assignments = db.query(AssignmentORM).count()
 
-    def replace_assignments(self, payload: AssignmentsPayload) -> List[Assignment]:
-        with self.lock:
-            validated = []
-            for assignment in payload.assignments:
-                # Ensure references exist
-                self._require_data_scientist(assignment.data_scientist_id)
-                self._require_project(assignment.project_id)
-                validated.append(assignment)
-
-            self.assignments = [
-                Assignment(
-                    id=index + 1,  # deterministic ordering
-                    data_scientist_id=item.data_scientist_id,
-                    project_id=item.project_id,
-                    week_start=item.week_start,
-                    allocation=item.allocation,
-                )
-                for index, item in enumerate(validated)
-            ]
-            self.counters["assignments"] = len(self.assignments)
-            self._save()
-        return self.assignments
-
-    # ------------------------------------------------------------------ #
-    # Import/export helpers
-    # ------------------------------------------------------------------ #
-    def export_assignments(self) -> str:
-        ds_lookup = {ds.id: ds for ds in self.data_scientists}
-        project_lookup = {project.id: project for project in self.projects}
-        rows = []
-        for assignment in self.assignments:
-            ds = ds_lookup.get(assignment.data_scientist_id)
-            project = project_lookup.get(assignment.project_id)
-            rows.append(
-                {
-                    "week_start": assignment.week_start.isoformat(),
-                    "data_scientist": ds.name if ds else assignment.data_scientist_id,
-                    "project": project.name if project else assignment.project_id,
-                    "allocation": assignment.allocation,
-                    "efficiency": ds.efficiency if ds else None,
-                }
-            )
-        df = pd.DataFrame(rows)
-        return df.to_csv(index=False)
-
-    def import_from_file(self, file_path: Path) -> ImportResult:
-        """Import schedule from Excel (.xlsx, .xls) or CSV file.
-        
-        This will clear all existing data_scientists, projects, and assignments
-        to avoid conflicts with seed data.
-        """
-        # Detect file type and read accordingly
-        suffix = file_path.suffix.lower()
-        if suffix == ".csv":
-            df = pd.read_csv(file_path)
-        elif suffix in (".xlsx", ".xls"):
-            df = pd.read_excel(file_path)
-        else:
-            raise ValueError(f"Unsupported file type: {suffix}. Use .csv, .xlsx, or .xls")
-
-        required_columns = {"week_start", "data_scientist", "project", "allocation"}
-        missing_columns = required_columns - set(df.columns)
-        if missing_columns:
-            raise ValueError(f"Missing required columns: {', '.join(sorted(missing_columns))}")
-
-        with self.lock:
-            # Clear all existing data to avoid conflicts with seed data
-            replaced_ds = len(self.data_scientists)
-            replaced_projects = len(self.projects)
-            replaced_assignments = len(self.assignments)
-            
-            self.data_scientists = []
-            self.projects = []
-            self.assignments = []
-            self.counters = {"data_scientists": 0, "projects": 0, "assignments": 0}
-
-            created_ds = created_projects = 0
-            new_assignments: List[AssignmentCreate] = []
-
-            # Track unique data scientists and projects for creation
-            ds_map: Dict[str, DataScientist] = {}
-            project_map: Dict[str, Project] = {}
-
-            for _, row in df.iterrows():
-                week_start = pd.to_datetime(row["week_start"]).date()
-                allocation = float(row["allocation"])
-                ds_name = str(row["data_scientist"]).strip()
-                project_name = str(row["project"]).strip()
-
-                # Get or create data scientist
-                if ds_name not in ds_map:
-                    ds_payload = DataScientistCreate(
-                        name=ds_name,
-                        level=str(row.get("level", "Imported DS")) if pd.notna(row.get("level")) else "Imported DS",
-                        max_concurrent_projects=int(row.get("max_concurrent_projects", 2)) if pd.notna(row.get("max_concurrent_projects")) else 2,
-                        efficiency=float(row.get("efficiency", 1.0)) if pd.notna(row.get("efficiency")) else 1.0,
-                    )
-                    new_ds = DataScientist(id=self._next_id("data_scientists"), **ds_payload.model_dump())
-                    self.data_scientists.append(new_ds)
-                    ds_map[ds_name] = new_ds
-                    created_ds += 1
-                ds = ds_map[ds_name]
-
-                # Get or create project
-                if project_name not in project_map:
-                    start_date = pd.to_datetime(row.get("project_start")).date() if pd.notna(row.get("project_start")) else week_start
-                    end_date = pd.to_datetime(row.get("project_end")).date() if pd.notna(row.get("project_end")) else (start_date + timedelta(weeks=12))
-                    fte_value = float(row.get("fte", allocation)) if pd.notna(row.get("fte")) else allocation
-
-                    fte_requirements = [
-                        ProjectWeek(week_start=start_date + timedelta(weeks=i), fte=fte_value)
-                        for i in range(max(1, int(((end_date - start_date).days // 7) + 1)))
-                    ]
-                    new_project = Project(
-                        id=self._next_id("projects"),
-                        name=project_name,
-                        start_date=start_date,
-                        end_date=end_date,
-                        fte_requirements=fte_requirements,
-                    )
-                    self.projects.append(new_project)
-                    project_map[project_name] = new_project
-                    created_projects += 1
-                project = project_map[project_name]
-
-                new_assignments.append(
-                    AssignmentCreate(
-                        data_scientist_id=ds.id,
-                        project_id=project.id,
-                        week_start=week_start,
-                        allocation=allocation,
-                    )
-                )
-
-            # Create assignments
-            self.assignments = [
-                Assignment(
-                    id=index + 1,
-                    data_scientist_id=item.data_scientist_id,
-                    project_id=item.project_id,
-                    week_start=item.week_start,
-                    allocation=item.allocation,
-                )
-                for index, item in enumerate(new_assignments)
-            ]
-            self.counters["assignments"] = len(self.assignments)
-            self._save()
-
-        return ImportResult(
-            created_data_scientists=created_ds,
-            created_projects=created_projects,
-            created_assignments=len(new_assignments),
-            replaced_existing_assignments=replaced_assignments,
-        )
-
-
-_store: Optional[Store] = None
-
-
-def get_store() -> Store:
-    global _store
-    if not _store:
-        data_path = Path(__file__).resolve().parent.parent / "data" / "store.json"
-        _store = Store(data_path)
-    return _store
-
+    return ImportResult(
+        created_data_scientists=created_ds,
+        created_projects=created_projects,
+        created_assignments=created_assignments,
+        replaced_existing_assignments=replaced_assignments,
+    )
