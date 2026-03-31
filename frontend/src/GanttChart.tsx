@@ -26,6 +26,12 @@ function generateAcronym(name: string): string {
     .slice(0, 5);
 }
 
+interface EntityOption {
+  id: number;
+  label: string;
+  acronym: string;
+}
+
 interface GanttBar {
   id: string;
   assignmentId: number;
@@ -33,6 +39,7 @@ interface GanttBar {
   acronym: string;
   allocation: number;
   color: string;
+  entityId: number; // project_id in by-person mode; data_scientist_id in by-project mode
 }
 
 interface GanttRow {
@@ -49,32 +56,42 @@ interface GanttChartProps {
   mode: "by-person" | "by-project";
   onMoveAssignment?: (assignmentId: number, newWeekStart: string, newDsId: number, newProjectId: number) => void;
   onEditAllocation?: (assignmentId: number, newAllocation: number) => void;
+  onCreateAssignment?: (dsId: number, projectId: number, weekStart: string, allocation: number) => void;
 }
 
-// Draggable bar
+// ── Draggable bar ──────────────────────────────────────────────────────────────
 function DraggableBar({
   bar,
   mode,
+  entityOptions,
   onEditAllocation,
+  onChangeEntity,
 }: {
   bar: GanttBar;
   mode: "by-person" | "by-project";
+  entityOptions: EntityOption[];
   onEditAllocation?: (assignmentId: number, newAllocation: number) => void;
+  onChangeEntity?: (assignmentId: number, newEntityId: number) => void;
 }) {
-  const [editing, setEditing] = useState(false);
-  const [editValue, setEditValue] = useState("");
+  const [editingPct, setEditingPct] = useState(false);
+  const [editingEntity, setEditingEntity] = useState(false);
+  const [pctValue, setPctValue] = useState("");
+
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `bar-${bar.assignmentId}`,
     data: { assignmentId: bar.assignmentId },
   });
 
-  const commitEdit = () => {
-    const pct = parseInt(editValue, 10);
+  const commitPct = () => {
+    const pct = parseInt(pctValue, 10);
     if (!isNaN(pct) && pct > 0 && pct <= 100) {
       onEditAllocation?.(bar.assignmentId, pct / 100);
     }
-    setEditing(false);
+    setEditingPct(false);
   };
+
+  const barLabel = mode === "by-person" ? bar.acronym : bar.label.split(" (")[0];
+  const entityHint = mode === "by-person" ? "project" : "data scientist";
 
   return (
     <div
@@ -84,67 +101,165 @@ function DraggableBar({
       style={{ backgroundColor: bar.color, opacity: isDragging ? 0.4 : 1 }}
       title={`${bar.label}: ${(bar.allocation * 100).toFixed(0)}%`}
     >
-      {/* Drag handle — only this element triggers dragging */}
+      {/* Drag handle — only this triggers dragging */}
       <span {...listeners} className="gantt-bar-drag-handle" title="Drag to move">⠿</span>
 
-      {editing ? (
+      {/* Entity name — click to change via dropdown */}
+      {editingEntity ? (
+        <select
+          className="gantt-bar-select"
+          defaultValue={bar.entityId}
+          autoFocus
+          onChange={(e) => {
+            onChangeEntity?.(bar.assignmentId, Number(e.target.value));
+            setEditingEntity(false);
+          }}
+          onBlur={() => setEditingEntity(false)}
+          onKeyDown={(e) => { if (e.key === "Escape") setEditingEntity(false); }}
+        >
+          {entityOptions.map((opt) => (
+            <option key={opt.id} value={opt.id}>{opt.label}</option>
+          ))}
+        </select>
+      ) : (
+        <span
+          className="gantt-bar-text gantt-bar-text--clickable"
+          onClick={() => onChangeEntity && setEditingEntity(true)}
+          title={onChangeEntity ? `Click to change ${entityHint}` : bar.label}
+        >
+          {barLabel}
+        </span>
+      )}
+
+      {/* Allocation % — click to edit */}
+      {editingPct ? (
         <>
           <input
             className="gantt-bar-input"
             type="number"
-            value={editValue}
+            value={pctValue}
             min={1}
             max={100}
             autoFocus
-            onChange={(e) => setEditValue(e.target.value)}
-            onBlur={commitEdit}
+            onChange={(e) => setPctValue(e.target.value)}
+            onBlur={commitPct}
             onKeyDown={(e) => {
               if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-              if (e.key === "Escape") setEditing(false);
+              if (e.key === "Escape") setEditingPct(false);
             }}
           />
           <span className="gantt-bar-pct-suffix">%</span>
         </>
       ) : (
-        <>
-          <span className="gantt-bar-text">
-            {mode === "by-person" ? bar.acronym : bar.label.split(" (")[0]}
-          </span>
-          <button
-            className="gantt-bar-pct"
-            onClick={() => {
-              setEditValue(String(Math.round(bar.allocation * 100)));
-              setEditing(true);
-            }}
-            title="Click to edit %"
-          >
-            {(bar.allocation * 100).toFixed(0)}%
-          </button>
-        </>
+        <button
+          className="gantt-bar-pct"
+          onClick={() => {
+            setPctValue(String(Math.round(bar.allocation * 100)));
+            setEditingPct(true);
+          }}
+          title="Click to edit %"
+        >
+          {(bar.allocation * 100).toFixed(0)}%
+        </button>
       )}
     </div>
   );
 }
 
-// Droppable cell
-function DroppableCell({
-  id,
-  children,
+// ── Creation form shown inside an empty cell ───────────────────────────────────
+function CellCreationForm({
+  entityOptions,
+  entityLabel,
+  onCommit,
+  onCancel,
 }: {
-  id: string;
-  children: React.ReactNode;
+  entityOptions: EntityOption[];
+  entityLabel: string;
+  onCommit: (entityId: number, allocation: number) => void;
+  onCancel: () => void;
 }) {
-  const { isOver, setNodeRef } = useDroppable({ id });
+  const [entityId, setEntityId] = useState(String(entityOptions[0]?.id ?? ""));
+  const [alloc, setAlloc] = useState("100");
+
+  const commit = () => {
+    const eid = parseInt(entityId, 10);
+    const pct = parseInt(alloc, 10);
+    if (!isNaN(eid) && !isNaN(pct) && pct > 0 && pct <= 100) {
+      onCommit(eid, pct / 100);
+    }
+  };
+
   return (
-    <div
-      ref={setNodeRef}
-      className={`gantt-cell${isOver ? " gantt-cell--over" : ""}`}
-    >
-      {children}
+    <div className="gantt-create-form" onClick={(e) => e.stopPropagation()}>
+      <div className="gantt-create-label">{entityLabel}</div>
+      <select
+        className="gantt-create-select"
+        value={entityId}
+        autoFocus
+        onChange={(e) => setEntityId(e.target.value)}
+        onKeyDown={(e) => { if (e.key === "Escape") onCancel(); }}
+      >
+        {entityOptions.map((opt) => (
+          <option key={opt.id} value={opt.id}>{opt.label}</option>
+        ))}
+      </select>
+      <div className="gantt-create-alloc-row">
+        <input
+          className="gantt-create-alloc"
+          type="number"
+          value={alloc}
+          min={1}
+          max={100}
+          onChange={(e) => setAlloc(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit();
+            if (e.key === "Escape") onCancel();
+          }}
+          placeholder="%"
+        />
+        <span className="gantt-create-alloc-suffix">%</span>
+      </div>
+      <div className="gantt-create-actions">
+        <button className="gantt-create-ok" onClick={commit} title="Confirm">✓</button>
+        <button className="gantt-create-cancel" onClick={onCancel} title="Cancel">✕</button>
+      </div>
     </div>
   );
 }
 
+// ── Droppable cell ─────────────────────────────────────────────────────────────
+function DroppableCell({
+  id,
+  children,
+  isEmpty,
+  onEmptyClick,
+  creationContent,
+}: {
+  id: string;
+  children: React.ReactNode;
+  isEmpty: boolean;
+  onEmptyClick?: () => void;
+  creationContent?: React.ReactNode;
+}) {
+  const { isOver, setNodeRef } = useDroppable({ id });
+  const clickable = isEmpty && !!onEmptyClick && !creationContent;
+  return (
+    <div
+      ref={setNodeRef}
+      className={[
+        "gantt-cell",
+        isOver ? "gantt-cell--over" : "",
+        creationContent ? "gantt-cell--creating" : "",
+        clickable ? "gantt-cell--empty" : "",
+      ].filter(Boolean).join(" ")}
+      onClick={clickable ? onEmptyClick : undefined}
+    >
+      {creationContent ?? children}
+    </div>
+  );
+}
+
+// ── Main chart component ───────────────────────────────────────────────────────
 export function GanttChart({
   weeks,
   assignments,
@@ -153,8 +268,11 @@ export function GanttChart({
   mode,
   onMoveAssignment,
   onEditAllocation,
+  onCreateAssignment,
 }: GanttChartProps) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
+  const [creatingCell, setCreatingCell] = useState<{ rowId: number; weekIndex: number } | null>(null);
 
   const dsLookup = useMemo(
     () => Object.fromEntries(dataScientists.map((ds) => [ds.id, ds])),
@@ -180,6 +298,22 @@ export function GanttChart({
     [dataScientists]
   );
 
+  // Options for the entity dropdown (what you can change a bar TO)
+  const entityOptions = useMemo((): EntityOption[] => {
+    if (mode === "by-person") {
+      return projects.map((p) => ({
+        id: p.id,
+        label: p.name,
+        acronym: projectData[p.id]?.acronym ?? "?",
+      }));
+    }
+    return dataScientists.map((ds) => ({
+      id: ds.id,
+      label: ds.name,
+      acronym: ds.name.split(" ").map((n) => n[0]).join(""),
+    }));
+  }, [mode, projects, dataScientists, projectData]);
+
   const visibleWeeks = weeks.slice(0, Math.min(weeks.length, 16));
 
   const rows = useMemo((): GanttRow[] => {
@@ -199,6 +333,7 @@ export function GanttChart({
               acronym: pData?.acronym ?? "?",
               allocation: a.allocation,
               color: pData?.color ?? COLORS[0],
+              entityId: a.project_id,
             };
             if (!bars.has(weekIndex)) bars.set(weekIndex, []);
             bars.get(weekIndex)!.push(bar);
@@ -221,6 +356,7 @@ export function GanttChart({
               acronym: ds?.name.split(" ").map((n) => n[0]).join("") ?? "?",
               allocation: a.allocation,
               color: dsColors[a.data_scientist_id] ?? COLORS[0],
+              entityId: a.data_scientist_id,
             };
             if (!bars.has(weekIndex)) bars.set(weekIndex, []);
             bars.get(weekIndex)!.push(bar);
@@ -235,24 +371,12 @@ export function GanttChart({
     return `${d.getMonth() + 1}/${d.getDate()}`;
   };
 
-  // Find a bar across all rows by assignmentId
-  const findBar = (assignmentId: number): GanttBar | undefined => {
-    for (const row of rows) {
-      for (const bars of row.bars.values()) {
-        const found = bars.find((b) => b.assignmentId === assignmentId);
-        if (found) return found;
-      }
-    }
-    return undefined;
-  };
-
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || !onMoveAssignment) return;
 
-    // active.id = "bar-{assignmentId}", over.id = "cell-{rowId}-{weekIndex}"
     const assignmentId = Number(String(active.id).replace("bar-", ""));
-    const parts = String(over.id).split("-"); // ["cell", "{rowId}", "{weekIndex}"]
+    const parts = String(over.id).split("-"); // "cell-{rowId}-{weekIndex}"
     const weekIndex = Number(parts[parts.length - 1]);
     const rowId = Number(parts[parts.length - 2]);
     const newWeekStart = visibleWeeks[weekIndex];
@@ -266,6 +390,23 @@ export function GanttChart({
     onMoveAssignment(assignmentId, newWeekStart, newDsId, newProjectId);
   };
 
+  const handleEntityChange = (assignmentId: number, newEntityId: number) => {
+    const assignment = assignments.find((a) => a.id === assignmentId);
+    if (!assignment || !onMoveAssignment) return;
+    const newDsId = mode === "by-person" ? assignment.data_scientist_id : newEntityId;
+    const newProjectId = mode === "by-project" ? assignment.project_id : newEntityId;
+    onMoveAssignment(assignmentId, assignment.week_start, newDsId, newProjectId);
+  };
+
+  const handleCommitCreate = (rowId: number, weekIndex: number, entityId: number, allocation: number) => {
+    const weekStart = visibleWeeks[weekIndex];
+    if (!weekStart || !onCreateAssignment) return;
+    const dsId = mode === "by-person" ? rowId : entityId;
+    const projectId = mode === "by-project" ? rowId : entityId;
+    onCreateAssignment(dsId, projectId, weekStart, allocation);
+    setCreatingCell(null);
+  };
+
   if (rows.length === 0) {
     return (
       <div className="gantt-empty">
@@ -273,6 +414,8 @@ export function GanttChart({
       </div>
     );
   }
+
+  const entityLabel = mode === "by-person" ? "Project" : "Data Scientist";
 
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
@@ -295,12 +438,43 @@ export function GanttChart({
               <div className="gantt-label-cell" title={row.name}>{row.name}</div>
               {visibleWeeks.map((week, weekIndex) => {
                 const cellBars = row.bars.get(weekIndex) ?? [];
+                const isCreating =
+                  creatingCell?.rowId === row.id && creatingCell?.weekIndex === weekIndex;
+
                 return (
-                  <DroppableCell key={week} id={`cell-${row.id}-${weekIndex}`}>
+                  <DroppableCell
+                    key={week}
+                    id={`cell-${row.id}-${weekIndex}`}
+                    isEmpty={cellBars.length === 0}
+                    onEmptyClick={
+                      onCreateAssignment
+                        ? () => setCreatingCell({ rowId: row.id, weekIndex })
+                        : undefined
+                    }
+                    creationContent={
+                      isCreating ? (
+                        <CellCreationForm
+                          entityOptions={entityOptions}
+                          entityLabel={entityLabel}
+                          onCommit={(entityId, allocation) =>
+                            handleCommitCreate(row.id, weekIndex, entityId, allocation)
+                          }
+                          onCancel={() => setCreatingCell(null)}
+                        />
+                      ) : undefined
+                    }
+                  >
                     {cellBars.length > 0 && (
                       <div className="gantt-bars">
                         {cellBars.map((bar) => (
-                          <DraggableBar key={bar.id} bar={bar} mode={mode} onEditAllocation={onEditAllocation} />
+                          <DraggableBar
+                            key={bar.id}
+                            bar={bar}
+                            mode={mode}
+                            entityOptions={entityOptions}
+                            onEditAllocation={onEditAllocation}
+                            onChangeEntity={onMoveAssignment ? handleEntityChange : undefined}
+                          />
                         ))}
                       </div>
                     )}
@@ -314,7 +488,8 @@ export function GanttChart({
         <div className="gantt-legend">
           <span className="gantt-legend-title">
             {mode === "by-person" ? "Project Acronyms:" : "Legend:"}
-            {onMoveAssignment && <span className="gantt-legend-hint"> · drag bars to move</span>}
+            {onMoveAssignment && <span className="gantt-legend-hint"> · drag ⠿ to move · click name to reassign · click % to edit</span>}
+            {onCreateAssignment && <span className="gantt-legend-hint"> · click empty cell to add</span>}
           </span>
           {mode === "by-person"
             ? projects.slice(0, 10).map((p) => {
@@ -340,10 +515,7 @@ export function GanttChart({
         </div>
       </div>
 
-      {/* Drag overlay (ghost preview) */}
-      <DragOverlay>
-        {/* No content needed — the draggable bar itself fades */}
-      </DragOverlay>
+      <DragOverlay>{/* bar fades in place during drag */}</DragOverlay>
     </DndContext>
   );
 }

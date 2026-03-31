@@ -389,6 +389,28 @@ function App() {
     }
   };
 
+  const handleCreateAssignmentFromChart = async (
+    dsId: number,
+    projectId: number,
+    weekStart: string,
+    allocation: number
+  ) => {
+    try {
+      const created = await api.createAssignment({
+        data_scientist_id: dsId,
+        project_id: projectId,
+        week_start: weekStart,
+        allocation,
+      });
+      setAssignments((prev) => prev.concat(created));
+      const updatedConflicts = await api.getConflicts();
+      setConflicts(updatedConflicts);
+      setStatus("Assignment created");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to create assignment");
+    }
+  };
+
   const handleDeleteAssignment = async (id: number) => {
     try {
       await api.deleteAssignment(id);
@@ -860,6 +882,7 @@ function App() {
                 mode="by-person"
                 onMoveAssignment={handleMoveAssignment}
                 onEditAllocation={handleEditAllocation}
+                onCreateAssignment={handleCreateAssignmentFromChart}
               />
             </div>
 
@@ -976,6 +999,7 @@ function App() {
                 mode="by-project"
                 onMoveAssignment={handleMoveAssignment}
                 onEditAllocation={handleEditAllocation}
+                onCreateAssignment={handleCreateAssignmentFromChart}
               />
             </div>
 
