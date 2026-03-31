@@ -357,12 +357,13 @@ button.ghost.danger {
   border-radius: 4px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   padding: 2px 4px;
   transition: transform 0.1s ease, box-shadow 0.1s ease;
   cursor: default;
   min-height: 18px;
   flex: 1;
+  gap: 2px;
 }
 
 .gantt-bar:hover {
@@ -396,6 +397,66 @@ button.ghost.danger {
   background: #eef2ff;
   outline: 2px dashed #6366f1;
   border-radius: 4px;
+}
+
+.gantt-bar-drag-handle {
+  cursor: grab;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  flex-shrink: 0;
+  line-height: 1;
+  padding-right: 2px;
+  user-select: none;
+}
+
+.gantt-bar-drag-handle:hover {
+  color: #fff;
+}
+
+.gantt-bar-pct {
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.18);
+  border: none;
+  border-radius: 3px;
+  padding: 1px 3px;
+  cursor: pointer;
+  margin-left: 2px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+
+.gantt-bar-pct:hover {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.gantt-bar-input {
+  width: 34px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 3px;
+  padding: 1px 2px;
+  text-align: center;
+  outline: none;
+  margin-left: 2px;
+}
+
+.gantt-bar-input::-webkit-inner-spin-button,
+.gantt-bar-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+.gantt-bar-pct-suffix {
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .gantt-legend-hint {

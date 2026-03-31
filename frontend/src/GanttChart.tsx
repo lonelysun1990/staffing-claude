@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -47,33 +47,81 @@ interface GanttChartProps {
   dataScientists: DataScientist[];
   projects: Project[];
   mode: "by-person" | "by-project";
-  onMoveAssignment?: (assignmentId: number, newWeekStart: string) => void;
+  onMoveAssignment?: (assignmentId: number, newWeekStart: string, newDsId: number, newProjectId: number) => void;
+  onEditAllocation?: (assignmentId: number, newAllocation: number) => void;
 }
 
 // Draggable bar
-function DraggableBar({ bar, mode }: { bar: GanttBar; mode: "by-person" | "by-project" }) {
+function DraggableBar({
+  bar,
+  mode,
+  onEditAllocation,
+}: {
+  bar: GanttBar;
+  mode: "by-person" | "by-project";
+  onEditAllocation?: (assignmentId: number, newAllocation: number) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [editValue, setEditValue] = useState("");
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `bar-${bar.assignmentId}`,
     data: { assignmentId: bar.assignmentId },
   });
+
+  const commitEdit = () => {
+    const pct = parseInt(editValue, 10);
+    if (!isNaN(pct) && pct > 0 && pct <= 100) {
+      onEditAllocation?.(bar.assignmentId, pct / 100);
+    }
+    setEditing(false);
+  };
+
   return (
     <div
       ref={setNodeRef}
-      {...listeners}
       {...attributes}
       className="gantt-bar"
-      style={{
-        backgroundColor: bar.color,
-        opacity: isDragging ? 0.4 : 1,
-        cursor: "grab",
-      }}
-      title={`${bar.label}: ${(bar.allocation * 100).toFixed(0)}% — drag to move`}
+      style={{ backgroundColor: bar.color, opacity: isDragging ? 0.4 : 1 }}
+      title={`${bar.label}: ${(bar.allocation * 100).toFixed(0)}%`}
     >
-      <span className="gantt-bar-text">
-        {mode === "by-person"
-          ? `${bar.acronym} ${(bar.allocation * 100).toFixed(0)}%`
-          : bar.label.split(" (")[0]}
-      </span>
+      {/* Drag handle — only this element triggers dragging */}
+      <span {...listeners} className="gantt-bar-drag-handle" title="Drag to move">⠿</span>
+
+      {editing ? (
+        <>
+          <input
+            className="gantt-bar-input"
+            type="number"
+            value={editValue}
+            min={1}
+            max={100}
+            autoFocus
+            onChange={(e) => setEditValue(e.target.value)}
+            onBlur={commitEdit}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+              if (e.key === "Escape") setEditing(false);
+            }}
+          />
+          <span className="gantt-bar-pct-suffix">%</span>
+        </>
+      ) : (
+        <>
+          <span className="gantt-bar-text">
+            {mode === "by-person" ? bar.acronym : bar.label.split(" (")[0]}
+          </span>
+          <button
+            className="gantt-bar-pct"
+            onClick={() => {
+              setEditValue(String(Math.round(bar.allocation * 100)));
+              setEditing(true);
+            }}
+            title="Click to edit %"
+          >
+            {(bar.allocation * 100).toFixed(0)}%
+          </button>
+        </>
+      )}
     </div>
   );
 }
@@ -104,6 +152,7 @@ export function GanttChart({
   projects,
   mode,
   onMoveAssignment,
+  onEditAllocation,
 }: GanttChartProps) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -203,11 +252,18 @@ export function GanttChart({
 
     // active.id = "bar-{assignmentId}", over.id = "cell-{rowId}-{weekIndex}"
     const assignmentId = Number(String(active.id).replace("bar-", ""));
-    const weekIndex = Number(String(over.id).split("-").pop());
+    const parts = String(over.id).split("-"); // ["cell", "{rowId}", "{weekIndex}"]
+    const weekIndex = Number(parts[parts.length - 1]);
+    const rowId = Number(parts[parts.length - 2]);
     const newWeekStart = visibleWeeks[weekIndex];
-    if (newWeekStart) {
-      onMoveAssignment(assignmentId, newWeekStart);
-    }
+    if (!newWeekStart) return;
+
+    const sourceAssignment = assignments.find((a) => a.id === assignmentId);
+    if (!sourceAssignment) return;
+
+    const newDsId = mode === "by-person" ? rowId : sourceAssignment.data_scientist_id;
+    const newProjectId = mode === "by-project" ? rowId : sourceAssignment.project_id;
+    onMoveAssignment(assignmentId, newWeekStart, newDsId, newProjectId);
   };
 
   if (rows.length === 0) {
@@ -244,7 +300,7 @@ export function GanttChart({
                     {cellBars.length > 0 && (
                       <div className="gantt-bars">
                         {cellBars.map((bar) => (
-                          <DraggableBar key={bar.id} bar={bar} mode={mode} />
+                          <DraggableBar key={bar.id} bar={bar} mode={mode} onEditAllocation={onEditAllocation} />
                         ))}
                       </div>
                     )}

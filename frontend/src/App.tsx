@@ -28,9 +28,9 @@ type TabKey =
   | "importExport";
 
 const TAB_LABELS: Record<TabKey, string> = {
-  schedule: "Schedule",
   dataScientists: "Data Scientists",
   projects: "Projects",
+  schedule: "Schedule",
   dashboard: "Dashboard",
   conflicts: "Conflicts",
   auditLog: "Audit Log",
@@ -341,14 +341,24 @@ function App() {
     }
   };
 
-  const handleMoveAssignment = async (assignmentId: number, newWeekStart: string) => {
+  const handleMoveAssignment = async (
+    assignmentId: number,
+    newWeekStart: string,
+    newDsId: number,
+    newProjectId: number
+  ) => {
     const assignment = assignments.find((a) => a.id === assignmentId);
-    if (!assignment || assignment.week_start === newWeekStart) return;
+    if (!assignment) return;
+    if (
+      assignment.week_start === newWeekStart &&
+      assignment.data_scientist_id === newDsId &&
+      assignment.project_id === newProjectId
+    ) return;
     try {
       await api.deleteAssignment(assignmentId);
       const created = await api.createAssignment({
-        data_scientist_id: assignment.data_scientist_id,
-        project_id: assignment.project_id,
+        data_scientist_id: newDsId,
+        project_id: newProjectId,
         week_start: newWeekStart,
         allocation: assignment.allocation,
       });
@@ -357,6 +367,25 @@ function App() {
       setConflicts(updatedConflicts);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to move assignment");
+    }
+  };
+
+  const handleEditAllocation = async (assignmentId: number, newAllocation: number) => {
+    const assignment = assignments.find((a) => a.id === assignmentId);
+    if (!assignment || assignment.allocation === newAllocation) return;
+    try {
+      await api.deleteAssignment(assignmentId);
+      const created = await api.createAssignment({
+        data_scientist_id: assignment.data_scientist_id,
+        project_id: assignment.project_id,
+        week_start: assignment.week_start,
+        allocation: newAllocation,
+      });
+      setAssignments((prev) => prev.filter((a) => a.id !== assignmentId).concat(created));
+      const updatedConflicts = await api.getConflicts();
+      setConflicts(updatedConflicts);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to update allocation");
     }
   };
 
@@ -830,6 +859,7 @@ function App() {
                 projects={projects}
                 mode="by-person"
                 onMoveAssignment={handleMoveAssignment}
+                onEditAllocation={handleEditAllocation}
               />
             </div>
 
@@ -945,6 +975,7 @@ function App() {
                 projects={projects}
                 mode="by-project"
                 onMoveAssignment={handleMoveAssignment}
+                onEditAllocation={handleEditAllocation}
               />
             </div>
 
