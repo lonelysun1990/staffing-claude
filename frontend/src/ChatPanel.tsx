@@ -12,7 +12,7 @@ export function ChatPanel({ isOpen, onClose, onDataChanged }: ChatPanelProps) {
     {
       role: "assistant",
       content:
-        "Hi! I'm your staffing assistant. Tell me what assignments to make — for example:\n• "Assign Yunxuan 25% on Nucor"\n• "Remove Josh from Cargill PSO CoE"\n• "Set Nancy at 50% on Signature Aviation for the next 4 weeks"",
+        `Hi! I'm your staffing assistant. Tell me what assignments to make — for example:\n• "Assign Yunxuan 25% on Nucor"\n• "Remove Josh from Cargill PSO CoE"\n• "Set Nancy at 50% on Signature Aviation for the next 4 weeks"`,
     },
   ]);
   const [input, setInput] = useState("");
