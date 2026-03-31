@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "./api";
+import { ChatPanel } from "./ChatPanel";
 import { GanttChart } from "./GanttChart";
 import {
   Assignment,
@@ -70,6 +71,7 @@ function App() {
   });
 
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
 
   const weeks = useMemo(() => {
     const slots: string[] = [];
@@ -836,6 +838,15 @@ function App() {
           </section>
         )}
       </main>
+
+      <button className="chat-toggle" onClick={() => setChatOpen(true)} title="Open staffing assistant">
+        💬
+      </button>
+      <ChatPanel
+        isOpen={chatOpen}
+        onClose={() => setChatOpen(false)}
+        onDataChanged={loadData}
+      />
     </div>
   );
 }

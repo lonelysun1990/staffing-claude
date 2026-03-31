@@ -3,6 +3,10 @@ from __future__ import annotations
 import tempfile
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse, StreamingResponse
@@ -18,6 +22,7 @@ from .models import (
     Project,
     ProjectCreate,
 )
+from .agent import AgentRequest, AgentResponse, run_agent
 from .storage import get_store
 
 app = FastAPI(title="Staffing Scheduler", version="0.1.0")
@@ -124,6 +129,11 @@ def export_schedule() -> StreamingResponse:
         media_type="text/csv",
         headers={"Content-Disposition": 'attachment; filename="schedule.csv"'},
     )
+
+
+@app.post("/agent/chat", response_model=AgentResponse)
+def agent_chat(request: AgentRequest) -> AgentResponse:
+    return run_agent(request, store)
 
 
 @app.post("/import/schedule", response_model=ImportResult)

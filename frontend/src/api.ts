@@ -42,6 +42,16 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (await response.text()) as unknown as T;
 }
 
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface AgentResponse {
+  reply: string;
+  data_changed: boolean;
+}
+
 export const api = {
   getConfig: (): Promise<ConfigResponse> => request("/config"),
   updateConfig: (payload: Partial<Config>): Promise<Config> =>
@@ -74,6 +84,12 @@ export const api = {
     const blob = await response.blob();
     return blob;
   },
+
+  sendAgentMessage: (messages: ChatMessage[]): Promise<AgentResponse> =>
+    request("/agent/chat", {
+      method: "POST",
+      body: JSON.stringify({ messages }),
+    }),
 
   importSchedule: async (file: File): Promise<ImportResult> => {
     const formData = new FormData();
