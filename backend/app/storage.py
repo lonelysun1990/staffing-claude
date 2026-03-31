@@ -260,6 +260,7 @@ def replace_assignments(db: Session, payload: AssignmentsPayload) -> List[Assign
         if not db.query(ProjectORM).filter(ProjectORM.id == item.project_id).first():
             raise KeyError(f"Project {item.project_id} not found")
 
+    db.query(AuditLogORM).filter(AuditLogORM.assignment_id.isnot(None)).update({"assignment_id": None})
     db.query(AssignmentORM).delete()
     new_assignments = []
     for item in payload.assignments:
