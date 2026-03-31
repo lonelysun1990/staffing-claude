@@ -6,9 +6,10 @@ from datetime import date, timedelta
 from typing import List, Optional
 
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
+from . import storage
 from .models import AssignmentCreate, AssignmentsPayload
-from .storage import Store
 
 
 # ---------------------------------------------------------------------------
@@ -121,13 +122,11 @@ def resolve_name(query: str, candidates: list[str]) -> list[str]:
 # ---------------------------------------------------------------------------
 
 def _next_monday(d: date) -> date:
-    """Return d if it's a Monday, else the next Monday."""
     days_ahead = (7 - d.weekday()) % 7
     return d + timedelta(days=days_ahead) if days_ahead else d
 
 
 def _upcoming_mondays(horizon_weeks: int) -> list[str]:
-    """Return ISO dates for all Mondays from today through the planning horizon."""
     today = date.today()
     start = _next_monday(today)
     return [
@@ -140,15 +139,14 @@ def _upcoming_mondays(horizon_weeks: int) -> list[str]:
 # Snapshot builder
 # ---------------------------------------------------------------------------
 
-def _build_snapshot(store: Store) -> tuple[str, str, str]:
-    ds_list = store.list_data_scientists()
-    project_list = store.list_projects()
-    assignments = store.list_assignments()
+def _build_snapshot(db: Session) -> tuple[str, str, str]:
+    ds_list = storage.list_data_scientists(db)
+    project_list = storage.list_projects(db)
+    assignments = storage.list_assignments(db)
 
     ds_lines = "\n".join(f"  - {ds.name} (id={ds.id})" for ds in ds_list) or "  (none)"
     proj_lines = "\n".join(f"  - {p.name} (id={p.id})" for p in project_list) or "  (none)"
 
-    # Summarise current allocations per DS
     from collections import defaultdict
     ds_id_map = {ds.id: ds.name for ds in ds_list}
     proj_id_map = {p.id: p.name for p in project_list}
@@ -175,16 +173,15 @@ def _build_snapshot(store: Store) -> tuple[str, str, str]:
 # ---------------------------------------------------------------------------
 
 def _execute_set_assignment(
-    store: Store,
+    db: Session,
     ds_name_query: str,
     proj_name_query: str,
     allocation: float,
     week_start_str: Optional[str],
     week_end_str: Optional[str],
 ) -> str:
-    """Execute set_assignment tool. Returns a result string (success or clarification needed)."""
-    ds_names = [ds.name for ds in store.list_data_scientists()]
-    proj_names = [p.name for p in store.list_projects()]
+    ds_names = [ds.name for ds in storage.list_data_scientists(db)]
+    proj_names = [p.name for p in storage.list_projects(db)]
 
     ds_matches = resolve_name(ds_name_query, ds_names)
     proj_matches = resolve_name(proj_name_query, proj_names)
@@ -201,20 +198,18 @@ def _execute_set_assignment(
     ds_name = ds_matches[0]
     proj_name = proj_matches[0]
 
-    config = store.get_config()
-    ds_list = store.list_data_scientists()
-    proj_list = store.list_projects()
+    config = storage.get_config(db)
+    ds_list = storage.list_data_scientists(db)
+    proj_list = storage.list_projects(db)
     ds = next(d for d in ds_list if d.name == ds_name)
     proj = next(p for p in proj_list if p.name == proj_name)
 
-    # Determine target weeks
     if week_start_str is None:
         target_weeks = set(_upcoming_mondays(config.horizon_weeks))
     else:
         start = date.fromisoformat(week_start_str)
         end = date.fromisoformat(week_end_str) if week_end_str else None
         if end is None:
-            # All weeks from start through horizon
             all_upcoming = _upcoming_mondays(config.horizon_weeks)
             target_weeks = {w for w in all_upcoming if w >= week_start_str}
         else:
@@ -224,8 +219,7 @@ def _execute_set_assignment(
                 target_weeks.add(current.isoformat())
                 current += timedelta(weeks=1)
 
-    # Build new assignment list: keep all rows NOT in (ds+proj+target_weeks), add new rows
-    existing = store.list_assignments()
+    existing = storage.list_assignments(db)
     kept = [
         a for a in existing
         if not (a.data_scientist_id == ds.id and a.project_id == proj.id and a.week_start in target_weeks)
@@ -249,20 +243,19 @@ def _execute_set_assignment(
         )
         for a in merged
     ])
-    store.replace_assignments(payload)
+    storage.replace_assignments(db, payload)
     return f"OK: Set {ds_name} at {allocation:.0%} on '{proj_name}' for {len(target_weeks)} week(s)."
 
 
 def _execute_clear_assignment(
-    store: Store,
+    db: Session,
     ds_name_query: str,
     proj_name_query: str,
     week_start_str: Optional[str],
     week_end_str: Optional[str],
 ) -> str:
-    """Execute clear_assignment tool. Returns a result string."""
-    ds_names = [ds.name for ds in store.list_data_scientists()]
-    proj_names = [p.name for p in store.list_projects()]
+    ds_names = [ds.name for ds in storage.list_data_scientists(db)]
+    proj_names = [p.name for p in storage.list_projects(db)]
 
     ds_matches = resolve_name(ds_name_query, ds_names)
     proj_matches = resolve_name(proj_name_query, proj_names)
@@ -278,14 +271,13 @@ def _execute_clear_assignment(
 
     ds_name = ds_matches[0]
     proj_name = proj_matches[0]
-    ds_list = store.list_data_scientists()
-    proj_list = store.list_projects()
+    ds_list = storage.list_data_scientists(db)
+    proj_list = storage.list_projects(db)
     ds = next(d for d in ds_list if d.name == ds_name)
     proj = next(p for p in proj_list if p.name == proj_name)
 
-    existing = store.list_assignments()
+    existing = storage.list_assignments(db)
     if week_start_str is None and week_end_str is None:
-        # Remove all for this ds+project
         kept = [a for a in existing if not (a.data_scientist_id == ds.id and a.project_id == proj.id)]
     else:
         ws = week_start_str
@@ -310,7 +302,7 @@ def _execute_clear_assignment(
         )
         for a in kept
     ])
-    store.replace_assignments(payload)
+    storage.replace_assignments(db, payload)
     return f"OK: Removed {removed} assignment(s) for {ds_name} on '{proj_name}'."
 
 
@@ -318,7 +310,7 @@ def _execute_clear_assignment(
 # Main agent entry point
 # ---------------------------------------------------------------------------
 
-def run_agent(request: AgentRequest, store: Store) -> AgentResponse:
+def run_agent(request: AgentRequest, db: Session) -> AgentResponse:
     api_key = os.environ.get("OPENAI_API_KEY", "")
     if not api_key:
         return AgentResponse(
@@ -336,8 +328,8 @@ def run_agent(request: AgentRequest, store: Store) -> AgentResponse:
 
     client = OpenAI(api_key=api_key)
 
-    ds_lines, proj_lines, assign_summary = _build_snapshot(store)
-    config = store.get_config()
+    ds_lines, proj_lines, assign_summary = _build_snapshot(db)
+    config = storage.get_config(db)
     today = date.today().isoformat()
 
     system_prompt = f"""You are a staffing scheduling assistant for a data science team.
@@ -367,7 +359,6 @@ Rules:
     data_changed = False
     clarification_reply: Optional[str] = None
 
-    # First LLM call
     response = client.chat.completions.create(
         model="gpt-4o",
         tools=TOOLS,
@@ -376,10 +367,8 @@ Rules:
     msg = response.choices[0].message
 
     if not msg.tool_calls:
-        # No tool calls — plain text response (clarification question or answer)
         return AgentResponse(reply=msg.content or "", data_changed=False)
 
-    # Execute tool calls
     messages.append(msg.model_dump(exclude_none=True))
     tool_results = []
 
@@ -389,7 +378,7 @@ Rules:
 
         if fn_name == "set_assignment":
             result = _execute_set_assignment(
-                store,
+                db,
                 args["data_scientist_name"],
                 args["project_name"],
                 args["allocation"],
@@ -398,7 +387,7 @@ Rules:
             )
         elif fn_name == "clear_assignment":
             result = _execute_clear_assignment(
-                store,
+                db,
                 args["data_scientist_name"],
                 args["project_name"],
                 args.get("week_start"),
@@ -418,11 +407,9 @@ Rules:
             "content": result,
         })
 
-    # If any tool needed clarification, short-circuit and return the question
     if clarification_reply:
         return AgentResponse(reply=clarification_reply, data_changed=data_changed)
 
-    # Second LLM call to get final natural language reply
     messages += tool_results
     follow_up = client.chat.completions.create(
         model="gpt-4o",

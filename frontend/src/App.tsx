@@ -5,7 +5,10 @@ import { GanttChart } from "./GanttChart";
 import {
   Assignment,
   AssignmentPayload,
+  AuditLogItem,
+  BulkAssignPayload,
   Config,
+  ConflictItem,
   DataScientist,
   DataScientistPayload,
   ImportResult,
@@ -14,12 +17,23 @@ import {
 } from "./types";
 import "./App.css";
 
-type TabKey = "schedule" | "dataScientists" | "projects" | "settings" | "importExport";
+type TabKey =
+  | "schedule"
+  | "dataScientists"
+  | "projects"
+  | "dashboard"
+  | "conflicts"
+  | "auditLog"
+  | "settings"
+  | "importExport";
 
 const TAB_LABELS: Record<TabKey, string> = {
   schedule: "Schedule",
   dataScientists: "Data Scientists",
   projects: "Projects",
+  dashboard: "Dashboard",
+  conflicts: "Conflicts",
+  auditLog: "Audit Log",
   settings: "Settings",
   importExport: "Import / Export",
 };
@@ -35,39 +49,144 @@ const startOfWeek = (input: Date) => {
 
 const toISODate = (date: Date) => date.toISOString().split("T")[0];
 
+// Simple tag input component
+function TagInput({
+  tags,
+  onChange,
+  placeholder,
+}: {
+  tags: string[];
+  onChange: (tags: string[]) => void;
+  placeholder?: string;
+}) {
+  const [input, setInput] = useState("");
+  const add = () => {
+    const t = input.trim();
+    if (t && !tags.includes(t)) onChange([...tags, t]);
+    setInput("");
+  };
+  return (
+    <div className="tag-input">
+      <div className="tag-input__tags">
+        {tags.map((t) => (
+          <span key={t} className="tag">
+            {t}
+            <button onClick={() => onChange(tags.filter((x) => x !== t))}>×</button>
+          </span>
+        ))}
+      </div>
+      <div className="tag-input__row">
+        <input
+          type="text"
+          value={input}
+          placeholder={placeholder ?? "Add tag..."}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === ",") {
+              e.preventDefault();
+              add();
+            }
+          }}
+        />
+        <button className="ghost" onClick={add}>
+          Add
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function LoginScreen({ onLogin }: { onLogin: (token: string, username: string, role: string) => void }) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [err, setErr] = useState<string | null>(null);
+  const [isRegister, setIsRegister] = useState(false);
+
+  const submit = async () => {
+    try {
+      if (isRegister) {
+        await api.register({ username, password, role: "manager" });
+      }
+      const { access_token } = await api.login(username, password);
+      const user = await api.me(access_token);
+      onLogin(access_token, user.username, user.role);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Login failed");
+    }
+  };
+
+  return (
+    <div className="login-screen">
+      <div className="login-card">
+        <p className="eyebrow">Staffing Scheduler</p>
+        <h1>{isRegister ? "Create account" : "Sign in"}</h1>
+        {err && <div className="alert danger">{err}</div>}
+        <label>Username<input type="text" value={username} onChange={(e) => setUsername(e.target.value)} /></label>
+        <label>Password<input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && submit()} /></label>
+        <button className="primary" onClick={submit}>{isRegister ? "Register & sign in" : "Sign in"}</button>
+        <button className="ghost" onClick={() => { setIsRegister(!isRegister); setErr(null); }}>
+          {isRegister ? "Already have an account? Sign in" : "No account? Register"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function App() {
+  const [authToken, setAuthToken] = useState<string | null>(() => localStorage.getItem("auth_token"));
+  const [currentUser, setCurrentUser] = useState<{ username: string; role: string } | null>(null);
   const [tab, setTab] = useState<TabKey>("schedule");
   const [config, setConfig] = useState<Config>({ granularity_weeks: 1, horizon_weeks: 26 });
   const [dataScientists, setDataScientists] = useState<DataScientist[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [conflicts, setConflicts] = useState<ConflictItem[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
 
+  // DS form
   const [dsForm, setDsForm] = useState<DataScientistPayload>({
     name: "",
     level: "Junior DS",
     max_concurrent_projects: 1,
     efficiency: 1,
     notes: "",
+    skills: [],
   });
   const [editingDsId, setEditingDsId] = useState<number | null>(null);
+  const [dsSearch, setDsSearch] = useState("");
 
+  // Project form
   const [projectForm, setProjectForm] = useState({
     name: "",
     start_date: toISODate(startOfWeek(new Date())),
     duration_weeks: 12,
     weeklyFte: 1,
+    required_skills: [] as string[],
   });
   const [editingProjectId, setEditingProjectId] = useState<number | null>(null);
+  const [projectSearch, setProjectSearch] = useState("");
+  const [suggestions, setSuggestions] = useState<DataScientist[] | null>(null);
 
+  // Assignment form
   const [newAssignment, setNewAssignment] = useState<AssignmentPayload>({
     data_scientist_id: 0,
     project_id: 0,
     week_start: toISODate(startOfWeek(new Date())),
     allocation: 0.25,
+  });
+
+  // Bulk assign form
+  const [bulkForm, setBulkForm] = useState<BulkAssignPayload>({
+    data_scientist_id: 0,
+    project_id: 0,
+    start_date: toISODate(startOfWeek(new Date())),
+    end_date: toISODate(startOfWeek(new Date())),
+    allocation: 0.5,
   });
 
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
@@ -87,21 +206,28 @@ function App() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [configResponse, dsList, projectList, assignmentList] = await Promise.all([
+      const [configRes, dsList, projectList, assignmentList, conflictList] = await Promise.all([
         api.getConfig(),
         api.listDataScientists(),
         api.listProjects(),
         api.listAssignments(),
+        api.getConflicts(),
       ]);
-      setConfig(configResponse);
+      setConfig(configRes);
       setDataScientists(dsList);
       setProjects(projectList);
       setAssignments(assignmentList);
+      setConflicts(conflictList);
       setNewAssignment((prev) => ({
         ...prev,
         data_scientist_id: dsList[0]?.id ?? 0,
         project_id: projectList[0]?.id ?? 0,
         week_start: weeks[0] ?? prev.week_start,
+      }));
+      setBulkForm((prev) => ({
+        ...prev,
+        data_scientist_id: dsList[0]?.id ?? 0,
+        project_id: projectList[0]?.id ?? 0,
       }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load data");
@@ -115,11 +241,13 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ------------------------------------------------------------------ #
+  // Handlers
+  // ------------------------------------------------------------------ #
+
   const handleSaveDataScientist = async () => {
     try {
-      if (!dsForm.name.trim()) {
-        throw new Error("Name is required");
-      }
+      if (!dsForm.name.trim()) throw new Error("Name is required");
       if (editingDsId) {
         const updated = await api.updateDataScientist(editingDsId, dsForm);
         setDataScientists((prev) => prev.map((ds) => (ds.id === updated.id ? updated : ds)));
@@ -129,13 +257,7 @@ function App() {
         setDataScientists((prev) => [...prev, created]);
         setStatus(`Added ${created.name}`);
       }
-      setDsForm({
-        name: "",
-        level: "Junior DS",
-        max_concurrent_projects: 1,
-        efficiency: 1,
-        notes: "",
-      });
+      setDsForm({ name: "", level: "Junior DS", max_concurrent_projects: 1, efficiency: 1, notes: "", skills: [] });
       setEditingDsId(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to save data scientist");
@@ -167,14 +289,13 @@ function App() {
       start_date: toISODate(start),
       end_date: toISODate(end),
       fte_requirements,
+      required_skills: projectForm.required_skills,
     };
   };
 
   const handleSaveProject = async () => {
     try {
-      if (!projectForm.name.trim()) {
-        throw new Error("Project name is required");
-      }
+      if (!projectForm.name.trim()) throw new Error("Project name is required");
       const payload = buildProjectPayload();
       if (editingProjectId) {
         const updated = await api.updateProject(editingProjectId, payload);
@@ -185,13 +306,9 @@ function App() {
         setProjects((prev) => [...prev, created]);
         setStatus(`Added project ${created.name}`);
       }
-      setProjectForm({
-        name: "",
-        start_date: toISODate(startOfWeek(new Date())),
-        duration_weeks: 12,
-        weeklyFte: 1,
-      });
+      setProjectForm({ name: "", start_date: toISODate(startOfWeek(new Date())), duration_weeks: 12, weeklyFte: 1, required_skills: [] });
       setEditingProjectId(null);
+      setSuggestions(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to save project");
     }
@@ -208,31 +325,79 @@ function App() {
     }
   };
 
-  const handleAddAssignment = () => {
+  const handleAddAssignment = async () => {
     if (!newAssignment.data_scientist_id || !newAssignment.project_id) {
       setError("Select a data scientist and project first");
       return;
     }
-    const newRow: Assignment = {
-      id: Date.now(),
-      ...newAssignment,
-    };
-    setAssignments((prev) => [...prev, newRow]);
-    setStatus("Draft assignment added");
+    try {
+      const created = await api.createAssignment(newAssignment);
+      setAssignments((prev) => [...prev, created]);
+      const updatedConflicts = await api.getConflicts();
+      setConflicts(updatedConflicts);
+      setStatus("Assignment saved");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to save assignment");
+    }
+  };
+
+  const handleMoveAssignment = async (assignmentId: number, newWeekStart: string) => {
+    const assignment = assignments.find((a) => a.id === assignmentId);
+    if (!assignment || assignment.week_start === newWeekStart) return;
+    try {
+      await api.deleteAssignment(assignmentId);
+      const created = await api.createAssignment({
+        data_scientist_id: assignment.data_scientist_id,
+        project_id: assignment.project_id,
+        week_start: newWeekStart,
+        allocation: assignment.allocation,
+      });
+      setAssignments((prev) => prev.filter((a) => a.id !== assignmentId).concat(created));
+      const updatedConflicts = await api.getConflicts();
+      setConflicts(updatedConflicts);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to move assignment");
+    }
+  };
+
+  const handleDeleteAssignment = async (id: number) => {
+    try {
+      await api.deleteAssignment(id);
+      setAssignments((prev) => prev.filter((row) => row.id !== id));
+      const updatedConflicts = await api.getConflicts();
+      setConflicts(updatedConflicts);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to remove assignment");
+    }
+  };
+
+  const handleBulkAssign = async () => {
+    if (!bulkForm.data_scientist_id || !bulkForm.project_id) {
+      setError("Select a data scientist and project first");
+      return;
+    }
+    try {
+      const created = await api.bulkAssign(bulkForm);
+      setAssignments((prev) => [...prev, ...created]);
+      const updatedConflicts = await api.getConflicts();
+      setConflicts(updatedConflicts);
+      setStatus(`Created ${created.length} assignments`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to bulk assign");
+    }
   };
 
   const handleSaveAssignments = async () => {
     try {
       const payload: AssignmentPayload[] = assignments.map(
         ({ data_scientist_id, project_id, week_start, allocation }) => ({
-          data_scientist_id,
-          project_id,
-          week_start,
-          allocation,
+          data_scientist_id, project_id, week_start, allocation,
         })
       );
       const saved = await api.replaceAssignments(payload);
       setAssignments(saved);
+      const updatedConflicts = await api.getConflicts();
+      setConflicts(updatedConflicts);
       setStatus("Assignments saved");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to save assignments");
@@ -245,7 +410,7 @@ function App() {
       const result = await api.importSchedule(file);
       setImportResult(result);
       await loadData();
-      setStatus("Imported schedule from Excel");
+      setStatus("Imported schedule");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to import file");
     }
@@ -262,7 +427,7 @@ function App() {
       URL.revokeObjectURL(url);
       setStatus("Exported schedule");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to export schedule");
+      setError(err instanceof Error ? err.message : "Unable to export");
     }
   };
 
@@ -270,14 +435,35 @@ function App() {
     try {
       const updated = await api.updateConfig(updates);
       setConfig(updated);
-      setStatus("Updated scheduling defaults");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to update config");
     }
   };
 
+  const handleSuggestDs = async (projectId: number) => {
+    try {
+      const result = await api.suggestDs(projectId);
+      setSuggestions(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to fetch suggestions");
+    }
+  };
+
+  const handleLoadAuditLogs = async () => {
+    try {
+      const logs = await api.listAuditLogs(200);
+      setAuditLogs(logs);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to load audit logs");
+    }
+  };
+
+  // ------------------------------------------------------------------ #
+  // Computed
+  // ------------------------------------------------------------------ #
+
   const projectLookup = useMemo(
-    () => Object.fromEntries(projects.map((project) => [project.id, project])),
+    () => Object.fromEntries(projects.map((p) => [p.id, p])),
     [projects]
   );
   const dsLookup = useMemo(
@@ -287,16 +473,95 @@ function App() {
 
   const weeklySummary = useMemo(() => {
     const summary: Record<string, number> = {};
-    assignments.forEach((assignment) => {
-      summary[assignment.week_start] = (summary[assignment.week_start] || 0) + assignment.allocation;
+    assignments.forEach((a) => {
+      summary[a.week_start] = (summary[a.week_start] || 0) + a.allocation;
     });
     return summary;
   }, [assignments]);
+
+  // Dashboard: utilization per week (total allocated / total capacity)
+  const totalCapacity = useMemo(
+    () => dataScientists.reduce((sum, ds) => sum + ds.efficiency, 0),
+    [dataScientists]
+  );
+
+  const dashboardWeeks = useMemo(() => weeks.slice(0, 12), [weeks]);
+
+  const weeklyUtilization = useMemo(() => {
+    return dashboardWeeks.map((week) => ({
+      week,
+      allocated: weeklySummary[week] ?? 0,
+      utilization: totalCapacity > 0 ? ((weeklySummary[week] ?? 0) / totalCapacity) * 100 : 0,
+    }));
+  }, [dashboardWeeks, weeklySummary, totalCapacity]);
+
+  // Per-person utilization for current week
+  const currentWeek = weeks[0];
+  const personUtilization = useMemo(() => {
+    const byPerson: Record<number, number> = {};
+    assignments
+      .filter((a) => a.week_start === currentWeek)
+      .forEach((a) => {
+        byPerson[a.data_scientist_id] = (byPerson[a.data_scientist_id] ?? 0) + a.allocation;
+      });
+    return dataScientists.map((ds) => ({
+      ds,
+      allocated: byPerson[ds.id] ?? 0,
+      pct: Math.round(((byPerson[ds.id] ?? 0) / ds.efficiency) * 100),
+    }));
+  }, [dataScientists, assignments, currentWeek]);
+
+  // Projects with unmet FTE (comparing required vs allocated this week)
+  const projectFteStatus = useMemo(() => {
+    const allocatedByProject: Record<number, number> = {};
+    assignments
+      .filter((a) => a.week_start === currentWeek)
+      .forEach((a) => {
+        allocatedByProject[a.project_id] = (allocatedByProject[a.project_id] ?? 0) + a.allocation;
+      });
+    return projects.map((p) => {
+      const required = p.fte_requirements.find((w) => w.week_start === currentWeek)?.fte ?? 0;
+      const allocated = allocatedByProject[p.id] ?? 0;
+      return { project: p, required, allocated, gap: Math.max(0, required - allocated) };
+    }).filter((x) => x.required > 0);
+  }, [projects, assignments, currentWeek]);
+
+  const filteredDs = useMemo(
+    () =>
+      dataScientists.filter(
+        (ds) =>
+          ds.name.toLowerCase().includes(dsSearch.toLowerCase()) ||
+          ds.level.toLowerCase().includes(dsSearch.toLowerCase())
+      ),
+    [dataScientists, dsSearch]
+  );
+
+  const filteredProjects = useMemo(
+    () =>
+      projects.filter((p) => p.name.toLowerCase().includes(projectSearch.toLowerCase())),
+    [projects, projectSearch]
+  );
+
+  const handleLogin = (token: string, username: string, role: string) => {
+    localStorage.setItem("auth_token", token);
+    setAuthToken(token);
+    setCurrentUser({ username, role });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("auth_token");
+    setAuthToken(null);
+    setCurrentUser(null);
+  };
 
   const resetMessages = () => {
     setError(null);
     setStatus(null);
   };
+
+  if (!authToken) {
+    return <LoginScreen onLogin={handleLogin} />;
+  }
 
   return (
     <div className="app">
@@ -305,37 +570,56 @@ function App() {
           <p className="eyebrow">Staffing Scheduler</p>
           <h1>Plan and balance your data science team</h1>
           <p className="subtitle">
-            Configure staffing capacity, track FTE demand per project, and allocate people week by
-            week.
+            Configure staffing capacity, track FTE demand per project, and allocate people week by week.
           </p>
         </div>
-        <div className="tag">Default: {config.granularity_weeks} week slots • {config.horizon_weeks} week horizon</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {currentUser && (
+            <span className="tag" style={{ background: "#374151" }}>
+              {currentUser.username} ({currentUser.role})
+            </span>
+          )}
+          <button className="ghost" onClick={handleLogout} style={{ fontSize: 13 }}>Sign out</button>
+        </div>
+        <div className="tag">
+          {config.granularity_weeks} week slots • {config.horizon_weeks} week horizon
+          {conflicts.length > 0 && (
+            <span className="conflict-badge" onClick={() => setTab("conflicts")}>
+              ⚠ {conflicts.length} conflict{conflicts.length > 1 ? "s" : ""}
+            </span>
+          )}
+        </div>
       </header>
 
       <nav className="tabs">
         {Object.entries(TAB_LABELS).map(([key, label]) => (
           <button
             key={key}
-            className={`tab ${tab === key ? "active" : ""}`}
+            className={`tab ${tab === key ? "active" : ""}${key === "conflicts" && conflicts.length > 0 ? " tab--warn" : ""}`}
             onClick={() => {
               resetMessages();
               setTab(key as TabKey);
+              if (key === "auditLog") handleLoadAuditLogs();
             }}
           >
             {label}
+            {key === "conflicts" && conflicts.length > 0 && (
+              <span className="tab-badge">{conflicts.length}</span>
+            )}
           </button>
         ))}
       </nav>
 
       {(loading || error || status) && (
         <div className="alerts">
-          {loading && <div className="alert info">Loading scheduler data...</div>}
+          {loading && <div className="alert info">Loading...</div>}
           {status && <div className="alert success">{status}</div>}
           {error && <div className="alert danger">{error}</div>}
         </div>
       )}
 
       <main className="panels">
+        {/* ---------------------------------------------------------------- SCHEDULE */}
         {tab === "schedule" && (
           <section className="panel">
             <header className="panel__header">
@@ -347,24 +631,31 @@ function App() {
                 Save assignments
               </button>
             </header>
+
             <div className="grid stats">
               <div className="stat">
                 <p className="eyebrow">People</p>
                 <strong>{dataScientists.length}</strong>
-                <span>Data scientists available</span>
+                <span>Data scientists</span>
               </div>
               <div className="stat">
                 <p className="eyebrow">Projects</p>
                 <strong>{projects.length}</strong>
-                <span>Active initiatives</span>
+                <span>Active</span>
               </div>
               <div className="stat">
                 <p className="eyebrow">This week</p>
                 <strong>{(weeklySummary[weeks[0]] ?? 0).toFixed(2)}</strong>
                 <span>FTE allocated</span>
               </div>
+              <div className="stat">
+                <p className="eyebrow">Conflicts</p>
+                <strong className={conflicts.length > 0 ? "text-danger" : ""}>{conflicts.length}</strong>
+                <span>Overbookings</span>
+              </div>
             </div>
 
+            {/* Single assignment */}
             <div className="card">
               <div className="card__header">
                 <div>
@@ -372,7 +663,7 @@ function App() {
                   <h3>Create a weekly allocation</h3>
                 </div>
                 <button className="secondary" onClick={handleAddAssignment}>
-                  Add to draft
+                  Add assignment
                 </button>
               </div>
               <div className="form-grid">
@@ -380,17 +671,10 @@ function App() {
                   Data scientist
                   <select
                     value={newAssignment.data_scientist_id}
-                    onChange={(e) =>
-                      setNewAssignment((prev) => ({
-                        ...prev,
-                        data_scientist_id: Number(e.target.value),
-                      }))
-                    }
+                    onChange={(e) => setNewAssignment((prev) => ({ ...prev, data_scientist_id: Number(e.target.value) }))}
                   >
                     {dataScientists.map((ds) => (
-                      <option key={ds.id} value={ds.id}>
-                        {ds.name} ({ds.level})
-                      </option>
+                      <option key={ds.id} value={ds.id}>{ds.name} ({ds.level})</option>
                     ))}
                   </select>
                 </label>
@@ -398,17 +682,10 @@ function App() {
                   Project
                   <select
                     value={newAssignment.project_id}
-                    onChange={(e) =>
-                      setNewAssignment((prev) => ({
-                        ...prev,
-                        project_id: Number(e.target.value),
-                      }))
-                    }
+                    onChange={(e) => setNewAssignment((prev) => ({ ...prev, project_id: Number(e.target.value) }))}
                   >
-                    {projects.map((project) => (
-                      <option key={project.id} value={project.id}>
-                        {project.name}
-                      </option>
+                    {projects.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
                     ))}
                   </select>
                 </label>
@@ -416,32 +693,68 @@ function App() {
                   Week start
                   <select
                     value={newAssignment.week_start}
-                    onChange={(e) =>
-                      setNewAssignment((prev) => ({ ...prev, week_start: e.target.value }))
-                    }
+                    onChange={(e) => setNewAssignment((prev) => ({ ...prev, week_start: e.target.value }))}
                   >
-                    {weeks.map((week) => (
-                      <option key={week} value={week}>
-                        {week}
-                      </option>
+                    {weeks.map((w) => <option key={w} value={w}>{w}</option>)}
+                  </select>
+                </label>
+                <label>
+                  Allocation (0–1)
+                  <input
+                    type="number" min={0} max={1} step={0.05}
+                    value={newAssignment.allocation}
+                    onChange={(e) => setNewAssignment((prev) => ({ ...prev, allocation: Number(e.target.value) }))}
+                  />
+                </label>
+              </div>
+            </div>
+
+            {/* Bulk assignment */}
+            <div className="card">
+              <div className="card__header">
+                <div>
+                  <p className="eyebrow">Bulk assign</p>
+                  <h3>Assign over a date range</h3>
+                </div>
+                <button className="secondary" onClick={handleBulkAssign}>
+                  Bulk assign
+                </button>
+              </div>
+              <div className="form-grid">
+                <label>
+                  Data scientist
+                  <select
+                    value={bulkForm.data_scientist_id}
+                    onChange={(e) => setBulkForm((prev) => ({ ...prev, data_scientist_id: Number(e.target.value) }))}
+                  >
+                    {dataScientists.map((ds) => (
+                      <option key={ds.id} value={ds.id}>{ds.name}</option>
                     ))}
                   </select>
                 </label>
                 <label>
-                  Allocation (% of week)
-                  <input
-                    type="number"
-                    min={0}
-                    max={1}
-                    step={0.05}
-                    value={newAssignment.allocation}
-                    onChange={(e) =>
-                      setNewAssignment((prev) => ({
-                        ...prev,
-                        allocation: Number(e.target.value),
-                      }))
-                    }
-                  />
+                  Project
+                  <select
+                    value={bulkForm.project_id}
+                    onChange={(e) => setBulkForm((prev) => ({ ...prev, project_id: Number(e.target.value) }))}
+                  >
+                    {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                </label>
+                <label>
+                  Start date
+                  <input type="date" value={bulkForm.start_date}
+                    onChange={(e) => setBulkForm((prev) => ({ ...prev, start_date: e.target.value }))} />
+                </label>
+                <label>
+                  End date
+                  <input type="date" value={bulkForm.end_date}
+                    onChange={(e) => setBulkForm((prev) => ({ ...prev, end_date: e.target.value }))} />
+                </label>
+                <label>
+                  Allocation (0–1)
+                  <input type="number" min={0} max={1} step={0.05} value={bulkForm.allocation}
+                    onChange={(e) => setBulkForm((prev) => ({ ...prev, allocation: Number(e.target.value) }))} />
                 </label>
               </div>
             </div>
@@ -458,46 +771,37 @@ function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {assignments.map((assignment) => (
-                    <tr key={assignment.id}>
-                      <td>{assignment.week_start}</td>
-                      <td>{dsLookup[assignment.data_scientist_id]?.name || assignment.data_scientist_id}</td>
-                      <td>{projectLookup[assignment.project_id]?.name || assignment.project_id}</td>
-                      <td>
-                        <input
-                          type="number"
-                          min={0}
-                          max={1}
-                          step={0.05}
-                          value={assignment.allocation}
-                          onChange={(e) => {
-                            const value = Number(e.target.value);
-                            setAssignments((prev) =>
-                              prev.map((row) =>
-                                row.id === assignment.id ? { ...row, allocation: value } : row
-                              )
-                            );
-                          }}
-                        />
-                      </td>
-                      <td>
-                        <button
-                          className="ghost"
-                          onClick={() =>
-                            setAssignments((prev) => prev.filter((row) => row.id !== assignment.id))
-                          }
-                        >
-                          Remove
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {assignments.map((a) => {
+                    const isConflict = conflicts.some(
+                      (c) => c.data_scientist_id === a.data_scientist_id && c.week_start === a.week_start
+                    );
+                    return (
+                      <tr key={a.id} className={isConflict ? "row--conflict" : ""}>
+                        <td>{a.week_start}</td>
+                        <td>{dsLookup[a.data_scientist_id]?.name ?? a.data_scientist_id}</td>
+                        <td>{projectLookup[a.project_id]?.name ?? a.project_id}</td>
+                        <td>
+                          <input
+                            type="number" min={0} max={1} step={0.05}
+                            value={a.allocation}
+                            onChange={(e) => {
+                              const value = Number(e.target.value);
+                              setAssignments((prev) =>
+                                prev.map((row) => row.id === a.id ? { ...row, allocation: value } : row)
+                              );
+                            }}
+                          />
+                        </td>
+                        <td>
+                          <button className="ghost" onClick={() => handleDeleteAssignment(a.id)}>
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                   {assignments.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="muted">
-                        No assignments yet. Add one above.
-                      </td>
-                    </tr>
+                    <tr><td colSpan={5} className="muted">No assignments yet.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -505,6 +809,7 @@ function App() {
           </section>
         )}
 
+        {/* ---------------------------------------------------------------- DATA SCIENTISTS */}
         {tab === "dataScientists" && (
           <section className="panel">
             <header className="panel__header">
@@ -518,72 +823,59 @@ function App() {
             </header>
 
             <div className="card">
-              <div className="card__header">
-                <div>
-                  <p className="eyebrow">Schedule overview</p>
-                  <h3>Weekly assignments by person</h3>
-                </div>
-              </div>
               <GanttChart
                 weeks={weeks}
                 assignments={assignments}
                 dataScientists={dataScientists}
                 projects={projects}
                 mode="by-person"
+                onMoveAssignment={handleMoveAssignment}
               />
             </div>
 
             <div className="form-grid">
               <label>
                 Name
-                <input
-                  type="text"
-                  value={dsForm.name}
-                  onChange={(e) => setDsForm((prev) => ({ ...prev, name: e.target.value }))}
-                />
+                <input type="text" value={dsForm.name}
+                  onChange={(e) => setDsForm((prev) => ({ ...prev, name: e.target.value }))} />
               </label>
               <label>
                 Level
-                <input
-                  type="text"
-                  value={dsForm.level}
-                  onChange={(e) => setDsForm((prev) => ({ ...prev, level: e.target.value }))}
-                />
+                <input type="text" value={dsForm.level}
+                  onChange={(e) => setDsForm((prev) => ({ ...prev, level: e.target.value }))} />
               </label>
               <label>
                 Max concurrent projects
-                <input
-                  type="number"
-                  min={1}
-                  value={dsForm.max_concurrent_projects}
-                  onChange={(e) =>
-                    setDsForm((prev) => ({
-                      ...prev,
-                      max_concurrent_projects: Number(e.target.value),
-                    }))
-                  }
-                />
+                <input type="number" min={1} value={dsForm.max_concurrent_projects}
+                  onChange={(e) => setDsForm((prev) => ({ ...prev, max_concurrent_projects: Number(e.target.value) }))} />
               </label>
               <label>
                 Efficiency (FTE)
-                <input
-                  type="number"
-                  step={0.05}
-                  min={0.1}
-                  value={dsForm.efficiency}
-                  onChange={(e) =>
-                    setDsForm((prev) => ({ ...prev, efficiency: Number(e.target.value) }))
-                  }
-                />
+                <input type="number" step={0.05} min={0.1} value={dsForm.efficiency}
+                  onChange={(e) => setDsForm((prev) => ({ ...prev, efficiency: Number(e.target.value) }))} />
               </label>
               <label className="full">
                 Notes
-                <input
-                  type="text"
-                  value={dsForm.notes ?? ""}
-                  onChange={(e) => setDsForm((prev) => ({ ...prev, notes: e.target.value }))}
+                <input type="text" value={dsForm.notes ?? ""}
+                  onChange={(e) => setDsForm((prev) => ({ ...prev, notes: e.target.value }))} />
+              </label>
+              <label className="full">
+                Skills
+                <TagInput
+                  tags={dsForm.skills}
+                  onChange={(skills) => setDsForm((prev) => ({ ...prev, skills }))}
+                  placeholder="e.g. Python, ML, NLP..."
                 />
               </label>
+            </div>
+
+            <div className="search-bar">
+              <input
+                type="text"
+                placeholder="Search data scientists..."
+                value={dsSearch}
+                onChange={(e) => setDsSearch(e.target.value)}
+              />
             </div>
 
             <div className="table-wrapper">
@@ -594,37 +886,35 @@ function App() {
                     <th>Level</th>
                     <th>Concurrency</th>
                     <th>Efficiency</th>
+                    <th>Skills</th>
                     <th>Notes</th>
                     <th></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {dataScientists.map((ds) => (
+                  {filteredDs.map((ds) => (
                     <tr key={ds.id}>
                       <td>{ds.name}</td>
                       <td>{ds.level}</td>
                       <td>{ds.max_concurrent_projects}</td>
                       <td>{ds.efficiency.toFixed(2)}</td>
+                      <td>
+                        {ds.skills.map((s) => (
+                          <span key={s} className="tag small">{s}</span>
+                        ))}
+                      </td>
                       <td className="muted">{ds.notes}</td>
                       <td className="actions">
-                        <button
-                          className="ghost"
-                          onClick={() => {
-                            setEditingDsId(ds.id);
-                            setDsForm({
-                              name: ds.name,
-                              level: ds.level,
-                              max_concurrent_projects: ds.max_concurrent_projects,
-                              efficiency: ds.efficiency,
-                              notes: ds.notes ?? "",
-                            });
-                          }}
-                        >
-                          Edit
-                        </button>
-                        <button className="ghost danger" onClick={() => handleDeleteDataScientist(ds.id)}>
-                          Delete
-                        </button>
+                        <button className="ghost" onClick={() => {
+                          setEditingDsId(ds.id);
+                          setDsForm({
+                            name: ds.name, level: ds.level,
+                            max_concurrent_projects: ds.max_concurrent_projects,
+                            efficiency: ds.efficiency, notes: ds.notes ?? "",
+                            skills: ds.skills,
+                          });
+                        }}>Edit</button>
+                        <button className="ghost danger" onClick={() => handleDeleteDataScientist(ds.id)}>Delete</button>
                       </td>
                     </tr>
                   ))}
@@ -634,6 +924,7 @@ function App() {
           </section>
         )}
 
+        {/* ---------------------------------------------------------------- PROJECTS */}
         {tab === "projects" && (
           <section className="panel">
             <header className="panel__header">
@@ -647,59 +938,88 @@ function App() {
             </header>
 
             <div className="card">
-              <div className="card__header">
-                <div>
-                  <p className="eyebrow">Team allocation</p>
-                  <h3>Who's working on each project</h3>
-                </div>
-              </div>
               <GanttChart
                 weeks={weeks}
                 assignments={assignments}
                 dataScientists={dataScientists}
                 projects={projects}
                 mode="by-project"
+                onMoveAssignment={handleMoveAssignment}
               />
             </div>
 
             <div className="form-grid">
               <label>
                 Name
-                <input
-                  type="text"
-                  value={projectForm.name}
-                  onChange={(e) => setProjectForm((prev) => ({ ...prev, name: e.target.value }))}
-                />
+                <input type="text" value={projectForm.name}
+                  onChange={(e) => setProjectForm((prev) => ({ ...prev, name: e.target.value }))} />
               </label>
               <label>
                 Start date
-                <input
-                  type="date"
-                  value={projectForm.start_date}
-                  onChange={(e) => setProjectForm((prev) => ({ ...prev, start_date: e.target.value }))}
-                />
+                <input type="date" value={projectForm.start_date}
+                  onChange={(e) => setProjectForm((prev) => ({ ...prev, start_date: e.target.value }))} />
               </label>
               <label>
                 Duration (weeks)
-                <input
-                  type="number"
-                  min={1}
-                  value={projectForm.duration_weeks}
-                  onChange={(e) =>
-                    setProjectForm((prev) => ({ ...prev, duration_weeks: Number(e.target.value) }))
-                  }
-                />
+                <input type="number" min={1} value={projectForm.duration_weeks}
+                  onChange={(e) => setProjectForm((prev) => ({ ...prev, duration_weeks: Number(e.target.value) }))} />
               </label>
               <label>
                 Weekly FTE need
-                <input
-                  type="number"
-                  min={0}
-                  step={0.1}
-                  value={projectForm.weeklyFte}
-                  onChange={(e) => setProjectForm((prev) => ({ ...prev, weeklyFte: Number(e.target.value) }))}
+                <input type="number" min={0} step={0.1} value={projectForm.weeklyFte}
+                  onChange={(e) => setProjectForm((prev) => ({ ...prev, weeklyFte: Number(e.target.value) }))} />
+              </label>
+              <label className="full">
+                Required skills
+                <TagInput
+                  tags={projectForm.required_skills}
+                  onChange={(required_skills) => setProjectForm((prev) => ({ ...prev, required_skills }))}
+                  placeholder="e.g. Python, ML..."
                 />
               </label>
+            </div>
+
+            {/* Auto-suggest DS */}
+            {editingProjectId && (
+              <div className="card">
+                <div className="card__header">
+                  <div>
+                    <p className="eyebrow">Auto-suggest</p>
+                    <h3>Best-fit data scientists</h3>
+                  </div>
+                  <button className="secondary" onClick={() => handleSuggestDs(editingProjectId)}>
+                    Suggest DS
+                  </button>
+                </div>
+                {suggestions && (
+                  <div className="table-wrapper">
+                    <table>
+                      <thead>
+                        <tr><th>Name</th><th>Level</th><th>Skills</th><th>Efficiency</th></tr>
+                      </thead>
+                      <tbody>
+                        {suggestions.map((ds) => (
+                          <tr key={ds.id}>
+                            <td>{ds.name}</td>
+                            <td>{ds.level}</td>
+                            <td>{ds.skills.map((s) => <span key={s} className="tag small">{s}</span>)}</td>
+                            <td>{ds.efficiency.toFixed(2)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="search-bar">
+              <input
+                type="text"
+                placeholder="Search projects..."
+                value={projectSearch}
+                onChange={(e) => setProjectSearch(e.target.value)}
+              />
             </div>
 
             <div className="table-wrapper">
@@ -709,43 +1029,35 @@ function App() {
                     <th>Project</th>
                     <th>Timeline</th>
                     <th>Weekly FTE</th>
-                    <th>Duration</th>
+                    <th>Skills needed</th>
                     <th></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {projects.map((project) => {
+                  {filteredProjects.map((project) => {
                     const duration =
                       (new Date(project.end_date).getTime() - new Date(project.start_date).getTime()) /
-                        (1000 * 60 * 60 * 24 * 7) +
-                      1;
+                        (1000 * 60 * 60 * 24 * 7) + 1;
                     const weeklyFte = project.fte_requirements[0]?.fte ?? 0;
                     return (
                       <tr key={project.id}>
                         <td>{project.name}</td>
-                        <td>
-                          {project.start_date} → {project.end_date}
-                        </td>
-                        <td>{weeklyFte}</td>
-                        <td>{duration.toFixed(0)} weeks</td>
+                        <td>{project.start_date} → {project.end_date}</td>
+                        <td>{weeklyFte} ({duration.toFixed(0)}w)</td>
+                        <td>{project.required_skills.map((s) => <span key={s} className="tag small">{s}</span>)}</td>
                         <td className="actions">
-                          <button
-                            className="ghost"
-                            onClick={() => {
-                              setEditingProjectId(project.id);
-                              setProjectForm({
-                                name: project.name,
-                                start_date: project.start_date,
-                                duration_weeks: Number(duration),
-                                weeklyFte: weeklyFte,
-                              });
-                            }}
-                          >
-                            Edit
-                          </button>
-                          <button className="ghost danger" onClick={() => handleDeleteProject(project.id)}>
-                            Delete
-                          </button>
+                          <button className="ghost" onClick={() => {
+                            setEditingProjectId(project.id);
+                            setProjectForm({
+                              name: project.name,
+                              start_date: project.start_date,
+                              duration_weeks: Number(duration),
+                              weeklyFte,
+                              required_skills: project.required_skills,
+                            });
+                            setSuggestions(null);
+                          }}>Edit</button>
+                          <button className="ghost danger" onClick={() => handleDeleteProject(project.id)}>Delete</button>
                         </td>
                       </tr>
                     );
@@ -756,6 +1068,224 @@ function App() {
           </section>
         )}
 
+        {/* ---------------------------------------------------------------- DASHBOARD */}
+        {tab === "dashboard" && (
+          <section className="panel">
+            <header className="panel__header">
+              <div>
+                <p className="eyebrow">Overview</p>
+                <h2>Team utilization dashboard</h2>
+              </div>
+            </header>
+
+            <div className="grid stats">
+              <div className="stat">
+                <p className="eyebrow">Total capacity</p>
+                <strong>{totalCapacity.toFixed(1)}</strong>
+                <span>FTE available</span>
+              </div>
+              <div className="stat">
+                <p className="eyebrow">This week</p>
+                <strong>{(weeklySummary[currentWeek] ?? 0).toFixed(1)}</strong>
+                <span>FTE allocated</span>
+              </div>
+              <div className="stat">
+                <p className="eyebrow">Utilization</p>
+                <strong>
+                  {totalCapacity > 0
+                    ? Math.round(((weeklySummary[currentWeek] ?? 0) / totalCapacity) * 100)
+                    : 0}%
+                </strong>
+                <span>This week</span>
+              </div>
+              <div className="stat">
+                <p className="eyebrow">Conflicts</p>
+                <strong className={conflicts.length > 0 ? "text-danger" : ""}>{conflicts.length}</strong>
+                <span>Overbookings</span>
+              </div>
+            </div>
+
+            {/* Weekly utilization chart */}
+            <div className="card">
+              <div className="card__header">
+                <div>
+                  <p className="eyebrow">12-week view</p>
+                  <h3>Weekly team utilization</h3>
+                </div>
+              </div>
+              <div className="bar-chart">
+                {weeklyUtilization.map(({ week, allocated, utilization }) => (
+                  <div key={week} className="bar-chart__col">
+                    <div className="bar-chart__label">{Math.round(utilization)}%</div>
+                    <div className="bar-chart__bar-wrap">
+                      <div
+                        className={`bar-chart__bar ${utilization > 100 ? "bar--over" : utilization > 80 ? "bar--high" : ""}`}
+                        style={{ height: `${Math.min(utilization, 120)}%` }}
+                        title={`${week}: ${allocated.toFixed(1)} FTE / ${totalCapacity.toFixed(1)} cap`}
+                      />
+                    </div>
+                    <div className="bar-chart__week">{week.slice(5)}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Per-person utilization */}
+            <div className="card">
+              <div className="card__header">
+                <div>
+                  <p className="eyebrow">This week</p>
+                  <h3>Per-person allocation</h3>
+                </div>
+              </div>
+              <div className="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>Name</th><th>Level</th><th>Allocated</th><th>Capacity</th><th>Utilization</th></tr>
+                  </thead>
+                  <tbody>
+                    {personUtilization.map(({ ds, allocated, pct }) => (
+                      <tr key={ds.id} className={pct > 100 ? "row--conflict" : ""}>
+                        <td>{ds.name}</td>
+                        <td>{ds.level}</td>
+                        <td>{allocated.toFixed(2)}</td>
+                        <td>{ds.efficiency.toFixed(2)}</td>
+                        <td>
+                          <div className="mini-bar">
+                            <div
+                              className={`mini-bar__fill ${pct > 100 ? "bar--over" : pct > 80 ? "bar--high" : ""}`}
+                              style={{ width: `${Math.min(pct, 100)}%` }}
+                            />
+                            <span>{pct}%</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Projects with unmet FTE */}
+            <div className="card">
+              <div className="card__header">
+                <div>
+                  <p className="eyebrow">This week</p>
+                  <h3>Project FTE coverage</h3>
+                </div>
+              </div>
+              <div className="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>Project</th><th>Required FTE</th><th>Allocated FTE</th><th>Gap</th></tr>
+                  </thead>
+                  <tbody>
+                    {projectFteStatus.map(({ project, required, allocated, gap }) => (
+                      <tr key={project.id} className={gap > 0 ? "row--warn" : ""}>
+                        <td>{project.name}</td>
+                        <td>{required.toFixed(1)}</td>
+                        <td>{allocated.toFixed(1)}</td>
+                        <td className={gap > 0 ? "text-danger" : "text-success"}>
+                          {gap > 0 ? `-${gap.toFixed(1)}` : "✓"}
+                        </td>
+                      </tr>
+                    ))}
+                    {projectFteStatus.length === 0 && (
+                      <tr><td colSpan={4} className="muted">No projects with FTE requirements this week.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ---------------------------------------------------------------- CONFLICTS */}
+        {tab === "conflicts" && (
+          <section className="panel">
+            <header className="panel__header">
+              <div>
+                <p className="eyebrow">Capacity conflicts</p>
+                <h2>Overbooked data scientists</h2>
+              </div>
+              <button className="secondary" onClick={async () => {
+                const c = await api.getConflicts();
+                setConflicts(c);
+                setStatus("Refreshed");
+              }}>Refresh</button>
+            </header>
+
+            {conflicts.length === 0 ? (
+              <div className="card">
+                <p className="muted">No conflicts — all data scientists are within 100% allocation.</p>
+              </div>
+            ) : (
+              <div className="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Data scientist</th>
+                      <th>Week</th>
+                      <th>Total allocation</th>
+                      <th>Over by</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {conflicts.map((c, i) => (
+                      <tr key={i} className="row--conflict">
+                        <td>{c.data_scientist_name}</td>
+                        <td>{c.week_start}</td>
+                        <td>{(c.total_allocation * 100).toFixed(0)}%</td>
+                        <td className="text-danger">+{(c.over_by * 100).toFixed(0)}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ---------------------------------------------------------------- AUDIT LOG */}
+        {tab === "auditLog" && (
+          <section className="panel">
+            <header className="panel__header">
+              <div>
+                <p className="eyebrow">Change history</p>
+                <h2>Audit log</h2>
+              </div>
+              <button className="secondary" onClick={handleLoadAuditLogs}>Refresh</button>
+            </header>
+
+            <div className="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Action</th>
+                    <th>Assignment</th>
+                    <th>Changed by</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {auditLogs.map((log) => (
+                    <tr key={log.id}>
+                      <td className="muted">{log.changed_at.replace("T", " ").slice(0, 19)}</td>
+                      <td><span className={`action-badge action--${log.action}`}>{log.action}</span></td>
+                      <td className="muted">{log.assignment_id ?? "—"}</td>
+                      <td>{log.changed_by ?? "system"}</td>
+                    </tr>
+                  ))}
+                  {auditLogs.length === 0 && (
+                    <tr><td colSpan={4} className="muted">No audit logs yet.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        {/* ---------------------------------------------------------------- SETTINGS */}
         {tab === "settings" && (
           <section className="panel">
             <header className="panel__header">
@@ -767,30 +1297,19 @@ function App() {
             <div className="form-grid">
               <label>
                 Granularity (weeks per slot)
-                <input
-                  type="number"
-                  min={1}
-                  value={config.granularity_weeks}
-                  onChange={(e) =>
-                    handleConfigUpdate({ granularity_weeks: Number(e.target.value) || 1 })
-                  }
-                />
+                <input type="number" min={1} value={config.granularity_weeks}
+                  onChange={(e) => handleConfigUpdate({ granularity_weeks: Number(e.target.value) || 1 })} />
               </label>
               <label>
                 Planning horizon (weeks)
-                <input
-                  type="number"
-                  min={1}
-                  value={config.horizon_weeks}
-                  onChange={(e) =>
-                    handleConfigUpdate({ horizon_weeks: Number(e.target.value) || 1 })
-                  }
-                />
+                <input type="number" min={1} value={config.horizon_weeks}
+                  onChange={(e) => handleConfigUpdate({ horizon_weeks: Number(e.target.value) || 1 })} />
               </label>
             </div>
           </section>
         )}
 
+        {/* ---------------------------------------------------------------- IMPORT/EXPORT */}
         {tab === "importExport" && (
           <section className="panel">
             <header className="panel__header">
@@ -799,39 +1318,30 @@ function App() {
                 <h2>Import or export schedules</h2>
               </div>
               <div className="actions">
-                <button className="secondary" onClick={handleExport}>
-                  Export CSV
-                </button>
+                <button className="secondary" onClick={handleExport}>Export CSV</button>
                 <label className="file-button">
                   Import CSV/Excel
-                  <input
-                    type="file"
-                    accept=".csv,.xlsx,.xls"
-                    onChange={(e) => handleImport(e.target.files?.[0])}
-                  />
+                  <input type="file" accept=".csv,.xlsx,.xls"
+                    onChange={(e) => handleImport(e.target.files?.[0])} />
                 </label>
               </div>
             </header>
             <div className="card">
               <h3>Template</h3>
               <p className="muted">
-                Include columns <code>week_start</code>, <code>data_scientist</code>,{" "}
-                <code>project</code>, and <code>allocation</code>. Optional columns such as{" "}
-                <code>level</code>, <code>max_concurrent_projects</code>, <code>efficiency</code>,
-                <code>project_start</code>, <code>project_end</code>, and <code>fte</code> will be used when
-                present.
+                Required columns: <code>week_start</code>, <code>data_scientist</code>,{" "}
+                <code>project</code>, <code>allocation</code>. Optional: <code>level</code>,{" "}
+                <code>efficiency</code>, <code>project_start</code>, <code>project_end</code>, <code>fte</code>.
               </p>
               {importResult && (
                 <div className="import-result">
-                  <div>
-                    <p className="eyebrow">Import summary</p>
-                    <ul>
-                      <li>Assignments created: {importResult.created_assignments}</li>
-                      <li>New data scientists: {importResult.created_data_scientists}</li>
-                      <li>New projects: {importResult.created_projects}</li>
-                      <li>Replaced assignments: {importResult.replaced_existing_assignments}</li>
-                    </ul>
-                  </div>
+                  <p className="eyebrow">Import summary</p>
+                  <ul>
+                    <li>Assignments created: {importResult.created_assignments}</li>
+                    <li>New data scientists: {importResult.created_data_scientists}</li>
+                    <li>New projects: {importResult.created_projects}</li>
+                    <li>Replaced: {importResult.replaced_existing_assignments}</li>
+                  </ul>
                 </div>
               )}
             </div>
@@ -852,4 +1362,3 @@ function App() {
 }
 
 export default App;
-

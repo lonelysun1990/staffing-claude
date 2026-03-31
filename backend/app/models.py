@@ -32,6 +32,7 @@ class DataScientistBase(BaseModel):
         description="Full-time equivalent capacity (e.g. 1.2 means 120% of a single FTE).",
     )
     notes: Optional[str] = None
+    skills: List[str] = Field(default_factory=list)
 
 
 class DataScientistCreate(DataScientistBase):
@@ -52,6 +53,7 @@ class ProjectBase(BaseModel):
     start_date: date
     end_date: date
     fte_requirements: List[ProjectWeek] = Field(default_factory=list)
+    required_skills: List[str] = Field(default_factory=list)
 
     @field_validator("end_date")
     @classmethod
@@ -105,3 +107,28 @@ class ImportResult(BaseModel):
     created_projects: int = 0
     created_assignments: int = 0
     replaced_existing_assignments: int = 0
+
+
+class ConflictItem(BaseModel):
+    data_scientist_id: int
+    data_scientist_name: str
+    week_start: str
+    total_allocation: float
+    over_by: float
+
+
+class AuditLogItem(BaseModel):
+    id: int
+    assignment_id: Optional[int]
+    action: str
+    changed_by: Optional[str]
+    changed_at: str
+    details: Optional[dict] = None
+
+
+class BulkAssignPayload(BaseModel):
+    data_scientist_id: int
+    project_id: int
+    start_date: date
+    end_date: date
+    allocation: float = Field(..., ge=0.0, le=1.0)

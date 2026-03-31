@@ -6,3 +6,8 @@ pytest==8.3.4
 openpyxl==3.1.5
 openai>=1.35.0
 python-dotenv>=1.0.1
+sqlalchemy>=2.0
+psycopg2-binary
+alembic
+passlib[bcrypt]
+python-jose[cryptography]
