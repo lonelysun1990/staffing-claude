@@ -676,8 +676,30 @@ button.ghost.danger {
 /* Conflict & warning rows */
 .row--conflict td { background: #fff1f2; }
 .row--warn td { background: #fffbeb; }
+.row--timing td { background: #fffbeb; }
 .text-danger { color: #b91c1c; font-weight: 700; }
 .text-success { color: #166534; font-weight: 700; }
+
+/* Mode toggle button group (single / range) */
+.btn-group {
+  display: flex;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.btn-group button {
+  border-radius: 0;
+  border: none;
+  border-right: 1px solid #d1d5db;
+  padding: 6px 14px;
+  font-size: 13px;
+  background: #f9fafb;
+}
+.btn-group button:last-child { border-right: none; }
+.btn-group button.active {
+  background: #111827;
+  color: #fff;
+}
 
 /* Conflict badge in header */
 .conflict-badge {

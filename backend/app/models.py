@@ -132,3 +132,15 @@ class BulkAssignPayload(BaseModel):
     start_date: date
     end_date: date
     allocation: float = Field(..., ge=0.0, le=1.0)
+
+
+class BulkRemovePayload(BaseModel):
+    """Remove all assignments matching the given filters.
+
+    At least one of data_scientist_id or project_id must be provided.
+    If only one is given, all assignments under that entity are removed.
+    If both are given, only assignments for that specific (person, project) pair are removed.
+    """
+
+    data_scientist_id: Optional[int] = None
+    project_id: Optional[int] = None

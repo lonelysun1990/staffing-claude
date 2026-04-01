@@ -253,6 +253,33 @@ def delete_assignment(db: Session, assignment_id: int, changed_by: str = "system
     db.commit()
 
 
+def bulk_remove_assignments(
+    db: Session,
+    data_scientist_id: Optional[int] = None,
+    project_id: Optional[int] = None,
+    changed_by: str = "system",
+) -> int:
+    """Delete assignments matching the given filters and return the count removed."""
+    query = db.query(AssignmentORM)
+    if data_scientist_id is not None:
+        query = query.filter(AssignmentORM.data_scientist_id == data_scientist_id)
+    if project_id is not None:
+        query = query.filter(AssignmentORM.project_id == project_id)
+
+    to_delete = query.all()
+    for orm in to_delete:
+        db.add(AuditLogORM(
+            assignment_id=None,
+            action="deleted",
+            changed_by=changed_by,
+            changed_at=datetime.utcnow().isoformat(),
+            details=json.dumps(_assignment_to_schema(orm).model_dump(mode="json")),
+        ))
+        db.delete(orm)
+    db.commit()
+    return len(to_delete)
+
+
 def replace_assignments(db: Session, payload: AssignmentsPayload) -> List[Assignment]:
     for item in payload.assignments:
         if not db.query(DataScientistORM).filter(DataScientistORM.id == item.data_scientist_id).first():

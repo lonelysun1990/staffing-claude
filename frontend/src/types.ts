@@ -67,6 +67,11 @@ export interface BulkAssignPayload {
   allocation: number;
 }
 
+export interface BulkRemovePayload {
+  data_scientist_id?: number | null;
+  project_id?: number | null;
+}
+
 export interface ImportResult {
   created_data_scientists: number;
   created_projects: number;
