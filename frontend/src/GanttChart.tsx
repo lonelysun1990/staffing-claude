@@ -48,6 +48,15 @@ interface GanttRow {
   bars: Map<number, GanttBar[]>;
 }
 
+interface ProjectMetrics {
+  totalLoe: number;
+  consumedLoe: number;
+  remainingLoe: number;
+  currentAssigned: number;
+  currentRequired: number;
+  gap: number;
+}
+
 interface GanttChartProps {
   weeks: string[];
   assignments: Assignment[];
@@ -328,6 +337,46 @@ export function GanttChart({
     }));
   }, [mode, projects, dataScientists, projectData]);
 
+  const currentWeek = weeks[0] ?? "";
+
+  const projectMetrics = useMemo((): Record<number, ProjectMetrics> => {
+    if (mode !== "by-project") return {};
+    return Object.fromEntries(
+      projects.map((project) => {
+        const totalLoe = project.fte_requirements.reduce((s, pw) => s + pw.fte, 0);
+
+        const consumedLoe = assignments
+          .filter((a) => a.project_id === project.id && a.week_start < currentWeek)
+          .reduce((s, a) => {
+            const ds = dsLookup[a.data_scientist_id];
+            return s + a.allocation * (ds?.efficiency ?? 1);
+          }, 0);
+
+        const currentAssigned = assignments
+          .filter((a) => a.project_id === project.id && a.week_start === currentWeek)
+          .reduce((s, a) => {
+            const ds = dsLookup[a.data_scientist_id];
+            return s + a.allocation * (ds?.efficiency ?? 1);
+          }, 0);
+
+        const currentRequired =
+          project.fte_requirements.find((pw) => pw.week_start === currentWeek)?.fte ?? 0;
+
+        return [
+          project.id,
+          {
+            totalLoe,
+            consumedLoe,
+            remainingLoe: totalLoe - consumedLoe,
+            currentAssigned,
+            currentRequired,
+            gap: currentRequired - currentAssigned,
+          },
+        ];
+      })
+    );
+  }, [mode, projects, assignments, currentWeek, dsLookup]);
+
   const visibleWeeks = weeks.slice(0, Math.min(weeks.length, 16));
 
   const rows = useMemo((): GanttRow[] => {
@@ -439,6 +488,14 @@ export function GanttChart({
             <div className="gantt-label-cell">
               {mode === "by-person" ? "Data Scientist" : "Project"}
             </div>
+            {mode === "by-project" && (
+              <>
+                <div className="gantt-metric-cell gantt-metric-cell--header" title="Total planned effort minus effort consumed in past weeks (FTE × weeks)">Rem. LoE</div>
+                <div className="gantt-metric-cell gantt-metric-cell--header" title="Effective FTE assigned to this project in the current week (allocation × efficiency)">Cur. LoE</div>
+                <div className="gantt-metric-cell gantt-metric-cell--header" title="FTE required by the project plan for the current week">Required</div>
+                <div className="gantt-metric-cell gantt-metric-cell--header" title="Gap = Required − Current (positive = understaffed, negative = overstaffed)">Gap</div>
+              </>
+            )}
             {visibleWeeks.map((week, i) => (
               <div key={week} className="gantt-week-header">
                 <span className="gantt-week-label">{formatWeek(week)}</span>
@@ -447,9 +504,35 @@ export function GanttChart({
             ))}
           </div>
 
-          {rows.map((row) => (
+          {rows.map((row) => {
+            const metrics = mode === "by-project" ? projectMetrics[row.id] : undefined;
+            return (
             <div key={row.id} className="gantt-row">
               <div className="gantt-label-cell" title={row.name}>{row.name}</div>
+              {metrics && (
+                <>
+                  <div className="gantt-metric-cell" title={`Total planned: ${metrics.totalLoe.toFixed(1)} | Consumed: ${metrics.consumedLoe.toFixed(2)}`}>
+                    <span className="gantt-metric-value">{metrics.remainingLoe.toFixed(1)}</span>
+                  </div>
+                  <div className="gantt-metric-cell" title="Effective FTE assigned this week (allocation × efficiency)">
+                    <span className="gantt-metric-value">{metrics.currentAssigned.toFixed(2)}</span>
+                  </div>
+                  <div className="gantt-metric-cell" title="FTE required by plan this week">
+                    <span className="gantt-metric-value">{metrics.currentRequired.toFixed(2)}</span>
+                  </div>
+                  <div
+                    className={[
+                      "gantt-metric-cell",
+                      metrics.gap > 0.05 ? "gantt-metric-cell--understaffed" : metrics.gap < -0.05 ? "gantt-metric-cell--overstaffed" : "gantt-metric-cell--balanced",
+                    ].join(" ")}
+                    title={metrics.gap > 0.05 ? "Understaffed" : metrics.gap < -0.05 ? "Overstaffed" : "Balanced"}
+                  >
+                    <span className="gantt-metric-value">
+                      {metrics.gap >= 0 ? "+" : ""}{metrics.gap.toFixed(2)}
+                    </span>
+                  </div>
+                </>
+              )}
               {visibleWeeks.map((week, weekIndex) => {
                 const cellBars = row.bars.get(weekIndex) ?? [];
                 const isCreating =
@@ -504,7 +587,8 @@ export function GanttChart({
                 );
               })}
             </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="gantt-legend">
