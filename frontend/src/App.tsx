@@ -1234,6 +1234,7 @@ function App() {
                 onMoveAssignment={handleMoveAssignment}
                 onEditAllocation={handleEditAllocation}
                 onCreateAssignment={handleCreateAssignmentFromChart}
+                onDeleteAssignment={handleDeleteAssignment}
               />
             </div>
 
@@ -1351,6 +1352,7 @@ function App() {
                 onMoveAssignment={handleMoveAssignment}
                 onEditAllocation={handleEditAllocation}
                 onCreateAssignment={handleCreateAssignmentFromChart}
+                onDeleteAssignment={handleDeleteAssignment}
               />
             </div>
 
