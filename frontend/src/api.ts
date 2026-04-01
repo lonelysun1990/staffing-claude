@@ -3,6 +3,7 @@ import {
   AssignmentPayload,
   AuditLogItem,
   BulkAssignPayload,
+  BulkRemovePayload,
   Config,
   ConflictItem,
   DataScientist,
@@ -101,6 +102,8 @@ export const api = {
     request("/assignments", { method: "PUT", body: JSON.stringify({ assignments: payload }) }),
   bulkAssign: (payload: BulkAssignPayload): Promise<Assignment[]> =>
     request("/assignments/bulk", { method: "POST", body: JSON.stringify(payload) }),
+  bulkRemove: (payload: BulkRemovePayload): Promise<{ removed: number }> =>
+    request("/assignments/bulk", { method: "DELETE", body: JSON.stringify(payload) }),
 
   // Conflicts
   getConflicts: (): Promise<ConflictItem[]> => request("/conflicts"),

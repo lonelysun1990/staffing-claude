@@ -7,6 +7,7 @@ import {
   AssignmentPayload,
   AuditLogItem,
   BulkAssignPayload,
+  BulkRemovePayload,
   Config,
   ConflictItem,
   DataScientist,
@@ -187,6 +188,24 @@ function App() {
     start_date: toISODate(startOfWeek(new Date())),
     end_date: toISODate(startOfWeek(new Date())),
     allocation: 0.5,
+  });
+
+  // Assign mode toggle: single week vs date range
+  const [assignMode, setAssignMode] = useState<"single" | "range">("single");
+
+  // Bulk remove form
+  const [bulkRemoveForm, setBulkRemoveForm] = useState<BulkRemovePayload>({
+    data_scientist_id: null,
+    project_id: null,
+  });
+
+  // Schedule list filters
+  const [scheduleFilter, setScheduleFilter] = useState({
+    ds_id: 0,        // 0 = all
+    project_id: 0,   // 0 = all
+    date_from: "",
+    date_to: "",
+    conflicts_only: false,
   });
 
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
@@ -438,6 +457,32 @@ function App() {
     }
   };
 
+  const handleBulkRemove = async () => {
+    if (!bulkRemoveForm.data_scientist_id && !bulkRemoveForm.project_id) {
+      setError("Select at least a person or project to remove");
+      return;
+    }
+    try {
+      const result = await api.bulkRemove(bulkRemoveForm);
+      setAssignments((prev) =>
+        prev.filter((a) => {
+          const dsMatch = bulkRemoveForm.data_scientist_id
+            ? a.data_scientist_id === bulkRemoveForm.data_scientist_id
+            : true;
+          const projMatch = bulkRemoveForm.project_id
+            ? a.project_id === bulkRemoveForm.project_id
+            : true;
+          return !(dsMatch && projMatch);
+        })
+      );
+      const updatedConflicts = await api.getConflicts();
+      setConflicts(updatedConflicts);
+      setStatus(`Removed ${result.removed} assignment${result.removed !== 1 ? "s" : ""}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to remove assignments");
+    }
+  };
+
   const handleSaveAssignments = async () => {
     try {
       const payload: AssignmentPayload[] = assignments.map(
@@ -593,6 +638,65 @@ function App() {
     [projects, projectSearch]
   );
 
+  // Schedule list: filtered assignments (by person, project, date range, conflicts)
+  const filteredAssignments = useMemo(() => {
+    const conflictSet = new Set(
+      conflicts.map((c) => `${c.data_scientist_id}::${c.week_start}`)
+    );
+    return assignments.filter((a) => {
+      if (scheduleFilter.ds_id && a.data_scientist_id !== scheduleFilter.ds_id) return false;
+      if (scheduleFilter.project_id && a.project_id !== scheduleFilter.project_id) return false;
+      if (scheduleFilter.date_from && a.week_start < scheduleFilter.date_from) return false;
+      if (scheduleFilter.date_to && a.week_start > scheduleFilter.date_to) return false;
+      if (scheduleFilter.conflicts_only && !conflictSet.has(`${a.data_scientist_id}::${a.week_start}`)) return false;
+      return true;
+    });
+  }, [assignments, scheduleFilter, conflicts]);
+
+  // Dashboard: lifetime FTE status per project (all weeks, not just current)
+  const projectFteLifetimeStatus = useMemo(() => {
+    const allocByProject: Record<number, number> = {};
+    const firstWeek: Record<number, string> = {};
+    const lastWeek: Record<number, string> = {};
+    assignments.forEach((a) => {
+      allocByProject[a.project_id] = (allocByProject[a.project_id] ?? 0) + a.allocation;
+      if (!firstWeek[a.project_id] || a.week_start < firstWeek[a.project_id])
+        firstWeek[a.project_id] = a.week_start;
+      if (!lastWeek[a.project_id] || a.week_start > lastWeek[a.project_id])
+        lastWeek[a.project_id] = a.week_start;
+    });
+    return projects
+      .map((p) => {
+        const totalRequired = p.fte_requirements.reduce((s, w) => s + w.fte, 0);
+        const numWeeks = p.fte_requirements.length;
+        const avgRequired = numWeeks > 0 ? totalRequired / numWeeks : 0;
+        const totalAllocated = allocByProject[p.id] ?? 0;
+        const lifetimeGap = Math.max(0, totalRequired - totalAllocated);
+        const avgAllocated = numWeeks > 0 ? totalAllocated / numWeeks : 0;
+        const firstAssignment = firstWeek[p.id] ?? null;
+        const lastAssignment = lastWeek[p.id] ?? null;
+        // Timing mismatches
+        const lateStart = firstAssignment !== null && firstAssignment > p.start_date;
+        const earlyEnd = lastAssignment !== null && lastAssignment < p.end_date;
+        const overEnd = lastAssignment !== null && lastAssignment > p.end_date;
+        return {
+          project: p,
+          totalRequired,
+          totalAllocated,
+          lifetimeGap,
+          avgRequired,
+          avgAllocated,
+          firstAssignment,
+          lastAssignment,
+          lateStart,
+          earlyEnd,
+          overEnd,
+          hasTimingIssue: lateStart || earlyEnd || overEnd,
+        };
+      })
+      .filter((x) => x.totalRequired > 0);
+  }, [projects, assignments]);
+
   const handleLogin = (token: string, username: string, role: string) => {
     localStorage.setItem("auth_token", token);
     setAuthToken(token);
@@ -706,23 +810,42 @@ function App() {
               </div>
             </div>
 
-            {/* Single assignment */}
+            {/* ---- Merged Assign section ---- */}
             <div className="card">
               <div className="card__header">
                 <div>
                   <p className="eyebrow">Add assignment</p>
-                  <h3>Create a weekly allocation</h3>
+                  <h3>Allocate a person to a project</h3>
                 </div>
-                <button className="secondary" onClick={handleAddAssignment}>
-                  Add assignment
-                </button>
+                <div className="actions">
+                  <div className="btn-group">
+                    <button
+                      className={`ghost${assignMode === "single" ? " active" : ""}`}
+                      onClick={() => setAssignMode("single")}
+                    >Single week</button>
+                    <button
+                      className={`ghost${assignMode === "range" ? " active" : ""}`}
+                      onClick={() => setAssignMode("range")}
+                    >Date range</button>
+                  </div>
+                  <button
+                    className="secondary"
+                    onClick={assignMode === "single" ? handleAddAssignment : handleBulkAssign}
+                  >
+                    {assignMode === "single" ? "Add assignment" : "Bulk assign"}
+                  </button>
+                </div>
               </div>
               <div className="form-grid">
                 <label>
                   Data scientist
                   <select
-                    value={newAssignment.data_scientist_id}
-                    onChange={(e) => setNewAssignment((prev) => ({ ...prev, data_scientist_id: Number(e.target.value) }))}
+                    value={assignMode === "single" ? newAssignment.data_scientist_id : bulkForm.data_scientist_id}
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      if (assignMode === "single") setNewAssignment((prev) => ({ ...prev, data_scientist_id: v }));
+                      else setBulkForm((prev) => ({ ...prev, data_scientist_id: v }));
+                    }}
                   >
                     {dataScientists.map((ds) => (
                       <option key={ds.id} value={ds.id}>{ds.name} ({ds.level})</option>
@@ -732,52 +855,129 @@ function App() {
                 <label>
                   Project
                   <select
-                    value={newAssignment.project_id}
-                    onChange={(e) => setNewAssignment((prev) => ({ ...prev, project_id: Number(e.target.value) }))}
+                    value={assignMode === "single" ? newAssignment.project_id : bulkForm.project_id}
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      if (assignMode === "single") setNewAssignment((prev) => ({ ...prev, project_id: v }));
+                      else setBulkForm((prev) => ({ ...prev, project_id: v }));
+                    }}
                   >
                     {projects.map((p) => (
                       <option key={p.id} value={p.id}>{p.name}</option>
                     ))}
                   </select>
                 </label>
-                <label>
-                  Week start
-                  <select
-                    value={newAssignment.week_start}
-                    onChange={(e) => setNewAssignment((prev) => ({ ...prev, week_start: e.target.value }))}
-                  >
-                    {weeks.map((w) => <option key={w} value={w}>{w}</option>)}
-                  </select>
-                </label>
+                {assignMode === "single" ? (
+                  <label>
+                    Week start
+                    <select
+                      value={newAssignment.week_start}
+                      onChange={(e) => setNewAssignment((prev) => ({ ...prev, week_start: e.target.value }))}
+                    >
+                      {weeks.map((w) => <option key={w} value={w}>{w}</option>)}
+                    </select>
+                  </label>
+                ) : (
+                  <>
+                    <label>
+                      Start date
+                      <input type="date" value={bulkForm.start_date}
+                        onChange={(e) => setBulkForm((prev) => ({ ...prev, start_date: e.target.value }))} />
+                    </label>
+                    <label>
+                      End date
+                      <input type="date" value={bulkForm.end_date}
+                        onChange={(e) => setBulkForm((prev) => ({ ...prev, end_date: e.target.value }))} />
+                    </label>
+                  </>
+                )}
                 <label>
                   Allocation (0–1)
                   <input
                     type="number" min={0} max={1} step={0.05}
-                    value={newAssignment.allocation}
-                    onChange={(e) => setNewAssignment((prev) => ({ ...prev, allocation: Number(e.target.value) }))}
+                    value={assignMode === "single" ? newAssignment.allocation : bulkForm.allocation}
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      if (assignMode === "single") setNewAssignment((prev) => ({ ...prev, allocation: v }));
+                      else setBulkForm((prev) => ({ ...prev, allocation: v }));
+                    }}
                   />
                 </label>
               </div>
             </div>
 
-            {/* Bulk assignment */}
+            {/* ---- Bulk Remove section ---- */}
             <div className="card">
               <div className="card__header">
                 <div>
-                  <p className="eyebrow">Bulk assign</p>
-                  <h3>Assign over a date range</h3>
+                  <p className="eyebrow">Remove assignments</p>
+                  <h3>Bulk remove by person or project</h3>
                 </div>
-                <button className="secondary" onClick={handleBulkAssign}>
-                  Bulk assign
+                <button className="secondary" style={{ color: "var(--danger, #ef4444)" }} onClick={handleBulkRemove}>
+                  Remove
                 </button>
               </div>
+              <p className="muted" style={{ fontSize: 13, marginBottom: 12 }}>
+                Choose a person, a project, or both. If only one is provided, all their assignments are removed.
+                If both are provided, only that specific pairing is removed.
+              </p>
               <div className="form-grid">
                 <label>
-                  Data scientist
+                  Person <span className="muted" style={{ fontWeight: 400 }}>(optional)</span>
                   <select
-                    value={bulkForm.data_scientist_id}
-                    onChange={(e) => setBulkForm((prev) => ({ ...prev, data_scientist_id: Number(e.target.value) }))}
+                    value={bulkRemoveForm.data_scientist_id ?? ""}
+                    onChange={(e) =>
+                      setBulkRemoveForm((prev) => ({
+                        ...prev,
+                        data_scientist_id: e.target.value ? Number(e.target.value) : null,
+                      }))
+                    }
                   >
+                    <option value="">— Anyone —</option>
+                    {dataScientists.map((ds) => (
+                      <option key={ds.id} value={ds.id}>{ds.name} ({ds.level})</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Project <span className="muted" style={{ fontWeight: 400 }}>(optional)</span>
+                  <select
+                    value={bulkRemoveForm.project_id ?? ""}
+                    onChange={(e) =>
+                      setBulkRemoveForm((prev) => ({
+                        ...prev,
+                        project_id: e.target.value ? Number(e.target.value) : null,
+                      }))
+                    }
+                  >
+                    <option value="">— Any project —</option>
+                    {projects.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            </div>
+
+            {/* ---- Assignment list with filters ---- */}
+            <div className="card">
+              <div className="card__header">
+                <div>
+                  <p className="eyebrow">Assignment list</p>
+                  <h3>Review and filter</h3>
+                </div>
+                <span className="muted" style={{ fontSize: 13 }}>
+                  {filteredAssignments.length} of {assignments.length} shown
+                </span>
+              </div>
+              <div className="form-grid" style={{ marginBottom: 8 }}>
+                <label>
+                  Person
+                  <select
+                    value={scheduleFilter.ds_id}
+                    onChange={(e) => setScheduleFilter((prev) => ({ ...prev, ds_id: Number(e.target.value) }))}
+                  >
+                    <option value={0}>All people</option>
                     {dataScientists.map((ds) => (
                       <option key={ds.id} value={ds.id}>{ds.name}</option>
                     ))}
@@ -786,28 +986,51 @@ function App() {
                 <label>
                   Project
                   <select
-                    value={bulkForm.project_id}
-                    onChange={(e) => setBulkForm((prev) => ({ ...prev, project_id: Number(e.target.value) }))}
+                    value={scheduleFilter.project_id}
+                    onChange={(e) => setScheduleFilter((prev) => ({ ...prev, project_id: Number(e.target.value) }))}
                   >
-                    {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    <option value={0}>All projects</option>
+                    {projects.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
                   </select>
                 </label>
                 <label>
-                  Start date
-                  <input type="date" value={bulkForm.start_date}
-                    onChange={(e) => setBulkForm((prev) => ({ ...prev, start_date: e.target.value }))} />
+                  From week
+                  <input type="date" value={scheduleFilter.date_from}
+                    onChange={(e) => setScheduleFilter((prev) => ({ ...prev, date_from: e.target.value }))} />
                 </label>
                 <label>
-                  End date
-                  <input type="date" value={bulkForm.end_date}
-                    onChange={(e) => setBulkForm((prev) => ({ ...prev, end_date: e.target.value }))} />
+                  To week
+                  <input type="date" value={scheduleFilter.date_to}
+                    onChange={(e) => setScheduleFilter((prev) => ({ ...prev, date_to: e.target.value }))} />
                 </label>
-                <label>
-                  Allocation (0–1)
-                  <input type="number" min={0} max={1} step={0.05} value={bulkForm.allocation}
-                    onChange={(e) => setBulkForm((prev) => ({ ...prev, allocation: Number(e.target.value) }))} />
+                <label style={{ flexDirection: "row", alignItems: "center", gap: 8, gridColumn: "span 2" }}>
+                  <input
+                    type="checkbox"
+                    checked={scheduleFilter.conflicts_only}
+                    onChange={(e) => setScheduleFilter((prev) => ({ ...prev, conflicts_only: e.target.checked }))}
+                    style={{ width: "auto", margin: 0 }}
+                  />
+                  <span>Show overstaffed weeks only</span>
+                  {conflicts.length > 0 && (
+                    <span className="tag" style={{ background: "#7f1d1d", color: "#fca5a5", fontSize: 11 }}>
+                      {conflicts.length} conflict{conflicts.length !== 1 ? "s" : ""}
+                    </span>
+                  )}
                 </label>
               </div>
+              {(scheduleFilter.ds_id || scheduleFilter.project_id || scheduleFilter.date_from || scheduleFilter.date_to || scheduleFilter.conflicts_only) && (
+                <div style={{ marginBottom: 8 }}>
+                  <button
+                    className="ghost"
+                    style={{ fontSize: 12 }}
+                    onClick={() => setScheduleFilter({ ds_id: 0, project_id: 0, date_from: "", date_to: "", conflicts_only: false })}
+                  >
+                    ✕ Clear filters
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="table-wrapper">
@@ -822,7 +1045,7 @@ function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {assignments.map((a) => {
+                  {filteredAssignments.map((a) => {
                     const isConflict = conflicts.some(
                       (c) => c.data_scientist_id === a.data_scientist_id && c.week_start === a.week_start
                     );
@@ -851,8 +1074,12 @@ function App() {
                       </tr>
                     );
                   })}
-                  {assignments.length === 0 && (
-                    <tr><td colSpan={5} className="muted">No assignments yet.</td></tr>
+                  {filteredAssignments.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="muted">
+                        {assignments.length === 0 ? "No assignments yet." : "No assignments match the current filters."}
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </table>
@@ -1221,32 +1448,97 @@ function App() {
               </div>
             </div>
 
-            {/* Projects with unmet FTE */}
+            {/* Projects with unmet FTE — this week + lifetime */}
             <div className="card">
               <div className="card__header">
                 <div>
-                  <p className="eyebrow">This week</p>
+                  <p className="eyebrow">This week &amp; lifetime</p>
                   <h3>Project FTE coverage</h3>
                 </div>
               </div>
               <div className="table-wrapper">
                 <table>
                   <thead>
-                    <tr><th>Project</th><th>Required FTE</th><th>Allocated FTE</th><th>Gap</th></tr>
+                    <tr>
+                      <th>Project</th>
+                      <th>This Wk Required</th>
+                      <th>This Wk Allocated</th>
+                      <th>This Wk Gap</th>
+                      <th>Lifetime Gap (FTE·wks)</th>
+                      <th>Avg Wkly Gap</th>
+                      <th>Assignment Coverage</th>
+                    </tr>
                   </thead>
                   <tbody>
-                    {projectFteStatus.map(({ project, required, allocated, gap }) => (
-                      <tr key={project.id} className={gap > 0 ? "row--warn" : ""}>
-                        <td>{project.name}</td>
-                        <td>{required.toFixed(1)}</td>
-                        <td>{allocated.toFixed(1)}</td>
-                        <td className={gap > 0 ? "text-danger" : "text-success"}>
-                          {gap > 0 ? `-${gap.toFixed(1)}` : "✓"}
-                        </td>
-                      </tr>
-                    ))}
-                    {projectFteStatus.length === 0 && (
-                      <tr><td colSpan={4} className="muted">No projects with FTE requirements this week.</td></tr>
+                    {projectFteLifetimeStatus.map(({ project, lifetimeGap, avgRequired, avgAllocated, firstAssignment, lastAssignment, lateStart, earlyEnd, overEnd, hasTimingIssue }) => {
+                      const thisWeekRow = projectFteStatus.find((x) => x.project.id === project.id);
+                      const wkRequired = thisWeekRow?.required ?? 0;
+                      const wkAllocated = thisWeekRow?.allocated ?? 0;
+                      const wkGap = thisWeekRow?.gap ?? 0;
+                      const avgGap = Math.max(0, avgRequired - avgAllocated);
+                      const timingBadges: string[] = [];
+                      if (lateStart) timingBadges.push("⚠ Late start");
+                      if (earlyEnd) timingBadges.push("⚠ Ends early");
+                      if (overEnd) timingBadges.push("⚠ Extends past end");
+                      return (
+                        <tr
+                          key={project.id}
+                          className={[
+                            wkGap > 0 ? "row--warn" : "",
+                            hasTimingIssue ? "row--timing" : "",
+                          ].filter(Boolean).join(" ")}
+                        >
+                          <td>
+                            {project.name}
+                            {hasTimingIssue && (
+                              <span className="tag" style={{ marginLeft: 6, background: "#78350f", color: "#fde68a", fontSize: 10 }}>
+                                timing
+                              </span>
+                            )}
+                          </td>
+                          <td>{wkRequired > 0 ? wkRequired.toFixed(1) : <span className="muted">—</span>}</td>
+                          <td>{wkRequired > 0 ? wkAllocated.toFixed(1) : <span className="muted">—</span>}</td>
+                          <td className={wkGap > 0 ? "text-danger" : wkRequired > 0 ? "text-success" : ""}>
+                            {wkRequired > 0 ? (wkGap > 0 ? `-${wkGap.toFixed(1)}` : "✓") : <span className="muted">—</span>}
+                          </td>
+                          <td className={lifetimeGap > 0 ? "text-danger" : "text-success"}>
+                            {lifetimeGap > 0 ? `-${lifetimeGap.toFixed(1)}` : "✓"}
+                          </td>
+                          <td className={avgGap > 0 ? "text-danger" : "text-success"}>
+                            {avgGap > 0 ? `-${avgGap.toFixed(2)}/wk` : "✓"}
+                          </td>
+                          <td style={{ fontSize: 12 }}>
+                            {firstAssignment ? (
+                              <div>
+                                <span style={{ color: lateStart ? "var(--warning, #f59e0b)" : undefined }}>
+                                  {firstAssignment}
+                                </span>
+                                {" → "}
+                                <span style={{ color: (earlyEnd || overEnd) ? "var(--warning, #f59e0b)" : undefined }}>
+                                  {lastAssignment}
+                                </span>
+                                {timingBadges.length > 0 && (
+                                  <div style={{ marginTop: 2 }}>
+                                    {timingBadges.map((b) => (
+                                      <span key={b} className="tag" style={{ background: "#78350f", color: "#fde68a", fontSize: 10, marginRight: 2 }}>
+                                        {b}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                                <div className="muted" style={{ fontSize: 11 }}>
+                                  project: {project.start_date} → {project.end_date}
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="muted">No assignments</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {projectFteLifetimeStatus.length === 0 && (
+                      <tr><td colSpan={7} className="muted">No projects with FTE requirements.</td></tr>
                     )}
                   </tbody>
                 </table>

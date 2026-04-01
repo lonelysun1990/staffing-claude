@@ -34,6 +34,7 @@ from .models import (
     AssignmentsPayload,
     AuditLogItem,
     BulkAssignPayload,
+    BulkRemovePayload,
     ConfigModel,
     ConfigUpdate,
     ConflictItem,
@@ -191,6 +192,25 @@ def replace_assignments(payload: AssignmentsPayload, db: Session = Depends(get_d
         return storage.replace_assignments(db, payload)
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
+
+
+@app.delete("/assignments/bulk", status_code=200)
+def bulk_remove(
+    payload: BulkRemovePayload,
+    db: Session = Depends(get_db),
+    current_user: Optional[UserORM] = Depends(get_user_or_none),
+) -> dict:
+    """Remove all assignments matching the given person and/or project filter."""
+    if payload.data_scientist_id is None and payload.project_id is None:
+        raise HTTPException(status_code=400, detail="At least one of data_scientist_id or project_id must be specified")
+    changed_by = current_user.username if current_user else "anonymous"
+    count = storage.bulk_remove_assignments(
+        db,
+        data_scientist_id=payload.data_scientist_id,
+        project_id=payload.project_id,
+        changed_by=changed_by,
+    )
+    return {"removed": count}
 
 
 @app.post("/assignments/bulk", response_model=List[Assignment], status_code=201)
