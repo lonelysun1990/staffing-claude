@@ -70,6 +70,9 @@ export interface BulkAssignPayload {
 export interface BulkRemovePayload {
   data_scientist_id?: number | null;
   project_id?: number | null;
+  week_start?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
 }
 
 export interface ImportResult {

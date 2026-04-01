@@ -137,10 +137,13 @@ class BulkAssignPayload(BaseModel):
 class BulkRemovePayload(BaseModel):
     """Remove all assignments matching the given filters.
 
-    At least one of data_scientist_id or project_id must be provided.
-    If only one is given, all assignments under that entity are removed.
-    If both are given, only assignments for that specific (person, project) pair are removed.
+    At least one filter must be provided (data_scientist_id, project_id, week_start, or start_date).
+    - week_start: remove assignments for exactly this week
+    - start_date + end_date: remove assignments whose week_start falls in this date range
     """
 
     data_scientist_id: Optional[int] = None
     project_id: Optional[int] = None
+    week_start: Optional[date] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None

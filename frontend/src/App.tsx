@@ -193,11 +193,21 @@ function App() {
   // Assign mode toggle: single week vs date range
   const [assignMode, setAssignMode] = useState<"single" | "range">("single");
 
+  // Remove mode toggle: single week vs date range
+  const [removeMode, setRemoveMode] = useState<"single" | "range">("single");
+
   // Bulk remove form
   const [bulkRemoveForm, setBulkRemoveForm] = useState<BulkRemovePayload>({
     data_scientist_id: null,
     project_id: null,
+    week_start: null,
+    start_date: null,
+    end_date: null,
   });
+
+  // Schedule list pagination
+  const [schedulePage, setSchedulePage] = useState(0);
+  const SCHEDULE_PAGE_SIZE = 20;
 
   // Schedule list filters
   const [scheduleFilter, setScheduleFilter] = useState({
@@ -458,24 +468,19 @@ function App() {
   };
 
   const handleBulkRemove = async () => {
-    if (!bulkRemoveForm.data_scientist_id && !bulkRemoveForm.project_id) {
-      setError("Select at least a person or project to remove");
+    const { data_scientist_id, project_id, week_start, start_date } = bulkRemoveForm;
+    if (!data_scientist_id && !project_id && !week_start && !start_date) {
+      setError("Select at least one filter (person, project, or date) to remove");
       return;
     }
     try {
       const result = await api.bulkRemove(bulkRemoveForm);
-      setAssignments((prev) =>
-        prev.filter((a) => {
-          const dsMatch = bulkRemoveForm.data_scientist_id
-            ? a.data_scientist_id === bulkRemoveForm.data_scientist_id
-            : true;
-          const projMatch = bulkRemoveForm.project_id
-            ? a.project_id === bulkRemoveForm.project_id
-            : true;
-          return !(dsMatch && projMatch);
-        })
-      );
-      const updatedConflicts = await api.getConflicts();
+      // Refresh assignments from server after removal
+      const [updated, updatedConflicts] = await Promise.all([
+        api.listAssignments(),
+        api.getConflicts(),
+      ]);
+      setAssignments(updated);
       setConflicts(updatedConflicts);
       setStatus(`Removed ${result.removed} assignment${result.removed !== 1 ? "s" : ""}`);
     } catch (err) {
@@ -652,6 +657,12 @@ function App() {
       return true;
     });
   }, [assignments, scheduleFilter, conflicts]);
+
+  const totalSchedulePages = Math.max(1, Math.ceil(filteredAssignments.length / SCHEDULE_PAGE_SIZE));
+  const pagedAssignments = filteredAssignments.slice(
+    schedulePage * SCHEDULE_PAGE_SIZE,
+    (schedulePage + 1) * SCHEDULE_PAGE_SIZE
+  );
 
   // Dashboard: lifetime FTE status per project (all weeks, not just current)
   const projectFteLifetimeStatus = useMemo(() => {
@@ -906,21 +917,33 @@ function App() {
               </div>
             </div>
 
-            {/* ---- Bulk Remove section ---- */}
+            {/* ---- Remove section ---- */}
             <div className="card">
               <div className="card__header">
                 <div>
                   <p className="eyebrow">Remove assignments</p>
-                  <h3>Bulk remove by person or project</h3>
+                  <h3>Remove by person, project, or date</h3>
                 </div>
-                <button className="secondary" style={{ color: "var(--danger, #ef4444)" }} onClick={handleBulkRemove}>
-                  Remove
-                </button>
+                <div className="actions">
+                  <div className="btn-group">
+                    <button
+                      className={`ghost${removeMode === "single" ? " active" : ""}`}
+                      onClick={() => setRemoveMode("single")}
+                    >Single week</button>
+                    <button
+                      className={`ghost${removeMode === "range" ? " active" : ""}`}
+                      onClick={() => setRemoveMode("range")}
+                    >Date range</button>
+                  </div>
+                  <button
+                    className="secondary"
+                    style={{ color: "var(--danger, #ef4444)" }}
+                    onClick={handleBulkRemove}
+                  >
+                    {removeMode === "single" ? "Remove" : "Bulk remove"}
+                  </button>
+                </div>
               </div>
-              <p className="muted" style={{ fontSize: 13, marginBottom: 12 }}>
-                Choose a person, a project, or both. If only one is provided, all their assignments are removed.
-                If both are provided, only that specific pairing is removed.
-              </p>
               <div className="form-grid">
                 <label>
                   Person <span className="muted" style={{ fontWeight: 400 }}>(optional)</span>
@@ -956,6 +979,52 @@ function App() {
                     ))}
                   </select>
                 </label>
+                {removeMode === "single" ? (
+                  <label>
+                    Week <span className="muted" style={{ fontWeight: 400 }}>(optional)</span>
+                    <select
+                      value={bulkRemoveForm.week_start ?? ""}
+                      onChange={(e) =>
+                        setBulkRemoveForm((prev) => ({
+                          ...prev,
+                          week_start: e.target.value || null,
+                        }))
+                      }
+                    >
+                      <option value="">— Any week —</option>
+                      {weeks.map((w) => <option key={w} value={w}>{w}</option>)}
+                    </select>
+                  </label>
+                ) : (
+                  <>
+                    <label>
+                      Start date
+                      <input
+                        type="date"
+                        value={bulkRemoveForm.start_date ?? ""}
+                        onChange={(e) =>
+                          setBulkRemoveForm((prev) => ({
+                            ...prev,
+                            start_date: e.target.value || null,
+                          }))
+                        }
+                      />
+                    </label>
+                    <label>
+                      End date
+                      <input
+                        type="date"
+                        value={bulkRemoveForm.end_date ?? ""}
+                        onChange={(e) =>
+                          setBulkRemoveForm((prev) => ({
+                            ...prev,
+                            end_date: e.target.value || null,
+                          }))
+                        }
+                      />
+                    </label>
+                  </>
+                )}
               </div>
             </div>
 
@@ -975,7 +1044,7 @@ function App() {
                   Person
                   <select
                     value={scheduleFilter.ds_id}
-                    onChange={(e) => setScheduleFilter((prev) => ({ ...prev, ds_id: Number(e.target.value) }))}
+                    onChange={(e) => { setScheduleFilter((prev) => ({ ...prev, ds_id: Number(e.target.value) })); setSchedulePage(0); }}
                   >
                     <option value={0}>All people</option>
                     {dataScientists.map((ds) => (
@@ -987,7 +1056,7 @@ function App() {
                   Project
                   <select
                     value={scheduleFilter.project_id}
-                    onChange={(e) => setScheduleFilter((prev) => ({ ...prev, project_id: Number(e.target.value) }))}
+                    onChange={(e) => { setScheduleFilter((prev) => ({ ...prev, project_id: Number(e.target.value) })); setSchedulePage(0); }}
                   >
                     <option value={0}>All projects</option>
                     {projects.map((p) => (
@@ -998,18 +1067,18 @@ function App() {
                 <label>
                   From week
                   <input type="date" value={scheduleFilter.date_from}
-                    onChange={(e) => setScheduleFilter((prev) => ({ ...prev, date_from: e.target.value }))} />
+                    onChange={(e) => { setScheduleFilter((prev) => ({ ...prev, date_from: e.target.value })); setSchedulePage(0); }} />
                 </label>
                 <label>
                   To week
                   <input type="date" value={scheduleFilter.date_to}
-                    onChange={(e) => setScheduleFilter((prev) => ({ ...prev, date_to: e.target.value }))} />
+                    onChange={(e) => { setScheduleFilter((prev) => ({ ...prev, date_to: e.target.value })); setSchedulePage(0); }} />
                 </label>
                 <label style={{ flexDirection: "row", alignItems: "center", gap: 8, gridColumn: "span 2" }}>
                   <input
                     type="checkbox"
                     checked={scheduleFilter.conflicts_only}
-                    onChange={(e) => setScheduleFilter((prev) => ({ ...prev, conflicts_only: e.target.checked }))}
+                    onChange={(e) => { setScheduleFilter((prev) => ({ ...prev, conflicts_only: e.target.checked })); setSchedulePage(0); }}
                     style={{ width: "auto", margin: 0 }}
                   />
                   <span>Show overstaffed weeks only</span>
@@ -1025,7 +1094,7 @@ function App() {
                   <button
                     className="ghost"
                     style={{ fontSize: 12 }}
-                    onClick={() => setScheduleFilter({ ds_id: 0, project_id: 0, date_from: "", date_to: "", conflicts_only: false })}
+                    onClick={() => { setScheduleFilter({ ds_id: 0, project_id: 0, date_from: "", date_to: "", conflicts_only: false }); setSchedulePage(0); }}
                   >
                     ✕ Clear filters
                   </button>
@@ -1045,7 +1114,7 @@ function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredAssignments.map((a) => {
+                  {pagedAssignments.map((a) => {
                     const isConflict = conflicts.some(
                       (c) => c.data_scientist_id === a.data_scientist_id && c.week_start === a.week_start
                     );
@@ -1081,9 +1150,31 @@ function App() {
                       </td>
                     </tr>
                   )}
+                  {pagedAssignments.length === 0 && filteredAssignments.length > 0 && (
+                    <tr>
+                      <td colSpan={5} className="muted">No assignments on this page.</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
+            {totalSchedulePages > 1 && (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
+                <button
+                  className="ghost"
+                  disabled={schedulePage === 0}
+                  onClick={() => setSchedulePage((p) => p - 1)}
+                >← Prev</button>
+                <span className="muted" style={{ fontSize: 13 }}>
+                  Page {schedulePage + 1} of {totalSchedulePages}
+                </span>
+                <button
+                  className="ghost"
+                  disabled={schedulePage >= totalSchedulePages - 1}
+                  onClick={() => setSchedulePage((p) => p + 1)}
+                >Next →</button>
+              </div>
+            )}
           </section>
         )}
 
