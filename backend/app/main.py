@@ -200,14 +200,17 @@ def bulk_remove(
     db: Session = Depends(get_db),
     current_user: Optional[UserORM] = Depends(get_user_or_none),
 ) -> dict:
-    """Remove all assignments matching the given person and/or project filter."""
-    if payload.data_scientist_id is None and payload.project_id is None:
-        raise HTTPException(status_code=400, detail="At least one of data_scientist_id or project_id must be specified")
+    """Remove all assignments matching the given filters."""
+    if all(v is None for v in [payload.data_scientist_id, payload.project_id, payload.week_start, payload.start_date]):
+        raise HTTPException(status_code=400, detail="At least one filter must be specified")
     changed_by = current_user.username if current_user else "anonymous"
     count = storage.bulk_remove_assignments(
         db,
         data_scientist_id=payload.data_scientist_id,
         project_id=payload.project_id,
+        week_start=payload.week_start,
+        start_date=payload.start_date,
+        end_date=payload.end_date,
         changed_by=changed_by,
     )
     return {"removed": count}

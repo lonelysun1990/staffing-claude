@@ -26,6 +26,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
   });
   if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem("auth_token");
+      window.dispatchEvent(new Event("auth:unauthorized"));
+    }
     let detail = response.statusText;
     try {
       const data = await response.json();

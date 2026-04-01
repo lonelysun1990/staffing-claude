@@ -57,6 +57,7 @@ interface GanttChartProps {
   onMoveAssignment?: (assignmentId: number, newWeekStart: string, newDsId: number, newProjectId: number) => void;
   onEditAllocation?: (assignmentId: number, newAllocation: number) => void;
   onCreateAssignment?: (dsId: number, projectId: number, weekStart: string, allocation: number) => void;
+  onDeleteAssignment?: (assignmentId: number) => void;
 }
 
 // ── Draggable bar ──────────────────────────────────────────────────────────────
@@ -66,12 +67,14 @@ function DraggableBar({
   entityOptions,
   onEditAllocation,
   onChangeEntity,
+  onDelete,
 }: {
   bar: GanttBar;
   mode: "by-person" | "by-project";
   entityOptions: EntityOption[];
   onEditAllocation?: (assignmentId: number, newAllocation: number) => void;
   onChangeEntity?: (assignmentId: number, newEntityId: number) => void;
+  onDelete?: (assignmentId: number) => void;
 }) {
   const [editingPct, setEditingPct] = useState(false);
   const [editingEntity, setEditingEntity] = useState(false);
@@ -160,6 +163,16 @@ function DraggableBar({
           title="Click to edit %"
         >
           {(bar.allocation * 100).toFixed(0)}%
+        </button>
+      )}
+
+      {onDelete && (
+        <button
+          className="gantt-bar-delete"
+          onClick={(e) => { e.stopPropagation(); onDelete(bar.assignmentId); }}
+          title="Delete assignment"
+        >
+          ×
         </button>
       )}
     </div>
@@ -269,6 +282,7 @@ export function GanttChart({
   onMoveAssignment,
   onEditAllocation,
   onCreateAssignment,
+  onDeleteAssignment,
 }: GanttChartProps) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -474,8 +488,16 @@ export function GanttChart({
                             entityOptions={entityOptions}
                             onEditAllocation={onEditAllocation}
                             onChangeEntity={onMoveAssignment ? handleEntityChange : undefined}
+                            onDelete={onDeleteAssignment}
                           />
                         ))}
+                        {onCreateAssignment && (
+                          <button
+                            className="gantt-cell-add"
+                            onClick={(e) => { e.stopPropagation(); setCreatingCell({ rowId: row.id, weekIndex }); }}
+                            title="Add assignment"
+                          >+</button>
+                        )}
                       </div>
                     )}
                   </DroppableCell>
@@ -488,7 +510,7 @@ export function GanttChart({
         <div className="gantt-legend">
           <span className="gantt-legend-title">
             {mode === "by-person" ? "Project Acronyms:" : "Legend:"}
-            {onMoveAssignment && <span className="gantt-legend-hint"> · drag ⠿ to move · click name to reassign · click % to edit</span>}
+            {onMoveAssignment && <span className="gantt-legend-hint"> · drag ⠿ to move · click name to reassign · click % to edit · × to delete</span>}
             {onCreateAssignment && <span className="gantt-legend-hint"> · click empty cell to add</span>}
           </span>
           {mode === "by-person"

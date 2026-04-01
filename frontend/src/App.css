@@ -575,6 +575,57 @@ button.ghost.danger {
   color: #fff;
 }
 
+.gantt-bar-delete {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  padding: 0 3px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.25);
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.gantt-bar:hover .gantt-bar-delete {
+  display: flex;
+}
+
+.gantt-bar-delete:hover {
+  background: rgba(220, 38, 38, 0.8);
+  color: #fff;
+}
+
+.gantt-cell-add {
+  display: none;
+  width: 100%;
+  padding: 1px 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  background: transparent;
+  border: 1px dashed #cbd5e1;
+  border-radius: 3px;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.gantt-bars:hover .gantt-cell-add {
+  display: block;
+}
+
+.gantt-cell-add:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #334155;
+}
+
 .gantt-bar-pct {
   font-size: 9px;
   font-weight: 700;

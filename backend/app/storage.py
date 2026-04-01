@@ -257,6 +257,9 @@ def bulk_remove_assignments(
     db: Session,
     data_scientist_id: Optional[int] = None,
     project_id: Optional[int] = None,
+    week_start=None,
+    start_date=None,
+    end_date=None,
     changed_by: str = "system",
 ) -> int:
     """Delete assignments matching the given filters and return the count removed."""
@@ -265,6 +268,12 @@ def bulk_remove_assignments(
         query = query.filter(AssignmentORM.data_scientist_id == data_scientist_id)
     if project_id is not None:
         query = query.filter(AssignmentORM.project_id == project_id)
+    if week_start is not None:
+        query = query.filter(AssignmentORM.week_start == week_start)
+    if start_date is not None:
+        query = query.filter(AssignmentORM.week_start >= start_date)
+    if end_date is not None:
+        query = query.filter(AssignmentORM.week_start <= end_date)
 
     to_delete = query.all()
     for orm in to_delete:
