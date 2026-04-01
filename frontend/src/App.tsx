@@ -729,6 +729,12 @@ function App() {
     setCurrentUser(null);
   };
 
+  useEffect(() => {
+    const handler = () => handleLogout();
+    window.addEventListener("auth:unauthorized", handler);
+    return () => window.removeEventListener("auth:unauthorized", handler);
+  }, []);
+
   const resetMessages = () => {
     setError(null);
     setStatus(null);
