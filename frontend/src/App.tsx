@@ -181,13 +181,18 @@ function App() {
     allocation: 0.25,
   });
 
-  // Bulk assign form
-  const [bulkForm, setBulkForm] = useState<BulkAssignPayload>({
-    data_scientist_id: 0,
-    project_id: 0,
-    start_date: toISODate(startOfWeek(new Date())),
-    end_date: toISODate(startOfWeek(new Date())),
-    allocation: 0.5,
+  // Bulk assign form — end_date defaults 4 weeks ahead of start
+  const [bulkForm, setBulkForm] = useState<BulkAssignPayload>(() => {
+    const start = startOfWeek(new Date());
+    const end = new Date(start);
+    end.setDate(start.getDate() + 4 * 7);
+    return {
+      data_scientist_id: 0,
+      project_id: 0,
+      start_date: toISODate(start),
+      end_date: toISODate(end),
+      allocation: 0.5,
+    };
   });
 
   // Assign mode toggle: single week vs date range
@@ -454,6 +459,10 @@ function App() {
   const handleBulkAssign = async () => {
     if (!bulkForm.data_scientist_id || !bulkForm.project_id) {
       setError("Select a data scientist and project first");
+      return;
+    }
+    if (bulkForm.start_date > bulkForm.end_date) {
+      setError("End date must be on or after start date");
       return;
     }
     try {
@@ -832,11 +841,29 @@ function App() {
                   <div className="btn-group">
                     <button
                       className={`ghost${assignMode === "single" ? " active" : ""}`}
-                      onClick={() => setAssignMode("single")}
+                      onClick={() => {
+                        // Sync person/project/allocation from bulkForm → newAssignment
+                        setNewAssignment((prev) => ({
+                          ...prev,
+                          data_scientist_id: bulkForm.data_scientist_id || prev.data_scientist_id,
+                          project_id: bulkForm.project_id || prev.project_id,
+                          allocation: bulkForm.allocation,
+                        }));
+                        setAssignMode("single");
+                      }}
                     >Single week</button>
                     <button
                       className={`ghost${assignMode === "range" ? " active" : ""}`}
-                      onClick={() => setAssignMode("range")}
+                      onClick={() => {
+                        // Sync person/project/allocation from newAssignment → bulkForm
+                        setBulkForm((prev) => ({
+                          ...prev,
+                          data_scientist_id: newAssignment.data_scientist_id || prev.data_scientist_id,
+                          project_id: newAssignment.project_id || prev.project_id,
+                          allocation: newAssignment.allocation,
+                        }));
+                        setAssignMode("range");
+                      }}
                     >Date range</button>
                   </div>
                   <button

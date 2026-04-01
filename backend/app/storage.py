@@ -269,11 +269,11 @@ def bulk_remove_assignments(
     if project_id is not None:
         query = query.filter(AssignmentORM.project_id == project_id)
     if week_start is not None:
-        query = query.filter(AssignmentORM.week_start == str(week_start))
+        query = query.filter(AssignmentORM.week_start == week_start)
     if start_date is not None:
-        query = query.filter(AssignmentORM.week_start >= str(start_date))
+        query = query.filter(AssignmentORM.week_start >= start_date)
     if end_date is not None:
-        query = query.filter(AssignmentORM.week_start <= str(end_date))
+        query = query.filter(AssignmentORM.week_start <= end_date)
 
     to_delete = query.all()
     for orm in to_delete:
