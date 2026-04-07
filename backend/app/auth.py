@@ -7,12 +7,16 @@ from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
+import passlib.handlers.bcrypt
 from passlib.context import CryptContext
 from pydantic import BaseModel
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import Session
 
 from .database import Base, get_db
+
+# Fix bcrypt backend detection issue in some environments (e.g., Railway containers)
+passlib.handlers.bcrypt.bcrypt.set_backend("builtin")
 
 SECRET_KEY = os.getenv("SECRET_KEY", "changeme-use-a-long-random-string-in-production")
 ALGORITHM = "HS256"
