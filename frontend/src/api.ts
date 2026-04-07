@@ -121,7 +121,9 @@ export const api = {
 
   // Import/export
   exportSchedule: async (): Promise<Blob> => {
-    const response = await fetch(`${API_BASE}/export/csv`);
+    const response = await fetch(`${API_BASE}/export/csv`, {
+      headers: getAuthHeaders(),
+    });
     return response.blob();
   },
 
@@ -135,7 +137,11 @@ export const api = {
   importSchedule: async (file: File): Promise<ImportResult> => {
     const formData = new FormData();
     formData.append("file", file);
-    const response = await fetch(`${API_BASE}/import/schedule`, { method: "POST", body: formData });
+    const response = await fetch(`${API_BASE}/import/schedule`, {
+      method: "POST",
+      body: formData,
+      headers: getAuthHeaders(),
+    });
     if (!response.ok) throw new Error(await response.text() || "Failed to import");
     return response.json() as Promise<ImportResult>;
   },
