@@ -486,3 +486,154 @@ def import_from_file(db: Session, file_path: Path) -> ImportResult:
         created_assignments=created_assignments,
         replaced_existing_assignments=replaced_assignments,
     )
+
+
+# ------------------------------------------------------------------ #
+# Full JSON export/import (store.json format)
+# ------------------------------------------------------------------ #
+
+def export_full_json(db: Session) -> dict:
+    """Export the entire database state as a JSON-serializable dict (store.json format).
+    
+    This can be used to backup data before the app goes offline, and restore it later.
+    """
+    config = get_config(db)
+    
+    data_scientists = []
+    for ds in db.query(DataScientistORM).all():
+        data_scientists.append({
+            "id": ds.id,
+            "name": ds.name,
+            "level": ds.level,
+            "max_concurrent_projects": ds.max_concurrent_projects,
+            "efficiency": ds.efficiency,
+            "notes": ds.notes,
+            "skills": [s.skill for s in (ds.skills or [])],
+        })
+    
+    projects = []
+    for p in db.query(ProjectORM).all():
+        projects.append({
+            "id": p.id,
+            "name": p.name,
+            "start_date": p.start_date.isoformat(),
+            "end_date": p.end_date.isoformat(),
+            "fte_requirements": [
+                {"week_start": w.week_start.isoformat(), "fte": w.fte}
+                for w in sorted(p.fte_requirements, key=lambda x: x.week_start)
+            ],
+            "required_skills": [s.skill for s in (p.required_skills or [])],
+        })
+    
+    assignments = []
+    for a in db.query(AssignmentORM).all():
+        assignments.append({
+            "id": a.id,
+            "data_scientist_id": a.data_scientist_id,
+            "project_id": a.project_id,
+            "week_start": a.week_start.isoformat(),
+            "allocation": a.allocation,
+        })
+    
+    return {
+        "config": {
+            "granularity_weeks": config.granularity_weeks,
+            "horizon_weeks": config.horizon_weeks,
+        },
+        "data_scientists": data_scientists,
+        "projects": projects,
+        "assignments": assignments,
+        "counters": {
+            "data_scientists": max((ds["id"] for ds in data_scientists), default=0),
+            "projects": max((p["id"] for p in projects), default=0),
+            "assignments": max((a["id"] for a in assignments), default=0),
+        },
+    }
+
+
+def import_full_json(db: Session, data: dict) -> ImportResult:
+    """Import data from a store.json-format dict, replacing all existing data.
+    
+    This restores a previously exported database state.
+    """
+    replaced_ds = db.query(DataScientistORM).count()
+    replaced_projects = db.query(ProjectORM).count()
+    replaced_assignments = db.query(AssignmentORM).count()
+
+    # Clear existing data (order matters due to foreign keys)
+    db.query(AuditLogORM).delete()
+    db.query(AssignmentORM).delete()
+    db.query(ProjectWeekORM).delete()
+    db.query(ProjectSkillORM).delete()
+    db.query(ProjectORM).delete()
+    db.query(DataScientistSkillORM).delete()
+    db.query(DataScientistORM).delete()
+    db.commit()
+
+    # Import config
+    cfg = data.get("config", {})
+    config_orm = db.query(ConfigORM).first()
+    if not config_orm:
+        config_orm = ConfigORM(id=1)
+        db.add(config_orm)
+    config_orm.granularity_weeks = cfg.get("granularity_weeks", 1)
+    config_orm.horizon_weeks = cfg.get("horizon_weeks", 26)
+
+    # Import data scientists with ID remapping
+    ds_id_map: Dict[int, int] = {}
+    for ds in data.get("data_scientists", []):
+        orm = DataScientistORM(
+            name=ds["name"],
+            level=ds.get("level", "DS"),
+            max_concurrent_projects=ds.get("max_concurrent_projects", 2),
+            efficiency=ds.get("efficiency", 1.0),
+            notes=ds.get("notes"),
+        )
+        db.add(orm)
+        db.flush()
+        ds_id_map[ds["id"]] = orm.id
+        for skill in ds.get("skills", []):
+            db.add(DataScientistSkillORM(data_scientist_id=orm.id, skill=skill))
+
+    # Import projects with ID remapping
+    project_id_map: Dict[int, int] = {}
+    for p in data.get("projects", []):
+        orm = ProjectORM(
+            name=p["name"],
+            start_date=date.fromisoformat(p["start_date"]),
+            end_date=date.fromisoformat(p["end_date"]),
+        )
+        db.add(orm)
+        db.flush()
+        project_id_map[p["id"]] = orm.id
+        for week in p.get("fte_requirements", []):
+            db.add(ProjectWeekORM(
+                project_id=orm.id,
+                week_start=date.fromisoformat(week["week_start"]),
+                fte=week["fte"],
+            ))
+        for skill in p.get("required_skills", []):
+            db.add(ProjectSkillORM(project_id=orm.id, skill=skill))
+
+    # Import assignments
+    created_assignments = 0
+    for a in data.get("assignments", []):
+        new_ds_id = ds_id_map.get(a["data_scientist_id"])
+        new_proj_id = project_id_map.get(a["project_id"])
+        if new_ds_id and new_proj_id:
+            db.add(AssignmentORM(
+                data_scientist_id=new_ds_id,
+                project_id=new_proj_id,
+                week_start=date.fromisoformat(a["week_start"]),
+                allocation=a["allocation"],
+            ))
+            created_assignments += 1
+
+    db.commit()
+
+    return ImportResult(
+        created_data_scientists=len(ds_id_map),
+        created_projects=len(project_id_map),
+        created_assignments=created_assignments,
+        replaced_existing_assignments=replaced_assignments,
+    )

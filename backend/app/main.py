@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 import tempfile
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import List, Optional
 
@@ -10,7 +12,7 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse, StreamingResponse
+from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 from sqlalchemy.orm import Session
 
 from . import storage
@@ -27,7 +29,7 @@ from .auth import (
     require_manager,
     verify_password,
 )
-from .database import Base, engine, get_db
+from .database import Base, engine, get_db, SessionLocal
 from .models import (
     Assignment,
     AssignmentCreate,
@@ -45,11 +47,18 @@ from .models import (
     ProjectCreate,
 )
 from .agent import AgentRequest, AgentResponse, run_agent
+from .seed_db import seed
 
-# Create all tables on startup
-Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Staffing Scheduler", version="0.2.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Startup: create tables and seed from store.json if database is empty."""
+    Base.metadata.create_all(bind=engine)
+    seed()  # Only seeds if database is empty
+    yield
+
+
+app = FastAPI(title="Staffing Scheduler", version="0.2.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -276,6 +285,36 @@ def export_schedule(db: Session = Depends(get_db)) -> StreamingResponse:
         media_type="text/csv",
         headers={"Content-Disposition": 'attachment; filename="schedule.csv"'},
     )
+
+
+@app.get("/export/json")
+def export_json(db: Session = Depends(get_db)) -> JSONResponse:
+    """Export the full database state as JSON (store.json format).
+    
+    Use this to backup your data before the app goes offline.
+    Save the response as store.json and commit to your repo to persist changes.
+    """
+    data = storage.export_full_json(db)
+    return JSONResponse(
+        content=data,
+        headers={"Content-Disposition": 'attachment; filename="store.json"'},
+    )
+
+
+@app.post("/import/json", response_model=ImportResult)
+async def import_json(file: UploadFile = File(...), db: Session = Depends(get_db), _: UserORM = Depends(require_manager)) -> ImportResult:
+    """Import data from a store.json file, replacing all existing data.
+    
+    Use this to restore a previously exported database state.
+    """
+    try:
+        contents = await file.read()
+        data = json.loads(contents.decode("utf-8"))
+        return storage.import_full_json(db, data)
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=400, detail=f"Invalid JSON: {exc}")
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @app.post("/agent/chat", response_model=AgentResponse)

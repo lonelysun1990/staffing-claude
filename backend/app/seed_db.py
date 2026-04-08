@@ -10,7 +10,9 @@ from .orm_models import (
     AssignmentORM,
     ConfigORM,
     DataScientistORM,
+    DataScientistSkillORM,
     ProjectORM,
+    ProjectSkillORM,
     ProjectWeekORM,
 )
 
@@ -46,6 +48,8 @@ def seed():
             db.add(orm)
             db.flush()
             ds_id_map[ds["id"]] = orm.id
+            for skill in ds.get("skills", []):
+                db.add(DataScientistSkillORM(data_scientist_id=orm.id, skill=skill))
 
         # Projects
         project_id_map: dict[int, int] = {}
@@ -64,6 +68,8 @@ def seed():
                     week_start=date.fromisoformat(week["week_start"]),
                     fte=week["fte"],
                 ))
+            for skill in p.get("required_skills", []):
+                db.add(ProjectSkillORM(project_id=orm.id, skill=skill))
 
         # Assignments
         for a in data.get("assignments", []):
