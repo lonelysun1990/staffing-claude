@@ -302,7 +302,7 @@ def export_json(db: Session = Depends(get_db)) -> JSONResponse:
 
 
 @app.post("/import/json", response_model=ImportResult)
-async def import_json(file: UploadFile = File(...), db: Session = Depends(get_db), _: UserORM = Depends(require_manager)) -> ImportResult:
+async def import_json(file: UploadFile = File(...), db: Session = Depends(get_db)) -> ImportResult:
     """Import data from a store.json file, replacing all existing data.
     
     Use this to restore a previously exported database state.
