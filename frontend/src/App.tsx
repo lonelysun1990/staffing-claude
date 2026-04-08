@@ -541,6 +541,33 @@ function App() {
     }
   };
 
+  const handleImportJson = async (file?: File | null) => {
+    if (!file) return;
+    try {
+      const result = await api.importJson(file);
+      setImportResult(result);
+      await loadData();
+      setStatus("Imported JSON backup");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to import JSON file");
+    }
+  };
+
+  const handleExportJson = async () => {
+    try {
+      const blob = await api.exportJson();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "store.json";
+      link.click();
+      URL.revokeObjectURL(url);
+      setStatus("Exported JSON backup");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to export JSON");
+    }
+  };
+
   const handleConfigUpdate = async (updates: Partial<Config>) => {
     try {
       const updated = await api.updateConfig(updates);
@@ -1788,9 +1815,35 @@ function App() {
             <header className="panel__header">
               <div>
                 <p className="eyebrow">Data exchange</p>
-                <h2>Import or export schedules</h2>
+                <h2>Import or export data</h2>
               </div>
-              <div className="actions">
+            </header>
+
+            <div className="card">
+              <h3>Full Backup (JSON)</h3>
+              <p className="muted">
+                Export or restore the complete database state including all data scientists, projects, assignments, and settings.
+                Use this to backup your data before going offline, or to restore from a previous backup.
+              </p>
+              <div className="actions" style={{ marginTop: "1rem" }}>
+                <button className="secondary" onClick={handleExportJson}>Export JSON</button>
+                <label className="file-button">
+                  Import JSON
+                  <input type="file" accept=".json"
+                    onChange={(e) => handleImportJson(e.target.files?.[0])} />
+                </label>
+              </div>
+            </div>
+
+            <div className="card">
+              <h3>Schedule Import (CSV/Excel)</h3>
+              <p className="muted">
+                Import assignments from a spreadsheet. This will replace all existing data.
+                Required columns: <code>week_start</code>, <code>data_scientist</code>,{" "}
+                <code>project</code>, <code>allocation</code>. Optional: <code>level</code>,{" "}
+                <code>efficiency</code>, <code>project_start</code>, <code>project_end</code>, <code>fte</code>.
+              </p>
+              <div className="actions" style={{ marginTop: "1rem" }}>
                 <button className="secondary" onClick={handleExport}>Export CSV</button>
                 <label className="file-button">
                   Import CSV/Excel
@@ -1798,26 +1851,19 @@ function App() {
                     onChange={(e) => handleImport(e.target.files?.[0])} />
                 </label>
               </div>
-            </header>
-            <div className="card">
-              <h3>Template</h3>
-              <p className="muted">
-                Required columns: <code>week_start</code>, <code>data_scientist</code>,{" "}
-                <code>project</code>, <code>allocation</code>. Optional: <code>level</code>,{" "}
-                <code>efficiency</code>, <code>project_start</code>, <code>project_end</code>, <code>fte</code>.
-              </p>
-              {importResult && (
-                <div className="import-result">
-                  <p className="eyebrow">Import summary</p>
-                  <ul>
-                    <li>Assignments created: {importResult.created_assignments}</li>
-                    <li>New data scientists: {importResult.created_data_scientists}</li>
-                    <li>New projects: {importResult.created_projects}</li>
-                    <li>Replaced: {importResult.replaced_existing_assignments}</li>
-                  </ul>
-                </div>
-              )}
             </div>
+
+            {importResult && (
+              <div className="card import-result">
+                <p className="eyebrow">Import summary</p>
+                <ul>
+                  <li>Assignments created: {importResult.created_assignments}</li>
+                  <li>New data scientists: {importResult.created_data_scientists}</li>
+                  <li>New projects: {importResult.created_projects}</li>
+                  <li>Replaced: {importResult.replaced_existing_assignments}</li>
+                </ul>
+              </div>
+            )}
           </section>
         )}
       </main>

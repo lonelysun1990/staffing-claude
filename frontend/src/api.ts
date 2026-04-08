@@ -127,6 +127,25 @@ export const api = {
     return response.blob();
   },
 
+  exportJson: async (): Promise<Blob> => {
+    const response = await fetch(`${API_BASE}/export/json`, {
+      headers: getAuthHeaders(),
+    });
+    return response.blob();
+  },
+
+  importJson: async (file: File): Promise<ImportResult> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await fetch(`${API_BASE}/import/json`, {
+      method: "POST",
+      body: formData,
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error(await response.text() || "Failed to import JSON");
+    return response.json() as Promise<ImportResult>;
+  },
+
   sendAgentMessage: (messages: ChatMessage[]): Promise<AgentResponse> =>
     request("/agent/chat", {
       method: "POST",
