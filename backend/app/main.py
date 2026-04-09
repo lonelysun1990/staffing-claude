@@ -63,13 +63,20 @@ from .seed_db import seed
 
 
 def bootstrap_admin(db: Session) -> None:
-    """If ADMIN_USERNAME + ADMIN_PASSWORD env vars are set, ensure that admin user exists."""
+    """Ensure ADMIN_USERNAME is an admin. Creates the user if missing, promotes if exists."""
     username = os.getenv("ADMIN_USERNAME")
     password = os.getenv("ADMIN_PASSWORD")
-    if not username or not password:
+    if not username:
         return
-    if db.query(UserORM).filter(UserORM.username == username).first():
+    existing = db.query(UserORM).filter(UserORM.username == username).first()
+    if existing:
+        if existing.role != "admin":
+            existing.role = "admin"
+            db.commit()
+            print(f"[bootstrap] User '{username}' promoted to admin")
         return
+    if not password:
+        return  # Can't create without a password
     db.add(UserORM(username=username, hashed_password=hash_password(password), role="admin"))
     db.commit()
     print(f"[bootstrap] Admin user '{username}' created from ENV vars")
