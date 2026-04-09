@@ -51,11 +51,6 @@ export interface ChatMessage {
   content: string;
 }
 
-export interface AgentResponse {
-  reply: string;
-  data_changed: boolean;
-}
-
 export type AgentStreamEvent =
   | { type: "text_delta"; delta: string }
   | { type: "tool_call_start"; tool_call_id: string; name: string; args: Record<string, unknown> }
@@ -156,12 +151,6 @@ export const api = {
     return response.json() as Promise<ImportResult>;
   },
 
-  sendAgentMessage: (messages: ChatMessage[]): Promise<AgentResponse> =>
-    request("/agent/chat", {
-      method: "POST",
-      body: JSON.stringify({ messages }),
-    }),
-
   async *streamAgentMessage(messages: ChatMessage[], sessionId?: number): AsyncGenerator<AgentStreamEvent> {
     const response = await fetch(`${API_BASE}/agent/chat/stream`, {
       method: "POST",
@@ -193,6 +182,7 @@ export const api = {
 
   // Sessions
   listSessions: (): Promise<ChatSession[]> => request("/sessions"),
+  createSession: (): Promise<ChatSession> => request("/sessions", { method: "POST" }),
   deleteSession: (id: number): Promise<void> => request(`/sessions/${id}`, { method: "DELETE" }),
   renameSession: (id: number, title: string): Promise<ChatSession> =>
     request(`/sessions/${id}`, { method: "PATCH", body: JSON.stringify({ title }) }),
