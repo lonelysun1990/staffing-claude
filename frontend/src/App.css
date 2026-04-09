@@ -146,6 +146,12 @@
   margin-bottom: 12px;
 }
 
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
 label {
   display: flex;
   flex-direction: column;

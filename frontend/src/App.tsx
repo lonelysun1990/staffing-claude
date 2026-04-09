@@ -1246,9 +1246,6 @@ function App() {
                 <p className="eyebrow">Team roster</p>
                 <h2>Manage data scientists</h2>
               </div>
-              <button className="primary" onClick={handleSaveDataScientist}>
-                {editingDsId ? "Update person" : "Add person"}
-              </button>
             </header>
 
             <div className="card">
@@ -1299,6 +1296,12 @@ function App() {
                   placeholder="e.g. Python, ML, NLP..."
                 />
               </label>
+            </div>
+
+            <div className="form-actions">
+              <button className="primary" onClick={handleSaveDataScientist}>
+                {editingDsId ? "Update person" : "Add person"}
+              </button>
             </div>
 
             <div className="search-bar">
@@ -1364,9 +1367,6 @@ function App() {
                 <p className="eyebrow">Project catalog</p>
                 <h2>Capture FTE needs</h2>
               </div>
-              <button className="primary" onClick={handleSaveProject}>
-                {editingProjectId ? "Update project" : "Add project"}
-              </button>
             </header>
 
             <div className="card">
@@ -1412,6 +1412,12 @@ function App() {
                   placeholder="e.g. Python, ML..."
                 />
               </label>
+            </div>
+
+            <div className="form-actions">
+              <button className="primary" onClick={handleSaveProject}>
+                {editingProjectId ? "Update project" : "Add project"}
+              </button>
             </div>
 
             {/* Auto-suggest DS */}
