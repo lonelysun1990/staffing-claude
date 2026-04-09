@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import tempfile
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -11,6 +12,8 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
+from pydantic import BaseModel
+from sqlalchemy import text as sa_text
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, PlainTextResponse, Response, StreamingResponse
 from sqlalchemy.orm import Session
@@ -21,10 +24,12 @@ from .auth import (
     UserCreate,
     UserORM,
     UserOut,
+    UserUpdate,
     create_access_token,
     get_current_user,
     get_user_or_none,
     hash_password,
+    require_admin,
     require_auth,
     require_manager,
     verify_password,
@@ -57,11 +62,26 @@ from .agent.chat_storage import create_session, get_session
 from .seed_db import seed
 
 
+def bootstrap_admin(db: Session) -> None:
+    """If ADMIN_USERNAME + ADMIN_PASSWORD env vars are set, ensure that admin user exists."""
+    username = os.getenv("ADMIN_USERNAME")
+    password = os.getenv("ADMIN_PASSWORD")
+    if not username or not password:
+        return
+    if db.query(UserORM).filter(UserORM.username == username).first():
+        return
+    db.add(UserORM(username=username, hashed_password=hash_password(password), role="admin"))
+    db.commit()
+    print(f"[bootstrap] Admin user '{username}' created from ENV vars")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Startup: create tables and seed from store.json if database is empty."""
+    """Startup: create tables, seed data, and bootstrap admin if configured."""
     Base.metadata.create_all(bind=engine)
-    seed()  # Only seeds if database is empty
+    seed()
+    with SessionLocal() as db:
+        bootstrap_admin(db)
     yield
 
 
@@ -88,7 +108,10 @@ def register(payload: UserCreate, db: Session = Depends(get_db)) -> UserOut:
     existing = db.query(UserORM).filter(UserORM.username == payload.username).first()
     if existing:
         raise HTTPException(status_code=400, detail="Username already taken")
-    user = UserORM(username=payload.username, hashed_password=hash_password(payload.password), role=payload.role)
+    # First user in an empty table automatically becomes admin
+    is_first = db.query(UserORM).count() == 0
+    role = "admin" if is_first else payload.role
+    user = UserORM(username=payload.username, hashed_password=hash_password(payload.password), role=role)
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -107,6 +130,73 @@ def login(username: str = Form(...), password: str = Form(...), db: Session = De
 @app.get("/auth/me", response_model=UserOut)
 def me(current_user: UserORM = Depends(require_auth)) -> UserOut:
     return UserOut(id=current_user.id, username=current_user.username, role=current_user.role)
+
+
+# User management (admin only) ----------------------------------------------- #
+
+@app.get("/users", response_model=List[UserOut])
+def list_users(
+    db: Session = Depends(get_db),
+    _admin: UserORM = Depends(require_admin),
+) -> List[UserOut]:
+    users = db.query(UserORM).order_by(UserORM.id).all()
+    return [UserOut(id=u.id, username=u.username, role=u.role) for u in users]
+
+
+@app.post("/users", response_model=UserOut, status_code=201)
+def admin_create_user(
+    payload: UserCreate,
+    db: Session = Depends(get_db),
+    _admin: UserORM = Depends(require_admin),
+) -> UserOut:
+    if db.query(UserORM).filter(UserORM.username == payload.username).first():
+        raise HTTPException(status_code=400, detail="Username already taken")
+    user = UserORM(
+        username=payload.username,
+        hashed_password=hash_password(payload.password),
+        role=payload.role,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return UserOut(id=user.id, username=user.username, role=user.role)
+
+
+@app.patch("/users/{user_id}", response_model=UserOut)
+def update_user(
+    user_id: int,
+    payload: UserUpdate,
+    db: Session = Depends(get_db),
+    admin: UserORM = Depends(require_admin),
+) -> UserOut:
+    user = db.query(UserORM).filter(UserORM.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.id == admin.id and payload.role and payload.role != "admin":
+        raise HTTPException(status_code=400, detail="Cannot change your own role")
+    if payload.role:
+        user.role = payload.role
+    if payload.password:
+        user.hashed_password = hash_password(payload.password)
+    db.commit()
+    db.refresh(user)
+    return UserOut(id=user.id, username=user.username, role=user.role)
+
+
+@app.delete("/users/{user_id}", status_code=204, response_class=Response)
+def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    admin: UserORM = Depends(require_admin),
+) -> Response:
+    user = db.query(UserORM).filter(UserORM.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.id == admin.id:
+        raise HTTPException(status_code=400, detail="Cannot delete your own account")
+    db.delete(user)
+    db.commit()
+    return Response(status_code=204)
 
 
 # Config -------------------------------------------------------------------- #
@@ -514,3 +604,45 @@ async def import_schedule(file: UploadFile = File(...), db: Session = Depends(ge
         if "tmp_path" in locals() and tmp_path.exists():
             tmp_path.unlink()
     return result
+
+
+# ---------------------------------------------------------------------------
+# DB Console (admin only — read-only SQL queries)
+# ---------------------------------------------------------------------------
+
+class ConsoleQuery(BaseModel):
+    sql: str
+
+
+class ConsoleResult(BaseModel):
+    columns: List[str]
+    rows: List[List]
+    row_count: int
+
+
+@app.post("/console/query", response_model=ConsoleResult)
+def console_query(
+    body: ConsoleQuery,
+    db: Session = Depends(get_db),
+    _admin: UserORM = Depends(require_admin),
+) -> ConsoleResult:
+    """Execute a read-only SQL query and return column names + rows."""
+    sql = body.sql.strip()
+    if not sql:
+        raise HTTPException(status_code=400, detail="Empty query")
+
+    # Reject any statement that isn't a SELECT / SHOW / PRAGMA / EXPLAIN / WITH
+    first_word = sql.split()[0].upper()
+    if first_word not in ("SELECT", "SHOW", "PRAGMA", "EXPLAIN", "WITH", "\\dt", "\\d"):
+        raise HTTPException(
+            status_code=400,
+            detail="Only read-only queries are allowed (SELECT, SHOW, PRAGMA, EXPLAIN, WITH)",
+        )
+
+    try:
+        result = db.execute(sa_text(sql))
+        columns = list(result.keys())
+        rows = [list(row) for row in result.fetchall()]
+        return ConsoleResult(columns=columns, rows=rows, row_count=len(rows))
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
