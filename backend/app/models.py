@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from pydantic import BaseModel, Field, FieldValidationInfo, field_validator
 
@@ -173,7 +173,7 @@ class ChatMessageOut(BaseModel):
     id: int
     role: str
     content: Optional[str]
-    metadata: Optional[dict]
+    metadata: Optional[Any]
     created_at: str
 
 

@@ -111,7 +111,7 @@ export interface ChatMessageOut {
   id: number;
   role: string;
   content: string | null;
-  metadata: Record<string, unknown> | null;
+  metadata: Record<string, unknown> | unknown[] | null;
   created_at: string;
 }
 
