@@ -835,6 +835,13 @@ function App() {
     return () => window.removeEventListener("auth:unauthorized", handler);
   }, []);
 
+  // Rehydrate currentUser on page load if a token is already stored
+  useEffect(() => {
+    if (authToken && !currentUser) {
+      api.me(authToken).then((u) => setCurrentUser({ username: u.username, role: u.role })).catch(() => handleLogout());
+    }
+  }, []);
+
   const resetMessages = () => {
     setError(null);
     setStatus(null);
