@@ -13,7 +13,6 @@ import {
   DataScientist,
   DataScientistPayload,
   ImportResult,
-  MemoryItem,
   Project,
   ProjectPayload,
   User,
@@ -241,8 +240,6 @@ function App() {
   const [consoleResult, setConsoleResult] = useState<{ columns: string[]; rows: unknown[][]; row_count: number } | null>(null);
   const [consoleError, setConsoleError] = useState<string | null>(null);
   const [consoleLoading, setConsoleLoading] = useState(false);
-  const [memories, setMemories] = useState<MemoryItem[]>([]);
-  const [memoriesLoaded, setMemoriesLoaded] = useState(false);
 
   const weeks = useMemo(() => {
     const slots: string[] = [];
@@ -628,20 +625,6 @@ function App() {
     }
   };
 
-  const loadMemories = async () => {
-    try {
-      setMemories(await api.listMemories());
-      setMemoriesLoaded(true);
-    } catch { /* ignore */ }
-  };
-
-  const handleDeleteMemory = async (id: number) => {
-    try {
-      await api.deleteMemory(id);
-      setMemories((prev) => prev.filter((m) => m.id !== id));
-    } catch { /* ignore */ }
-  };
-
   const handleConsoleRun = async () => {
     const sql = consoleSql.trim();
     if (!sql) return;
@@ -901,7 +884,6 @@ function App() {
               setTab(key as TabKey);
               if (key === "auditLog") handleLoadAuditLogs();
               if (key === "settings") loadUsers();
-              if (key === "console") loadMemories();
             }}
           >
             {label}
@@ -2086,6 +2068,7 @@ function App() {
                 { label: "audit_logs",      sql: "SELECT * FROM audit_logs ORDER BY changed_at DESC LIMIT 50;" },
                 { label: "chat_sessions",   sql: "SELECT * FROM chat_sessions ORDER BY updated_at DESC LIMIT 20;" },
                 { label: "chat_messages",   sql: "SELECT * FROM chat_messages ORDER BY id DESC LIMIT 50;" },
+                { label: "agent_memories",  sql: "SELECT * FROM agent_memories ORDER BY category, key;" },
                 { label: "list tables",     sql: "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name;" },
               ].map(({ label, sql }) => (
                 <button
@@ -2149,53 +2132,6 @@ function App() {
               </div>
             )}
 
-            {/* Long-term memory */}
-            <div className="console-memory">
-              <div className="console-memory__header">
-                <div>
-                  <p className="eyebrow">AI Agent</p>
-                  <h3>Long-term Memory</h3>
-                </div>
-                <button className="secondary" onClick={loadMemories}>
-                  Refresh
-                </button>
-              </div>
-              {memoriesLoaded && memories.length === 0 && (
-                <p className="muted" style={{ fontSize: 13 }}>No memories stored yet.</p>
-              )}
-              {memories.length > 0 && (
-                <div className="table-wrapper">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Category</th>
-                        <th>Key</th>
-                        <th>Value</th>
-                        <th>Confidence</th>
-                        <th>Updated</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {memories.map((m) => (
-                        <tr key={m.id}>
-                          <td><span className="tag small">{m.category}</span></td>
-                          <td className="console-cell">{m.key}</td>
-                          <td className="console-cell" style={{ maxWidth: 360 }}>{m.value}</td>
-                          <td>{(m.confidence * 100).toFixed(0)}%</td>
-                          <td className="muted" style={{ fontSize: 12 }}>{m.updated_at.slice(0, 10)}</td>
-                          <td>
-                            <button className="ghost danger" onClick={() => handleDeleteMemory(m.id)}>
-                              Delete
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
           </section>
         )}
       </main>
