@@ -425,11 +425,11 @@ async def import_json(file: UploadFile = File(...), db: Session = Depends(get_db
 async def agent_chat_stream(
     request: AgentRequest,
     db: Session = Depends(get_db),
-    current_user: Optional[UserORM] = Depends(get_user_or_none),
+    current_user: UserORM = Depends(require_auth),
 ) -> StreamingResponse:
     """Streaming SSE endpoint. Events: text_delta, tool_call_start, tool_result, done, error."""
     return StreamingResponse(
-        run_agent_stream(request, db, user_id=current_user.id if current_user else None),
+        run_agent_stream(request, db, user_id=current_user.id),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
@@ -459,10 +459,9 @@ def list_sessions(
 @app.post("/sessions", response_model=ChatSessionDetail, status_code=201)
 def new_session(
     db: Session = Depends(get_db),
-    current_user: Optional[UserORM] = Depends(get_user_or_none),
+    current_user: UserORM = Depends(require_auth),
 ) -> ChatSessionDetail:
-    user_id = current_user.id if current_user else None
-    s = create_session(db, user_id)
+    s = create_session(db, current_user.id)
     return ChatSessionDetail(
         id=s.id, title=s.title, created_at=s.created_at,
         updated_at=s.updated_at, message_count=s.message_count,

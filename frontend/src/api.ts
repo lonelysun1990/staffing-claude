@@ -159,6 +159,10 @@ export const api = {
       body: JSON.stringify({ messages, session_id: sessionId ?? null }),
     });
     if (!response.ok) {
+      if (response.status === 401) {
+        localStorage.removeItem("auth_token");
+        window.dispatchEvent(new Event("auth:unauthorized"));
+      }
       let detail = response.statusText;
       try { const d = await response.json(); detail = d.detail ?? detail; } catch {}
       throw new Error(detail);
