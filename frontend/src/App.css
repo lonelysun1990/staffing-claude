@@ -1456,3 +1456,25 @@ button.ghost.danger {
   color: #9ca3af;
   font-style: italic;
 }
+
+/* ── Console: long-term memory section ──────────────────────────────────── */
+
+.console-memory {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.console-memory__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.console-memory__header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+}
