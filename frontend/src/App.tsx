@@ -2079,21 +2079,21 @@ function App() {
 
             <div className="console-shortcuts">
               {[
-                "SELECT * FROM data_scientists LIMIT 50;",
-                "SELECT * FROM projects LIMIT 50;",
-                "SELECT * FROM assignments LIMIT 50;",
-                "SELECT * FROM users;",
-                "SELECT * FROM audit_logs ORDER BY changed_at DESC LIMIT 50;",
-                "SELECT * FROM chat_sessions ORDER BY updated_at DESC LIMIT 20;",
-                "SELECT * FROM chat_messages ORDER BY id DESC LIMIT 50;",
-                "SELECT name FROM sqlite_master WHERE type='table';",
-              ].map((q) => (
+                { label: "data_scientists", sql: "SELECT * FROM data_scientists LIMIT 50;" },
+                { label: "projects",        sql: "SELECT * FROM projects LIMIT 50;" },
+                { label: "assignments",     sql: "SELECT * FROM assignments LIMIT 50;" },
+                { label: "users",           sql: "SELECT * FROM users;" },
+                { label: "audit_logs",      sql: "SELECT * FROM audit_logs ORDER BY changed_at DESC LIMIT 50;" },
+                { label: "chat_sessions",   sql: "SELECT * FROM chat_sessions ORDER BY updated_at DESC LIMIT 20;" },
+                { label: "chat_messages",   sql: "SELECT * FROM chat_messages ORDER BY id DESC LIMIT 50;" },
+                { label: "list tables",     sql: "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name;" },
+              ].map(({ label, sql }) => (
                 <button
-                  key={q}
+                  key={label}
                   className="ghost console-shortcut"
-                  onClick={() => setConsoleSql(q)}
+                  onClick={() => setConsoleSql(sql)}
                 >
-                  {q.replace(/SELECT \* FROM (\w+).*/i, "$1").replace(/SELECT (.*) FROM.*/i, "$1")}
+                  {label}
                 </button>
               ))}
             </div>
