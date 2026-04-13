@@ -57,7 +57,7 @@ export type AgentStreamEvent =
   | { type: "tool_call_start"; tool_call_id: string; name: string; args: Record<string, unknown> }
   | { type: "tool_result"; tool_call_id: string; name: string; result: string; ok: boolean }
   | { type: "done"; data_changed: boolean; session_id: number | null }
-  | { type: "error"; message: string };
+  | { type: "error"; message: string; traceback?: string };
 
 export const api = {
   // Auth

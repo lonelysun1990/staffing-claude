@@ -1361,6 +1361,57 @@ button.ghost.danger {
   line-height: 1.5;
 }
 
+/* ── Agent error ────────────────────────────────────────────────────────── */
+
+.chat-error {
+  align-self: flex-start;
+  max-width: 88%;
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #dc2626;
+}
+
+.chat-error__icon {
+  margin-right: 6px;
+  font-size: 11px;
+}
+
+.chat-error__message {
+  word-break: break-word;
+}
+
+.chat-error__details {
+  margin-top: 6px;
+}
+
+.chat-error__details summary {
+  cursor: pointer;
+  font-size: 11px;
+  color: #ef4444;
+  user-select: none;
+}
+
+.chat-error__details summary:hover {
+  text-decoration: underline;
+}
+
+.chat-error__trace {
+  margin-top: 6px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-size: 10px;
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", monospace;
+  color: #7f1d1d;
+  background: #fef2f2;
+  border-radius: 4px;
+  padding: 6px 8px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
 /* ── Streaming cursor ───────────────────────────────────────────────────── */
 
 .streaming-cursor {

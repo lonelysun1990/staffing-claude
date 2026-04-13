@@ -20,6 +20,11 @@ type MessageItem =
       result: string | null; // null = still running
       ok: boolean;
       collapsed: boolean;
+    }
+  | {
+      kind: "error";
+      message: string;
+      traceback?: string;
     };
 
 // ── Tool name display labels ─────────────────────────────────────────────────
@@ -230,10 +235,10 @@ export function ChatPanel({ isOpen, onClose, onDataChanged }: ChatPanelProps) {
           break;
         } else if (event.type === "error") {
           localItems = [...localItems, {
-            kind: "message",
-            role: "assistant",
-            content: `Error: ${(event as AgentStreamEvent & { type: "error" }).message}`,
-          }];
+            kind: "error",
+            message: event.message,
+            traceback: event.traceback,
+          } as MessageItem];
           setItems([...localItems]);
           setStreamingText("");
           break;
@@ -316,6 +321,20 @@ export function ChatPanel({ isOpen, onClose, onDataChanged }: ChatPanelProps) {
                 return (
                   <div key={idx} className={`chat-message ${item.role}`}>
                     {item.content}
+                  </div>
+                );
+              }
+              if (item.kind === "error") {
+                return (
+                  <div key={idx} className="chat-error">
+                    <span className="chat-error__icon">✗</span>
+                    <span className="chat-error__message">{item.message}</span>
+                    {item.traceback && (
+                      <details className="chat-error__details">
+                        <summary>Show full trace</summary>
+                        <pre className="chat-error__trace">{item.traceback}</pre>
+                      </details>
+                    )}
                   </div>
                 );
               }

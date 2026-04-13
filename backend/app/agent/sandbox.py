@@ -37,7 +37,13 @@ if __name__ == "__main__":
             capture_output=True,
             text=True,
             timeout=TIMEOUT_SECONDS,
-            env={"PATH": "/usr/bin:/bin", "HOME": "/tmp"},
+            env={
+                "PATH": "/usr/bin:/bin",
+                "HOME": "/tmp",
+                "LD_LIBRARY_PATH": "/usr/lib:/usr/lib64:/lib:/lib64",
+                "LANG": "C.UTF-8",
+                "LC_ALL": "C.UTF-8",
+            },
         )
         if proc.returncode == 0 and proc.stdout.strip():
             return json.loads(proc.stdout.strip())

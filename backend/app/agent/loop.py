@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from .chat_storage import (
     auto_title_session,
+    create_session,
     get_session,
     load_session_messages,
     maybe_summarize,
@@ -63,30 +64,26 @@ async def run_agent_stream(
     client = AsyncOpenAI(api_key=api_key)
 
     # ---- Session setup ----
-    session = None
+    # Always persist conversations: load existing session or auto-create a new one.
     if request.session_id:
         session = get_session(db, request.session_id, user_id)
         if session is None:
             yield sse("error", {"message": f"Session {request.session_id} not found."})
             return
-
-    # Build the initial messages list
-    if session:
-        # Load history from DB; only the last message from request is the new user message
-        new_user_msg = request.messages[-1]
-        loaded = load_session_messages(db, session)
-        messages: list[dict] = [
-            {"role": "system", "content": build_system_prompt(db, user_id, session.context_summary)}
-        ]
-        messages += loaded
-        messages.append({"role": new_user_msg.role, "content": new_user_msg.content})
-        # Persist the new user message immediately
-        save_message(db, session, "user", new_user_msg.content)
-        auto_title_session(db, session, new_user_msg.content)
     else:
-        # Stateless fallback — original behavior
-        messages = [{"role": "system", "content": build_system_prompt(db)}]
-        messages += [{"role": m.role, "content": m.content} for m in request.messages]
+        session = create_session(db, user_id)
+
+    # Build the initial messages list from DB history
+    new_user_msg = request.messages[-1]
+    loaded = load_session_messages(db, session)
+    messages: list[dict] = [
+        {"role": "system", "content": build_system_prompt(db, user_id, session.context_summary)}
+    ]
+    messages += loaded
+    messages.append({"role": new_user_msg.role, "content": new_user_msg.content})
+    # Persist the new user message immediately
+    save_message(db, session, "user", new_user_msg.content)
+    auto_title_session(db, session, new_user_msg.content)
 
     data_changed = False
 
@@ -204,4 +201,5 @@ async def run_agent_stream(
         yield sse("error", {"message": f"Agent reached the maximum of {MAX_ITERATIONS} iterations."})
 
     except Exception as exc:
-        yield sse("error", {"message": f"Agent error: {exc}"})
+        import traceback as _tb
+        yield sse("error", {"message": f"Agent error: {exc}", "traceback": _tb.format_exc()})
