@@ -1199,6 +1199,7 @@ button.ghost.danger {
 
 .chat-message {
   max-width: 88%;
+  flex-shrink: 0;
   padding: 10px 14px;
   border-radius: 14px;
   font-size: 13.5px;
@@ -1280,6 +1281,7 @@ button.ghost.danger {
 
 .tool-step {
   align-self: flex-start;
+  flex-shrink: 0;
   width: 92%;
   border-radius: 8px;
   border: 1px solid #e2e8f0;
@@ -1365,6 +1367,7 @@ button.ghost.danger {
 
 .chat-error {
   align-self: flex-start;
+  flex-shrink: 0;
   max-width: 88%;
   background: #fff5f5;
   border: 1px solid #fecaca;
