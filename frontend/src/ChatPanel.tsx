@@ -20,6 +20,7 @@ type MessageItem =
       result: string | null; // null = still running
       ok: boolean;
       collapsed: boolean;
+      traceback?: string;
     }
   | {
       kind: "error";
@@ -214,7 +215,7 @@ export function ChatPanel({ isOpen, onClose, onDataChanged }: ChatPanelProps) {
         } else if (event.type === "tool_result") {
           updateItem(
             (item) => item.kind === "tool_step" && item.toolCallId === event.tool_call_id,
-            (item) => ({ ...item, result: event.result, ok: event.ok } as MessageItem),
+            (item) => ({ ...item, result: event.result, ok: event.ok, traceback: event.traceback } as MessageItem),
           );
         } else if (event.type === "done") {
           if (localText) {
@@ -352,6 +353,12 @@ export function ChatPanel({ isOpen, onClose, onDataChanged }: ChatPanelProps) {
                   {!item.collapsed && (
                     <div className="tool-step__body">
                       <pre className="tool-step__result">{item.result ?? "Running…"}</pre>
+                      {!item.ok && item.traceback && (
+                        <details className="chat-error__details">
+                          <summary>Show full trace</summary>
+                          <pre className="chat-error__trace">{item.traceback}</pre>
+                        </details>
+                      )}
                     </div>
                   )}
                 </div>

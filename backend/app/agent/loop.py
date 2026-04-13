@@ -177,7 +177,13 @@ async def run_agent_stream(
                     "args": args,
                 })
 
-                result = _dispatch_tool(tc["name"], args, db, user_id=user_id)
+                tool_traceback: str | None = None
+                try:
+                    result = _dispatch_tool(tc["name"], args, db, user_id=user_id)
+                except Exception as tool_exc:
+                    import traceback as _tb
+                    tool_traceback = _tb.format_exc()
+                    result = f"ERROR: {tool_exc}"
 
                 ok = not result.startswith("ERROR:")
                 if result.startswith("OK:") and tc["name"] not in READ_ONLY_TOOLS:
@@ -188,6 +194,7 @@ async def run_agent_stream(
                     "name": tc["name"],
                     "result": result,
                     "ok": ok,
+                    **({"traceback": tool_traceback} if tool_traceback else {}),
                 })
 
                 messages.append({"role": "tool", "tool_call_id": tc["id"], "content": result})

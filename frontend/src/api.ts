@@ -55,7 +55,7 @@ export interface ChatMessage {
 export type AgentStreamEvent =
   | { type: "text_delta"; delta: string }
   | { type: "tool_call_start"; tool_call_id: string; name: string; args: Record<string, unknown> }
-  | { type: "tool_result"; tool_call_id: string; name: string; result: string; ok: boolean }
+  | { type: "tool_result"; tool_call_id: string; name: string; result: string; ok: boolean; traceback?: string }
   | { type: "done"; data_changed: boolean; session_id: number | null }
   | { type: "error"; message: string; traceback?: string };
 
