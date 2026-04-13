@@ -488,6 +488,11 @@ def _execute_list_memories(
 # ---------------------------------------------------------------------------
 
 def _execute_create_dynamic_tool(db: Session, args: dict) -> str:
+    required_fields = ["name", "description", "code"]
+    missing = [f for f in required_fields if f not in args]
+    if missing:
+        return f"ERROR: Missing required fields: {', '.join(missing)}"
+
     name = args["name"]
     if name in RESERVED_NAMES:
         return f"ERROR: '{name}' is a reserved tool name and cannot be used"
@@ -496,9 +501,12 @@ def _execute_create_dynamic_tool(db: Session, args: dict) -> str:
     err = validate_tool_code(args["code"], name)
     if err:
         return f"ERROR: {err}"
+
+    parameters_schema = args.get("parameters_schema", {"type": "object", "properties": {}})
+
     _, msg = create_dynamic_tool(
         db, name=name, description=args["description"],
-        parameters_schema=args["parameters_schema"],
+        parameters_schema=parameters_schema,
         code=args["code"], requirements=args.get("requirements", []),
         tags=args.get("tags"),
     )

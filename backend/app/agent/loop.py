@@ -21,7 +21,7 @@ from .context import build_system_prompt
 from .executor import _dispatch_tool
 from .models import AgentRequest
 from .sse import sse
-from .tools import READ_ONLY_TOOLS, TOOLS
+from .tools import READ_ONLY_TOOLS, get_all_tools
 
 MODEL = "gpt-4o"
 MAX_ITERATIONS = 8
@@ -90,12 +90,15 @@ async def run_agent_stream(
 
     data_changed = False
 
+    # Build tools list including any ready dynamic tools
+    tools_for_model = get_all_tools(db)
+
     try:
         for iteration in range(MAX_ITERATIONS):
             # ---- Single model call with streaming ----
             stream = await client.chat.completions.create(
                 model=MODEL,
-                tools=TOOLS,
+                tools=tools_for_model,
                 messages=messages,
                 stream=True,
             )

@@ -440,3 +440,35 @@ READ_ONLY_TOOLS: frozenset[str] = frozenset({
     "list_memories",
     "list_dynamic_tools",
 })
+
+
+def get_all_tools(db) -> list[dict]:
+    """
+    Build the complete tools list including dynamic tools.
+    
+    Static tools from TOOLS are always included. Dynamic tools that have
+    env_status='ready' are appended so OpenAI can call them directly by name.
+    """
+    import json as _json
+    from .dynamic_tools import list_dynamic_tools
+
+    all_tools = TOOLS.copy()
+
+    for tool in list_dynamic_tools(db):
+        if tool.env_status != "ready":
+            continue
+        try:
+            params = _json.loads(tool.parameters_schema)
+        except (TypeError, _json.JSONDecodeError):
+            params = {"type": "object", "properties": {}}
+
+        all_tools.append({
+            "type": "function",
+            "function": {
+                "name": tool.name,
+                "description": tool.description,
+                "parameters": params,
+            },
+        })
+
+    return all_tools
