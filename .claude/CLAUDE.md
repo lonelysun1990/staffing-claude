@@ -68,3 +68,7 @@ Path alias `@/*` → `src/*` is configured in tsconfig/vite.
 
 ### Deployment
 Deployed on Railway.com — see `backend/railway.toml` and `backend/Procfile`.
+
+## Development Guidelines
+
+When developing new features, include appropriate tests to ensure the feature works. Add them to `backend/tests/` following the existing test patterns.
