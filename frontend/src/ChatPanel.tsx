@@ -207,7 +207,7 @@ export function ChatPanel({ isOpen, onClose, onDataChanged }: ChatPanelProps) {
             args: event.args,
             result: null,
             ok: true,
-            collapsed: true,
+            collapsed: false,
           };
           localItems = [...localItems, step];
           setItems([...localItems]);
