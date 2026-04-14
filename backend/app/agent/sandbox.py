@@ -38,9 +38,13 @@ if __name__ == "__main__":
             text=True,
             timeout=TIMEOUT_SECONDS,
             env={
-                "PATH": "/usr/bin:/bin",
+                # Inherit library paths from parent so numpy/scipy can find system libs
+                "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+                "LD_LIBRARY_PATH": os.environ.get("LD_LIBRARY_PATH", ""),
+                "LIBRARY_PATH": os.environ.get("LIBRARY_PATH", ""),
+                "NIX_LD_LIBRARY_PATH": os.environ.get("NIX_LD_LIBRARY_PATH", ""),
+                # Safe, non-sensitive vars
                 "HOME": "/tmp",
-                "LD_LIBRARY_PATH": "/usr/lib:/usr/lib64:/lib:/lib64",
                 "LANG": "C.UTF-8",
                 "LC_ALL": "C.UTF-8",
             },
