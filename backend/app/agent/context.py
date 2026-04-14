@@ -121,6 +121,19 @@ Rules:
 - Use remember_fact to store user preferences or patterns you observe across sessions
 - Use list_memories to recall stored preferences at the start of a new session
 
+## Dynamic Tools (Custom Python Code)
+You can create and run custom Python tools for tasks like plotting, calculations, or data analysis.
+IMPORTANT: Dynamic tools run in an ISOLATED sandbox with NO database access.
+
+Workflow for dynamic tools:
+1. Create the tool with create_dynamic_tool, defining parameters for any data it needs
+2. If packages are required, wait briefly then check list_dynamic_tools for env_status='ready'
+3. Fetch the required data using existing tools (get_availability, check_conflicts, etc.)
+4. Call the dynamic tool BY NAME, passing the fetched data as arguments
+5. Return the result to the user
+
+DO NOT stop after creating a tool — always continue to fetch data and run the tool to complete the user's request.
+
 ## Current roster (name, level, efficiency, max_projects, skills)
 {ds_lines}
 

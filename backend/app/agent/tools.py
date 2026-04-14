@@ -430,6 +430,24 @@ TOOLS: list[dict] = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "check_dynamic_tool_status",
+            "description": (
+                "Wait for a dynamic tool's environment to be ready. "
+                "Call this after create_dynamic_tool to wait for package installation to complete. "
+                "Returns when the tool is ready, failed, or timeout (max 60 seconds)."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string", "description": "Name of the dynamic tool to check"},
+                },
+                "required": ["name"],
+            },
+        },
+    },
 ]
 
 # Tools that do not modify data — used by the loop to decide whether to set data_changed=True.
@@ -439,6 +457,7 @@ READ_ONLY_TOOLS: frozenset[str] = frozenset({
     "suggest_data_scientists",
     "list_memories",
     "list_dynamic_tools",
+    "check_dynamic_tool_status",
 })
 
 

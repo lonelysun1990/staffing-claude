@@ -1,6 +1,7 @@
 import ast
 import json
 import threading
+import time
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -85,13 +86,21 @@ def create_dynamic_tool(
             args=(tool.id, tool.name, requirements),
             daemon=True,
         ).start()
+        param_names = list(parameters_schema.get('properties', {}).keys())
         msg = (
-            f"Tool '{name}' created. Installing {len(requirements)} package(s) "
-            f"in background: {', '.join(requirements)}. "
-            f"Check status with list_dynamic_tools before running."
+            f"Tool '{name}' created. Installing {len(requirements)} package(s) in background: {', '.join(requirements)}. "
+            f"NEXT: Call check_dynamic_tool_status('{name}') to wait for installation to complete. "
+            f"Once ready, fetch required data and call {name}(). "
+            f"Parameters: {param_names or ['none']}"
         )
     else:
-        msg = f"Tool '{name}' created and ready (no additional packages needed)."
+        param_names = list(parameters_schema.get('properties', {}).keys())
+        msg = (
+            f"Tool '{name}' created and ready (no packages to install). "
+            f"NEXT: Fetch any required data using existing tools (e.g., get_availability), "
+            f"then call {name}() passing that data. "
+            f"Parameters: {param_names or ['none']}"
+        )
 
     return tool, msg
 
@@ -139,3 +148,78 @@ def ensure_tool_environments() -> None:
             args=(tool_id, tool_name, reqs),
             daemon=True,
         ).start()
+
+
+def wait_for_tool_ready(
+    db: Session,
+    tool_name: str,
+    max_wait_seconds: int = 60,
+    poll_interval: float = 3.0,
+) -> tuple[str, Optional[str]]:
+    """
+    Poll until tool's env_status is no longer 'pending' or timeout.
+    Returns (status, error_message).
+    status is one of: 'ready', 'failed', 'pending' (if timeout), 'not_found'
+    """
+    tool = get_dynamic_tool_by_name(db, tool_name)
+    if not tool:
+        return ("not_found", f"Tool '{tool_name}' does not exist")
+
+    elapsed = 0.0
+    while tool.env_status == "pending" and elapsed < max_wait_seconds:
+        time.sleep(poll_interval)
+        elapsed += poll_interval
+        db.refresh(tool)
+
+    if tool.env_status == "ready":
+        return ("ready", None)
+    elif tool.env_status == "failed":
+        return ("failed", tool.env_error)
+    else:
+        return ("pending", f"Still installing after {max_wait_seconds}s")
+
+
+def ensure_tool_environment_ready(
+    db: Session,
+    tool: DynamicToolORM,
+    max_wait_seconds: int = 30,
+) -> tuple[bool, str]:
+    """
+    Ensure a tool's venv exists and is ready. Handles:
+    1. env_status='ready' but venv missing -> rebuild and wait
+    2. env_status='pending' -> wait for completion
+    3. env_status='failed' -> return error
+
+    Returns (is_ready, message).
+    """
+    requirements = json.loads(tool.requirements) if tool.requirements else []
+
+    # Case 1: Status says ready but venv is missing (e.g., after redeploy)
+    if tool.env_status == "ready" and not environment_exists(tool.name):
+        tool.env_status = "pending"
+        tool.env_error = None
+        db.commit()
+
+        # Rebuild in background
+        threading.Thread(
+            target=_setup_env_background,
+            args=(tool.id, tool.name, requirements),
+            daemon=True,
+        ).start()
+
+    # Case 2: Wait if pending
+    if tool.env_status == "pending":
+        status, error = wait_for_tool_ready(db, tool.name, max_wait_seconds)
+        if status == "ready":
+            return (True, "Environment ready")
+        elif status == "failed":
+            return (False, f"Environment setup failed: {error}")
+        else:
+            return (False, f"Environment still installing. Try again in a moment.")
+
+    # Case 3: Already ready
+    if tool.env_status == "ready":
+        return (True, "Environment ready")
+
+    # Case 4: Failed
+    return (False, f"Environment setup failed: {tool.env_error}")
