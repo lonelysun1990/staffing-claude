@@ -86,11 +86,18 @@ def bootstrap_admin(db: Session) -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup: create tables, seed data, and bootstrap admin if configured."""
-    Base.metadata.create_all(bind=engine)
-    seed()
-    with SessionLocal() as db:
-        bootstrap_admin(db)
-    ensure_tool_environments()  # spawns background threads; returns immediately
+    from .database import DATABASE_URL
+    print(f"[startup] DATABASE_URL scheme: {DATABASE_URL.split('@')[0].split('://')[0] if '@' in DATABASE_URL else DATABASE_URL[:40]}")
+    try:
+        Base.metadata.create_all(bind=engine)
+        seed()
+        with SessionLocal() as db:
+            bootstrap_admin(db)
+        ensure_tool_environments()  # spawns background threads; returns immediately
+        print("[startup] DB init complete")
+    except Exception as e:
+        print(f"[startup] ERROR: DB init failed — {e}")
+        print("[startup] App will start but all DB operations will fail until DATABASE_URL is fixed")
     yield
 
 
@@ -106,8 +113,13 @@ app.add_middleware(
 
 
 @app.get("/health", response_class=PlainTextResponse)
-def health() -> str:
-    return "ok"
+def health(db: Session = Depends(get_db)) -> str:
+    try:
+        db.execute(sa_text("SELECT 1"))
+        return "ok"
+    except Exception as e:
+        from fastapi import Response
+        return PlainTextResponse(f"db_error: {e}", status_code=503)
 
 
 # Auth ----------------------------------------------------------------------- #

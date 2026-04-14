@@ -27,8 +27,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN mkdir -p /sandbox-envs && chmod 755 /sandbox-envs
 ENV SANDBOX_ENVS_DIR=/sandbox-envs
 
-# Copy application code
+# Copy application code (venv, .env, __pycache__ excluded via .dockerignore)
 COPY . .
 
-# Railway injects $PORT at runtime
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
