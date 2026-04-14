@@ -99,18 +99,31 @@ export function ChatPanel({ isOpen, onClose, onDataChanged }: ChatPanelProps) {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [items, streaming, streamingText]);
 
-  // Load session list when panel opens
+  // Load session list when panel opens; auto-select most recent if none active
   useEffect(() => {
     if (isOpen) {
-      loadSessions();
+      loadSessions(true);
     }
   }, [isOpen]);
 
-  const loadSessions = async () => {
+  const loadSessions = async (autoSelectIfNone = false) => {
     setLoadingSessions(true);
     try {
       const list = await api.listSessions();
       setSessions(list);
+      // Auto-load the most recent session when opening the panel with no active session
+      if (autoSelectIfNone && list.length > 0) {
+        setActiveSessionId((current) => {
+          if (current === null) {
+            const first = list[0];
+            api.getSessionMessages(first.id)
+              .then((msgs) => setItems(dbMessagesToItems(msgs)))
+              .catch(() => {});
+            return first.id;
+          }
+          return current;
+        });
+      }
     } catch {
       // ignore — sessions just won't show
     } finally {
