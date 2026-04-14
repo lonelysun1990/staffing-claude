@@ -1058,6 +1058,26 @@ button.ghost.danger {
   flex-shrink: 0;
 }
 
+.chat-panel__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chat-panel__export {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 3px 10px;
+  border-radius: 4px;
+}
+
+.chat-panel__export:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
 .chat-panel__close {
   background: none;
   border: none;

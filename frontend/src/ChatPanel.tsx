@@ -277,11 +277,56 @@ export function ChatPanel({ isOpen, onClose, onDataChanged }: ChatPanelProps) {
 
   const activeSession = sessions.find((s) => s.id === activeSessionId);
 
+  const handleExport = () => {
+    const title = activeSession?.title ?? "conversation";
+    const lines: string[] = [
+      `Staffing Assistant — ${title}`,
+      `Exported: ${new Date().toLocaleString()}`,
+      "=".repeat(60),
+      "",
+    ];
+    for (const item of items) {
+      if (item.kind === "message") {
+        if (item.role === "user") {
+          lines.push("[You]");
+        } else {
+          lines.push("[Assistant]");
+        }
+        lines.push(item.content, "");
+      } else if (item.kind === "tool_step") {
+        const status = item.result === null ? "running" : item.ok ? "ok" : "error";
+        lines.push(`[Tool: ${item.name}] (${status})`);
+        if (item.result) lines.push(item.result);
+        if (item.traceback) lines.push("--- trace ---", item.traceback, "--- end trace ---");
+        lines.push("");
+      } else if (item.kind === "error") {
+        lines.push("[Error]");
+        lines.push(item.message);
+        if (item.traceback) lines.push("--- trace ---", item.traceback, "--- end trace ---");
+        lines.push("");
+      }
+    }
+    const blob = new Blob([lines.join("\n")], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className={`chat-panel${isOpen ? " open" : ""}`}>
       <div className="chat-panel__header">
         <span>{activeSession?.title ?? "Staffing Assistant"}</span>
-        <button className="chat-panel__close" onClick={onClose} aria-label="Close">✕</button>
+        <div className="chat-panel__header-actions">
+          {items.length > 1 && (
+            <button className="chat-panel__export" onClick={handleExport} title="Export conversation">
+              ↓ Export
+            </button>
+          )}
+          <button className="chat-panel__close" onClick={onClose} aria-label="Close">✕</button>
+        </div>
       </div>
 
       <div className="chat-panel__body">
