@@ -1188,6 +1188,28 @@ button.ghost.danger {
   min-width: 0;
 }
 
+.session-item__export {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.1s, color 0.1s;
+}
+
+.session-item:hover .session-item__export {
+  opacity: 1;
+}
+
+.session-item__export:hover {
+  color: #4f46e5;
+}
+
 .session-item__delete {
   flex-shrink: 0;
   background: none;

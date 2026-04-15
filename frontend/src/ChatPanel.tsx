@@ -151,6 +151,51 @@ export function ChatPanel({ isOpen, onClose, onDataChanged }: ChatPanelProps) {
     }
   };
 
+  const handleExportSession = async (id: number, title: string | null, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const label = title ?? "conversation";
+    // Use already-loaded items if this is the active session, otherwise fetch
+    let exportItems = id === activeSessionId ? items : null;
+    if (!exportItems) {
+      try {
+        const msgs = await api.getSessionMessages(id);
+        exportItems = dbMessagesToItems(msgs);
+      } catch {
+        return;
+      }
+    }
+    const lines: string[] = [
+      `Staffing Assistant — ${label}`,
+      `Exported: ${new Date().toLocaleString()}`,
+      "=".repeat(60),
+      "",
+    ];
+    for (const item of exportItems) {
+      if (item.kind === "message") {
+        lines.push(item.role === "user" ? "[You]" : "[Assistant]");
+        lines.push(item.content, "");
+      } else if (item.kind === "tool_step") {
+        const status = item.result === null ? "running" : item.ok ? "ok" : "error";
+        lines.push(`[Tool: ${item.name}] (${status})`);
+        if (item.result) lines.push(item.result);
+        if (item.traceback) lines.push("--- trace ---", item.traceback, "--- end trace ---");
+        lines.push("");
+      } else if (item.kind === "error") {
+        lines.push("[Error]");
+        lines.push(item.message);
+        if (item.traceback) lines.push("--- trace ---", item.traceback, "--- end trace ---");
+        lines.push("");
+      }
+    }
+    const blob = new Blob([lines.join("\n")], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${label.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleDeleteSession = async (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
@@ -284,54 +329,11 @@ export function ChatPanel({ isOpen, onClose, onDataChanged }: ChatPanelProps) {
 
   const activeSession = sessions.find((s) => s.id === activeSessionId);
 
-  const handleExport = () => {
-    const title = activeSession?.title ?? "conversation";
-    const lines: string[] = [
-      `Staffing Assistant — ${title}`,
-      `Exported: ${new Date().toLocaleString()}`,
-      "=".repeat(60),
-      "",
-    ];
-    for (const item of items) {
-      if (item.kind === "message") {
-        if (item.role === "user") {
-          lines.push("[You]");
-        } else {
-          lines.push("[Assistant]");
-        }
-        lines.push(item.content, "");
-      } else if (item.kind === "tool_step") {
-        const status = item.result === null ? "running" : item.ok ? "ok" : "error";
-        lines.push(`[Tool: ${item.name}] (${status})`);
-        if (item.result) lines.push(item.result);
-        if (item.traceback) lines.push("--- trace ---", item.traceback, "--- end trace ---");
-        lines.push("");
-      } else if (item.kind === "error") {
-        lines.push("[Error]");
-        lines.push(item.message);
-        if (item.traceback) lines.push("--- trace ---", item.traceback, "--- end trace ---");
-        lines.push("");
-      }
-    }
-    const blob = new Blob([lines.join("\n")], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   return (
     <div className={`chat-panel${isOpen ? " open" : ""}`}>
       <div className="chat-panel__header">
         <span>{activeSession?.title ?? "Staffing Assistant"}</span>
         <div className="chat-panel__header-actions">
-          {activeSessionId !== null && (
-            <button className="chat-panel__export" onClick={handleExport} title="Export conversation">
-              ↓ Export
-            </button>
-          )}
           <button className="chat-panel__close" onClick={onClose} aria-label="Close">✕</button>
         </div>
       </div>
@@ -354,6 +356,14 @@ export function ChatPanel({ isOpen, onClose, onDataChanged }: ChatPanelProps) {
                 <span className="session-item__title">
                   {s.title ?? "New conversation"}
                 </span>
+                <button
+                  className="session-item__export"
+                  onClick={(e) => handleExportSession(s.id, s.title, e)}
+                  aria-label="Export session"
+                  title="Download conversation"
+                >
+                  ↓
+                </button>
                 <button
                   className="session-item__delete"
                   onClick={(e) => handleDeleteSession(s.id, e)}
