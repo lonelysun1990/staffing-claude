@@ -64,20 +64,50 @@ const GREETING: MessageItem = {
 
 function dbMessagesToItems(rows: ChatMessageOut[]): MessageItem[] {
   const items: MessageItem[] = [GREETING];
+
+  // Build tool_call_id → {name, args} from assistant rows that have tool_calls
+  type ToolCallMeta = { id: string; function: { name: string; arguments: string } };
+  const toolCallMap = new Map<string, { name: string; args: Record<string, unknown> }>();
+  for (const row of rows) {
+    if (row.role === "assistant" && Array.isArray(row.metadata)) {
+      for (const tc of row.metadata as ToolCallMeta[]) {
+        try {
+          toolCallMap.set(tc.id, {
+            name: tc.function?.name ?? "",
+            args: JSON.parse(tc.function?.arguments || "{}"),
+          });
+        } catch {
+          toolCallMap.set(tc.id, { name: tc.function?.name ?? "", args: {} });
+        }
+      }
+    }
+  }
+
   for (const row of rows) {
     if (row.role === "user" && row.content) {
       items.push({ kind: "message", role: "user", content: row.content });
     } else if (row.role === "assistant" && row.content) {
-      // If this assistant row has tool_calls in metadata, skip it from display
-      // (tool steps are reconstructed separately, we only want text turns)
-      const meta = row.metadata;
-      if (!meta || !Array.isArray(meta)) {
+      // Skip assistant rows that were purely tool-dispatch turns (metadata is the tool_calls array)
+      if (!Array.isArray(row.metadata)) {
         items.push({ kind: "message", role: "assistant", content: row.content });
       }
+    } else if (row.role === "tool") {
+      const meta = row.metadata as { tool_call_id?: string; name?: string } | null;
+      const toolCallId = meta?.tool_call_id ?? "";
+      const toolInfo = toolCallMap.get(toolCallId);
+      const result = row.content ?? "";
+      items.push({
+        kind: "tool_step",
+        toolCallId,
+        name: toolInfo?.name ?? meta?.name ?? "",
+        args: toolInfo?.args ?? {},
+        result,
+        ok: !result.startsWith("ERROR:"),
+        collapsed: true,
+      });
     }
-    // tool-role rows are not shown directly; they surface as tool_step items
-    // which we don't reconstruct here (would need to pair with tool_call_start)
   }
+
   return items;
 }
 
