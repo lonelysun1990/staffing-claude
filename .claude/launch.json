@@ -5,7 +5,7 @@
       "name": "frontend",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
-      "cwd": "/Users/Larry.Jin/Documents/research/staffing/frontend",
+      "cwd": "frontend",
       "port": 5173
     }
   ]

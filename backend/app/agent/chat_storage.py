@@ -173,15 +173,61 @@ def load_session_messages(db: Session, session: ChatSessionORM) -> list[dict]:
 # Context summarization (short-term memory)
 # ---------------------------------------------------------------------------
 
+def format_history_as_text(messages: list[dict]) -> str:
+    """
+    Convert a list of Anthropic-format message dicts (from load_session_messages)
+    into a plain-text block suitable for embedding in a system prompt.
+    """
+    if not messages:
+        return ""
+
+    lines: list[str] = []
+    for msg in messages:
+        role = msg.get("role", "")
+        content = msg.get("content", "")
+
+        if isinstance(content, str):
+            if role == "user":
+                lines.append(f"USER: {content}")
+            elif role == "assistant":
+                lines.append(f"ASSISTANT: {content}")
+        elif isinstance(content, list):
+            # Content-block format
+            if role == "assistant":
+                text_parts: list[str] = []
+                tool_parts: list[str] = []
+                for block in content:
+                    btype = block.get("type", "")
+                    if btype == "text" and block.get("text"):
+                        text_parts.append(block["text"])
+                    elif btype == "tool_use":
+                        tool_parts.append(f"[Called {block.get('name', '?')}]")
+                assistant_line = "ASSISTANT: " + " ".join(text_parts + tool_parts)
+                lines.append(assistant_line)
+            elif role == "user":
+                # Tool results batched into a user turn
+                result_parts: list[str] = []
+                for block in content:
+                    if block.get("type") == "tool_result":
+                        result_text = block.get("content", "")
+                        if isinstance(result_text, list):
+                            result_text = " ".join(
+                                b.get("text", "") for b in result_text if b.get("type") == "text"
+                            )
+                        result_parts.append(f"[Tool result: {str(result_text)[:200]}]")
+                if result_parts:
+                    lines.append("TOOL RESULTS: " + " ".join(result_parts))
+
+    return "\n".join(lines)
+
+
 async def maybe_summarize(
     db: Session,
     session: ChatSessionORM,
-    client,  # AsyncAnthropic instance
-    model: str,
 ) -> None:
     """
     If the session has grown past SUMMARY_THRESHOLD and the count is a multiple
-    of 10, generate a fresh context summary from messages excluding the tail.
+    of 10, generate a fresh context summary using the Claude Agent SDK.
     """
     if session.message_count <= SUMMARY_THRESHOLD:
         return
@@ -214,13 +260,19 @@ async def maybe_summarize(
     )
 
     try:
-        resp = await client.messages.create(
-            model=model,
-            max_tokens=500,
-            messages=[{"role": "user", "content": summary_prompt}],
-        )
-        summary = resp.content[0].text if resp.content else ""
-        session.context_summary = summary
-        db.commit()
+        from claude_agent_sdk import query, ClaudeAgentOptions, AssistantMessage, TextBlock
+        summary = ""
+        async for msg in query(
+            prompt=summary_prompt,
+            options=ClaudeAgentOptions(max_turns=1),
+        ):
+            if isinstance(msg, AssistantMessage):
+                for block in msg.content:
+                    if isinstance(block, TextBlock):
+                        summary = block.text
+                        break
+        if summary:
+            session.context_summary = summary
+            db.commit()
     except Exception:
         pass  # summarization failure is non-fatal

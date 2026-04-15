@@ -38,10 +38,17 @@ def _summary_section(context_summary: Optional[str]) -> str:
     return f"\n## Earlier in this conversation (summary)\n{context_summary}\n"
 
 
+def _history_section(prior_history_text: Optional[str]) -> str:
+    if not prior_history_text:
+        return ""
+    return f"\n## Prior conversation history\n{prior_history_text}\n"
+
+
 def build_system_prompt(
     db: Session,
     user_id: Optional[int] = None,
     context_summary: Optional[str] = None,
+    prior_history_text: Optional[str] = None,
 ) -> str:
     ds_list = storage.list_data_scientists(db)
     project_list = storage.list_projects(db)
@@ -112,4 +119,4 @@ Rules:
 
 ## Current assignments (summary)
 {assign_summary}
-{_memory_section(db, user_id)}{_summary_section(context_summary)}"""
+{_memory_section(db, user_id)}{_summary_section(context_summary)}{_history_section(prior_history_text)}"""

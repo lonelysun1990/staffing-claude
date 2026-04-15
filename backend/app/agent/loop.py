@@ -1,31 +1,54 @@
 """
-Agent loop — async streaming implementation using the Anthropic API.
+Agent loop — powered by the Claude Agent SDK.
+
+The SDK manages the agentic loop internally (model calls, tool dispatch,
+iteration). We provide custom tools as an in-process MCP server and stream
+the SDK's messages out as SSE events.
+
+SSE event types emitted:
+    text_delta      — streamed assistant text token (from StreamEvent)
+    tool_call_start — a tool was invoked (from AssistantMessage with ToolUseBlock)
+    tool_result     — tool result received (from UserMessage with ToolResultBlock)
+    done            — stream finished successfully (includes session_id, data_changed)
+    error           — unrecoverable failure
 """
 
 from __future__ import annotations
 
-import json
 import os
 from typing import AsyncGenerator, Optional
 
 from sqlalchemy.orm import Session
 
+from claude_agent_sdk import (
+    query,
+    ClaudeAgentOptions,
+    AssistantMessage,
+    UserMessage,
+    ResultMessage,
+    StreamEvent,
+    SystemMessage,
+    TextBlock,
+    ToolUseBlock,
+    ToolResultBlock,
+)
+
 from .chat_storage import (
     auto_title_session,
     create_session,
+    format_history_as_text,
     get_session,
     load_session_messages,
     maybe_summarize,
     save_message,
 )
 from .context import build_system_prompt
-from .executor import _dispatch_tool
 from .models import AgentRequest
 from .sse import sse
-from .tools import READ_ONLY_TOOLS, TOOLS
+from .tools import READ_ONLY_TOOLS, ALL_TOOL_NAMES, build_mcp_server
 
 MODEL = "claude-sonnet-4-6"
-MAX_ITERATIONS = 12
+MAX_TURNS = 12
 
 
 async def run_agent_stream(
@@ -34,31 +57,17 @@ async def run_agent_stream(
     user_id: Optional[int] = None,
 ) -> AsyncGenerator[str, None]:
     """
-    Agentic loop with SSE streaming and session persistence.
+    Stream SSE events for a single user message using the Claude Agent SDK.
 
-    Uses the Anthropic Messages API with tool use. The loop continues calling
-    the model until it produces a text-only reply (stop_reason="end_turn"),
-    or until MAX_ITERATIONS is reached.
-
-    Event types emitted:
-        text_delta      — streamed assistant text token
-        tool_call_start — a tool is about to execute (full args available)
-        tool_result     — tool execution complete
-        done            — stream finished successfully (includes session_id)
-        error           — unrecoverable failure
+    The SDK spawns a Claude Code CLI subprocess that handles the full agentic
+    loop. Our in-process MCP server (build_mcp_server) routes tool calls to
+    the _execute_* functions in executor.py, which have direct DB access via
+    closures.
     """
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
         yield sse("error", {"message": "Anthropic API key is not configured."})
         return
-
-    try:
-        from anthropic import AsyncAnthropic
-    except ImportError:
-        yield sse("error", {"message": "anthropic package is not installed. Run: pip install anthropic"})
-        return
-
-    client = AsyncAnthropic(api_key=api_key)
 
     # ---- Session setup ----
     if request.session_id:
@@ -70,145 +79,128 @@ async def run_agent_stream(
         session = create_session(db, user_id)
 
     new_user_msg = request.messages[-1]
-    system_prompt = build_system_prompt(db, user_id, session.context_summary)
 
-    # Load prior messages from DB (Claude format — no system message in the list)
-    messages: list[dict] = load_session_messages(db, session)
-    messages.append({"role": "user", "content": new_user_msg.content})
+    # Load prior history from DB and format as text for the system prompt
+    prior_messages = load_session_messages(db, session)
+    prior_history_text = format_history_as_text(prior_messages)
 
-    # Persist the new user message immediately
+    system_prompt = build_system_prompt(
+        db, user_id,
+        context_summary=session.context_summary,
+        prior_history_text=prior_history_text or None,
+    )
+
+    # Persist new user message immediately
     save_message(db, session, "user", new_user_msg.content)
     auto_title_session(db, session, new_user_msg.content)
 
+    # Build in-process MCP server with direct DB access via closures
+    mcp_server = build_mcp_server(db, user_id)
+
+    options = ClaudeAgentOptions(
+        system_prompt=system_prompt,
+        mcp_servers={"staffing": mcp_server},
+        max_turns=MAX_TURNS,
+        model=MODEL,
+        permission_mode="bypassPermissions",
+        allowed_tools=ALL_TOOL_NAMES,
+        include_partial_messages=True,
+        env={"ANTHROPIC_API_KEY": api_key},
+    )
+
     data_changed = False
+    # Map tool_use_id → tool_name so we can label tool_result SSE events
+    tool_id_to_name: dict[str, str] = {}
 
     try:
-        for _iteration in range(MAX_ITERATIONS):
-            # ---- Single model call with streaming ----
-            assistant_text = ""
-            tool_uses: list[dict] = []  # [{id, name, input}]
-            pending_tool: dict | None = None
-            pending_tool_json = ""
-            stop_reason = "end_turn"
+        async for message in query(prompt=new_user_msg.content, options=options):
 
-            async with client.messages.stream(
-                model=MODEL,
-                max_tokens=8096,
-                system=system_prompt,
-                tools=TOOLS,
-                messages=messages,
-            ) as stream:
-                async for event in stream:
-                    etype = event.type
+            # ---- Streaming text tokens ----
+            if isinstance(message, StreamEvent):
+                event = message.event
+                if (
+                    event.get("type") == "content_block_delta"
+                    and event.get("delta", {}).get("type") == "text_delta"
+                ):
+                    delta_text = event["delta"].get("text", "")
+                    if delta_text:
+                        yield sse("text_delta", {"delta": delta_text})
+                continue
 
-                    if etype == "content_block_start":
-                        cb = event.content_block
-                        if cb.type == "tool_use":
-                            pending_tool = {"id": cb.id, "name": cb.name}
-                            pending_tool_json = ""
+            # ---- Skip system/init messages ----
+            if isinstance(message, SystemMessage):
+                continue
 
-                    elif etype == "content_block_delta":
-                        d = event.delta
-                        if d.type == "text_delta":
-                            assistant_text += d.text
-                            yield sse("text_delta", {"delta": d.text})
-                        elif d.type == "input_json_delta" and pending_tool is not None:
-                            pending_tool_json += d.partial_json
+            # ---- Assistant turn: text and/or tool calls ----
+            if isinstance(message, AssistantMessage):
+                text = ""
+                tool_uses: list[ToolUseBlock] = []
 
-                    elif etype == "content_block_stop":
-                        if pending_tool is not None:
-                            try:
-                                inp = json.loads(pending_tool_json or "{}")
-                            except json.JSONDecodeError:
-                                inp = {}
-                            tool_uses.append({**pending_tool, "input": inp})
-                            pending_tool = None
-                            pending_tool_json = ""
+                for block in message.content:
+                    if isinstance(block, TextBlock):
+                        text = block.text
+                    elif isinstance(block, ToolUseBlock):
+                        tool_uses.append(block)
+                        tool_id_to_name[block.id] = block.name
+                        yield sse("tool_call_start", {
+                            "tool_call_id": block.id,
+                            "name": block.name,
+                            "args": block.input,
+                        })
+                        if block.name not in READ_ONLY_TOOLS:
+                            data_changed = True
 
-                    elif etype == "message_delta":
-                        if hasattr(event.delta, "stop_reason") and event.delta.stop_reason:
-                            stop_reason = event.delta.stop_reason
+                # Persist the assistant turn
+                if tool_uses:
+                    save_message(
+                        db, session, "assistant", text or None,
+                        metadata=[
+                            {"id": tu.id, "name": tu.name, "input": tu.input}
+                            for tu in tool_uses
+                        ],
+                    )
+                elif text:
+                    save_message(db, session, "assistant", text)
+                continue
 
-            # ---- Turn complete ----
+            # ---- User turn carrying tool results (SDK feeds these back to Claude) ----
+            if isinstance(message, UserMessage):
+                content = message.content
+                if not isinstance(content, list):
+                    continue
+                for block in content:
+                    if isinstance(block, ToolResultBlock):
+                        result_text = block.content
+                        if isinstance(result_text, list):
+                            result_text = " ".join(
+                                b.get("text", "") for b in result_text
+                                if isinstance(b, dict) and b.get("type") == "text"
+                            )
+                        result_text = str(result_text) if result_text is not None else ""
+                        tool_name = tool_id_to_name.get(block.tool_use_id, "unknown")
+                        yield sse("tool_result", {
+                            "tool_call_id": block.tool_use_id,
+                            "name": tool_name,
+                            "result": result_text,
+                            "ok": not block.is_error,
+                        })
+                        save_message(
+                            db, session, "tool", result_text,
+                            metadata={"tool_use_id": block.tool_use_id, "name": tool_name},
+                        )
+                continue
 
-            # Build the assistant content blocks for DB and next-turn messages
-            content_blocks: list[dict] = []
-            if assistant_text:
-                content_blocks.append({"type": "text", "text": assistant_text})
-            for tu in tool_uses:
-                content_blocks.append({
-                    "type": "tool_use",
-                    "id": tu["id"],
-                    "name": tu["name"],
-                    "input": tu["input"],
-                })
-
-            # Append assistant turn to in-memory message list
-            messages.append({"role": "assistant", "content": content_blocks})
-
-            # Persist assistant turn
-            if tool_uses:
-                # Store tool_use blocks as metadata so history can be reconstructed
-                save_message(db, session, "assistant", assistant_text or None,
-                             metadata=[{"id": tu["id"], "name": tu["name"], "input": tu["input"]}
-                                       for tu in tool_uses])
-            else:
-                save_message(db, session, "assistant", assistant_text)
-
-            # No tool calls → model is done
-            if stop_reason == "end_turn" or not tool_uses:
-                await maybe_summarize(db, session, client, MODEL)
+            # ---- Final result ----
+            if isinstance(message, ResultMessage):
+                if message.is_error:
+                    yield sse("error", {"message": f"Agent error: {message.result or 'unknown'}"})
+                    return
+                await maybe_summarize(db, session)
                 yield sse("done", {
                     "data_changed": data_changed,
                     "session_id": session.id,
                 })
                 return
-
-            # ---- Execute all tool calls and build the tool_result user turn ----
-            tool_result_blocks: list[dict] = []
-
-            for tu in tool_uses:
-                yield sse("tool_call_start", {
-                    "tool_call_id": tu["id"],
-                    "name": tu["name"],
-                    "args": tu["input"],
-                })
-
-                tool_traceback: str | None = None
-                try:
-                    result = _dispatch_tool(tu["name"], tu["input"], db, user_id=user_id)
-                except Exception as tool_exc:
-                    import traceback as _tb
-                    tool_traceback = _tb.format_exc()
-                    result = f"ERROR: {tool_exc}"
-
-                ok = not result.startswith("ERROR:")
-                if result.startswith("OK:") and tu["name"] not in READ_ONLY_TOOLS:
-                    data_changed = True
-
-                yield sse("tool_result", {
-                    "tool_call_id": tu["id"],
-                    "name": tu["name"],
-                    "result": result,
-                    "ok": ok,
-                    **({"traceback": tool_traceback} if tool_traceback else {}),
-                })
-
-                tool_result_blocks.append({
-                    "type": "tool_result",
-                    "tool_use_id": tu["id"],
-                    "content": result,
-                })
-
-                # Persist each tool result individually for DB history
-                save_message(db, session, "tool", result,
-                             metadata={"tool_use_id": tu["id"], "name": tu["name"]})
-
-            # Append all tool results as a single user turn (Claude's required format)
-            messages.append({"role": "user", "content": tool_result_blocks})
-
-        # Exhausted max iterations without a clean exit
-        yield sse("error", {"message": f"Agent reached the maximum of {MAX_ITERATIONS} iterations."})
 
     except Exception as exc:
         import traceback as _tb

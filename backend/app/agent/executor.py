@@ -1,13 +1,11 @@
 """
 Tool execution layer.
 
-Each _execute_* function maps 1:1 to a tool in tools.py.
-_dispatch_tool is the single routing entry point called by the loop.
+Each _execute_* function is called by the MCP tool handlers in tools.py.
 
 To add a new tool:
   1. Write _execute_<name>() here.
-  2. Add a case in _dispatch_tool().
-  3. Add the schema in tools.py.
+  2. Add a corresponding @tool handler in tools.py.
 """
 
 from __future__ import annotations
@@ -27,7 +25,6 @@ from ..models import (
     ProjectWeek,
 )
 from ..orm_models import AgentMemoryORM
-from .tools import READ_ONLY_TOOLS  # re-exported for loop.py convenience
 
 
 # ---------------------------------------------------------------------------
@@ -471,61 +468,3 @@ def _execute_list_memories(
     ]
     return "OK:\n" + "\n".join(lines)
 
-
-# ---------------------------------------------------------------------------
-# Dispatch table
-# ---------------------------------------------------------------------------
-
-def _dispatch_tool(fn_name: str, args: dict, db: Session, user_id: Optional[int] = None) -> str:
-    """Route a tool call to the appropriate execute function."""
-    match fn_name:
-        case "set_assignment":
-            return _execute_set_assignment(
-                db, args["data_scientist_name"], args["project_name"],
-                args["allocation"], args.get("week_start"), args.get("week_end"),
-            )
-        case "clear_assignment":
-            return _execute_clear_assignment(
-                db, args["data_scientist_name"], args["project_name"],
-                args.get("week_start"), args.get("week_end"),
-            )
-        case "get_availability":
-            return _execute_get_availability(
-                db, args.get("data_scientist_name"),
-                args.get("week_start"), args.get("week_end"),
-            )
-        case "check_conflicts":
-            return _execute_check_conflicts(db)
-        case "suggest_data_scientists":
-            return _execute_suggest_data_scientists(db, args["project_name"])
-        case "update_data_scientist":
-            return _execute_update_data_scientist(
-                db, args["data_scientist_name"], args.get("new_name"),
-                args.get("level"), args.get("efficiency"),
-                args.get("max_concurrent_projects"), args.get("notes"), args.get("skills"),
-            )
-        case "update_project":
-            return _execute_update_project(
-                db, args["project_name"], args.get("new_name"),
-                args.get("start_date"), args.get("end_date"), args.get("required_skills"),
-            )
-        case "create_data_scientist":
-            return _execute_create_data_scientist(
-                db, args["name"], args["level"],
-                args.get("efficiency", 1.0), args.get("max_concurrent_projects", 2),
-                args.get("notes"), args.get("skills"),
-            )
-        case "create_project":
-            return _execute_create_project(
-                db, args["name"], args["start_date"], args["end_date"],
-                args.get("required_skills"),
-            )
-        case "remember_fact":
-            return _execute_remember_fact(
-                db, user_id, args["category"], args["key"], args["value"],
-                args.get("confidence", 3),
-            )
-        case "list_memories":
-            return _execute_list_memories(db, user_id, args.get("category"))
-        case _:
-            return f"ERROR: Unknown tool '{fn_name}'"
