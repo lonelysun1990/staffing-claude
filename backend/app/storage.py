@@ -34,6 +34,34 @@ from .orm_models import (
 
 
 # ------------------------------------------------------------------ #
+# Week buckets (must match Gantt: ISO weeks starting Monday)
+# ------------------------------------------------------------------ #
+
+
+def canonical_week_monday(w: date | datetime | str) -> date:
+    """Normalize any calendar day to the Monday of that ISO week (same as App.tsx startOfWeek)."""
+    if isinstance(w, datetime):
+        d = w.date()
+    elif isinstance(w, date):
+        d = w
+    else:
+        s = str(w).strip()
+        d = date.fromisoformat(s[:10]) if len(s) >= 10 else date.fromisoformat(s)
+    return d - timedelta(days=d.weekday())
+
+
+def monday_iso_strings_in_range(range_start: date, range_end: date) -> list[str]:
+    """Inclusive range of planning weeks as YYYY-MM-DD Mondays."""
+    cur = canonical_week_monday(range_start)
+    last = canonical_week_monday(range_end)
+    out: list[str] = []
+    while cur <= last:
+        out.append(cur.isoformat())
+        cur += timedelta(weeks=1)
+    return out
+
+
+# ------------------------------------------------------------------ #
 # Helpers to convert ORM → Pydantic
 # ------------------------------------------------------------------ #
 
@@ -68,7 +96,7 @@ def _assignment_to_schema(orm: AssignmentORM) -> Assignment:
         id=orm.id,
         data_scientist_id=orm.data_scientist_id,
         project_id=orm.project_id,
-        week_start=orm.week_start,
+        week_start=canonical_week_monday(orm.week_start),
         allocation=orm.allocation,
     )
 
@@ -221,7 +249,7 @@ def add_assignment(db: Session, payload: AssignmentCreate, changed_by: str = "sy
     orm = AssignmentORM(
         data_scientist_id=payload.data_scientist_id,
         project_id=payload.project_id,
-        week_start=payload.week_start,
+        week_start=canonical_week_monday(payload.week_start),
         allocation=payload.allocation,
     )
     db.add(orm)
@@ -303,7 +331,7 @@ def replace_assignments(db: Session, payload: AssignmentsPayload) -> List[Assign
         orm = AssignmentORM(
             data_scientist_id=item.data_scientist_id,
             project_id=item.project_id,
-            week_start=item.week_start,
+            week_start=canonical_week_monday(item.week_start),
             allocation=item.allocation,
         )
         db.add(orm)
@@ -321,7 +349,8 @@ def get_conflicts(db: Session) -> List[dict]:
     assignments = db.query(AssignmentORM).all()
     weekly: Dict[tuple, float] = {}
     for a in assignments:
-        key = (a.data_scientist_id, a.week_start)
+        wk = canonical_week_monday(a.week_start)
+        key = (a.data_scientist_id, wk)
         weekly[key] = weekly.get(key, 0.0) + a.allocation
 
     conflicts = []
@@ -473,7 +502,7 @@ def import_from_file(db: Session, file_path: Path) -> ImportResult:
         db.add(AssignmentORM(
             data_scientist_id=ds_map[ds_name].id,
             project_id=project_map[project_name].id,
-            week_start=week_start,
+            week_start=canonical_week_monday(week_start),
             allocation=allocation,
         ))
 
@@ -624,7 +653,7 @@ def import_full_json(db: Session, data: dict) -> ImportResult:
             db.add(AssignmentORM(
                 data_scientist_id=new_ds_id,
                 project_id=new_proj_id,
-                week_start=date.fromisoformat(a["week_start"]),
+                week_start=canonical_week_monday(date.fromisoformat(a["week_start"][:10])),
                 allocation=a["allocation"],
             ))
             created_assignments += 1

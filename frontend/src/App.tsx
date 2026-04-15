@@ -51,7 +51,13 @@ const startOfWeek = (input: Date) => {
   return copy;
 };
 
-const toISODate = (date: Date) => date.toISOString().split("T")[0];
+/** Local calendar date as YYYY-MM-DD (avoid UTC shift from toISOString). */
+const toISODate = (date: Date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+};
 
 // Simple tag input component
 function TagInput({

@@ -221,6 +221,8 @@ async def run_agent_stream(
                             )
                         result_text = str(result_text) if result_text is not None else ""
                         tool_name = tool_id_to_name.get(block.tool_use_id, "unknown")
+                        if not is_read_only_tool(tool_name):
+                            data_changed = True
                         yield sse("tool_result", {
                             "tool_call_id": block.tool_use_id,
                             "name": tool_name,

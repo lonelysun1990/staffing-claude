@@ -71,25 +71,9 @@ def _to_date(w) -> date:
     return date.fromisoformat(_week_start_str(w))
 
 
-def _iso_week_monday(d: date) -> date:
-    """Monday of the ISO week containing d (weekday: Mon=0 .. Sun=6)."""
-    return d - timedelta(days=d.weekday())
-
-
 def _week_bucket_key(w) -> str:
-    """Canonical key for allocation: Monday of the calendar week containing this assignment."""
-    return _iso_week_monday(_to_date(w)).isoformat()
-
-
-def _mondays_in_inclusive_range(range_start: date, range_end: date) -> list[str]:
-    """Every Monday from the week of range_start through the week of range_end (inclusive)."""
-    cur = _iso_week_monday(range_start)
-    last = _iso_week_monday(range_end)
-    out: list[str] = []
-    while cur <= last:
-        out.append(cur.isoformat())
-        cur += timedelta(weeks=1)
-    return out
+    """Canonical key for allocation (same Monday bucket as Gantt / storage)."""
+    return storage.canonical_week_monday(_to_date(w)).isoformat()
 
 
 # ---------------------------------------------------------------------------
@@ -128,16 +112,16 @@ def _execute_set_assignment(
     if week_start_str is None:
         target_weeks = set(_upcoming_mondays(config.horizon_weeks))
     else:
-        start = date.fromisoformat(week_start_str)
-        end = date.fromisoformat(week_end_str) if week_end_str else None
+        start = date.fromisoformat(week_start_str[:10])
+        end = date.fromisoformat(week_end_str[:10]) if week_end_str else None
         if end is None:
-            target_weeks = {w for w in _upcoming_mondays(config.horizon_weeks) if w >= week_start_str}
+            anchor = storage.canonical_week_monday(start)
+            target_weeks = {
+                w for w in _upcoming_mondays(config.horizon_weeks)
+                if date.fromisoformat(w) >= anchor
+            }
         else:
-            target_weeks = set()
-            current = start
-            while current <= end:
-                target_weeks.add(current.isoformat())
-                current += timedelta(weeks=1)
+            target_weeks = set(storage.monday_iso_strings_in_range(start, end))
 
     existing = storage.list_assignments(db)
     kept = [
@@ -152,7 +136,7 @@ def _execute_set_assignment(
         AssignmentCreate(
             data_scientist_id=ds.id,
             project_id=proj.id,
-            week_start=w,
+            week_start=date.fromisoformat(w[:10]),
             allocation=allocation,
         )
         for w in sorted(target_weeks)
@@ -200,16 +184,20 @@ def _execute_clear_assignment(
 
     ws, we = week_start_str, week_end_str
     existing = storage.list_assignments(db)
+    ws_d = date.fromisoformat(ws[:10]) if ws else None
+    we_d = date.fromisoformat(we[:10]) if we else None
+    ws_mon = storage.canonical_week_monday(ws_d) if ws_d is not None else None
+    we_mon = storage.canonical_week_monday(we_d) if we_d is not None else None
 
     def _matches(a) -> bool:
         if a.data_scientist_id != ds.id:
             return False
         if not clear_all and a.project_id != proj.id:
             return False
-        w = _week_start_str(a.week_start)
-        if ws is not None and w < ws:
+        w_mon = storage.canonical_week_monday(a.week_start)
+        if ws_mon is not None and w_mon < ws_mon:
             return False
-        if we is not None and w > we:
+        if we_mon is not None and w_mon > we_mon:
             return False
         return True
 
@@ -249,7 +237,7 @@ def _execute_get_availability(
             re_end = _to_date(week_end_str)
         else:
             re_end = rs + timedelta(weeks=4)
-        weeks = _mondays_in_inclusive_range(rs, re_end)
+        weeks = storage.monday_iso_strings_in_range(rs, re_end)
 
     if ds_name_query:
         matches = resolve_name(ds_name_query, [ds.name for ds in ds_list])
