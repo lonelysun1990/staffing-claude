@@ -327,7 +327,7 @@ export function ChatPanel({ isOpen, onClose, onDataChanged }: ChatPanelProps) {
       <div className="chat-panel__header">
         <span>{activeSession?.title ?? "Staffing Assistant"}</span>
         <div className="chat-panel__header-actions">
-          {items.length > 1 && (
+          {activeSessionId !== null && (
             <button className="chat-panel__export" onClick={handleExport} title="Export conversation">
               ↓ Export
             </button>

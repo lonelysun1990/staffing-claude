@@ -1056,12 +1056,22 @@ button.ghost.danger {
   font-weight: 600;
   font-size: 15px;
   flex-shrink: 0;
+  gap: 12px;
+}
+
+.chat-panel__header > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chat-panel__header-actions {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
 }
 
 .chat-panel__export {
