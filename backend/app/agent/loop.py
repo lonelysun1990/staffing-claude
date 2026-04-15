@@ -1,5 +1,5 @@
 """
-Agent loop — async streaming implementation.
+Agent loop — async streaming implementation using the Anthropic API.
 """
 
 from __future__ import annotations
@@ -22,9 +22,9 @@ from .context import build_system_prompt
 from .executor import _dispatch_tool
 from .models import AgentRequest
 from .sse import sse
-from .tools import READ_ONLY_TOOLS, get_all_tools
+from .tools import READ_ONLY_TOOLS, TOOLS
 
-MODEL = "gpt-4o"
+MODEL = "claude-sonnet-4-6"
 MAX_ITERATIONS = 12
 
 
@@ -34,14 +34,11 @@ async def run_agent_stream(
     user_id: Optional[int] = None,
 ) -> AsyncGenerator[str, None]:
     """
-    Agentic loop with SSE streaming and optional session persistence.
+    Agentic loop with SSE streaming and session persistence.
 
-    When request.session_id is set, the conversation is loaded from DB and
-    each turn is saved incrementally. When None, stateless behavior is used
-    (identical to the original implementation).
-
-    Yields SSE-formatted strings. The loop continues calling the model until it
-    produces a text-only reply (no tool calls), or until MAX_ITERATIONS is reached.
+    Uses the Anthropic Messages API with tool use. The loop continues calling
+    the model until it produces a text-only reply (stop_reason="end_turn"),
+    or until MAX_ITERATIONS is reached.
 
     Event types emitted:
         text_delta      — streamed assistant text token
@@ -50,21 +47,20 @@ async def run_agent_stream(
         done            — stream finished successfully (includes session_id)
         error           — unrecoverable failure
     """
-    api_key = os.environ.get("OPENAI_API_KEY", "")
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
-        yield sse("error", {"message": "OpenAI API key is not configured."})
+        yield sse("error", {"message": "Anthropic API key is not configured."})
         return
 
     try:
-        from openai import AsyncOpenAI
+        from anthropic import AsyncAnthropic
     except ImportError:
-        yield sse("error", {"message": "openai package is not installed. Run: pip install openai"})
+        yield sse("error", {"message": "anthropic package is not installed. Run: pip install anthropic"})
         return
 
-    client = AsyncOpenAI(api_key=api_key)
+    client = AsyncAnthropic(api_key=api_key)
 
     # ---- Session setup ----
-    # Always persist conversations: load existing session or auto-create a new one.
     if request.session_id:
         session = get_session(db, request.session_id, user_id)
         if session is None:
@@ -73,14 +69,13 @@ async def run_agent_stream(
     else:
         session = create_session(db, user_id)
 
-    # Build the initial messages list from DB history
     new_user_msg = request.messages[-1]
-    loaded = load_session_messages(db, session)
-    messages: list[dict] = [
-        {"role": "system", "content": build_system_prompt(db, user_id, session.context_summary)}
-    ]
-    messages += loaded
-    messages.append({"role": new_user_msg.role, "content": new_user_msg.content})
+    system_prompt = build_system_prompt(db, user_id, session.context_summary)
+
+    # Load prior messages from DB (Claude format — no system message in the list)
+    messages: list[dict] = load_session_messages(db, session)
+    messages.append({"role": "user", "content": new_user_msg.content})
+
     # Persist the new user message immediately
     save_message(db, session, "user", new_user_msg.content)
     auto_title_session(db, session, new_user_msg.content)
@@ -88,121 +83,129 @@ async def run_agent_stream(
     data_changed = False
 
     try:
-        for iteration in range(MAX_ITERATIONS):
-            # Refresh tools list each iteration to pick up newly created dynamic tools
-            tools_for_model = get_all_tools(db)
-
+        for _iteration in range(MAX_ITERATIONS):
             # ---- Single model call with streaming ----
-            stream = await client.chat.completions.create(
-                model=MODEL,
-                tools=tools_for_model,
-                messages=messages,
-                stream=True,
-            )
-
             assistant_text = ""
-            # pending[index] = {"id": str, "name": str, "arguments": str}
-            pending: dict[int, dict] = {}
+            tool_uses: list[dict] = []  # [{id, name, input}]
+            pending_tool: dict | None = None
+            pending_tool_json = ""
+            stop_reason = "end_turn"
 
-            async for chunk in stream:
-                choice = chunk.choices[0]
-                delta = choice.delta
+            async with client.messages.stream(
+                model=MODEL,
+                max_tokens=8096,
+                system=system_prompt,
+                tools=TOOLS,
+                messages=messages,
+            ) as stream:
+                async for event in stream:
+                    etype = event.type
 
-                # Stream text tokens immediately
-                if delta.content:
-                    assistant_text += delta.content
-                    yield sse("text_delta", {"delta": delta.content})
+                    if etype == "content_block_start":
+                        cb = event.content_block
+                        if cb.type == "tool_use":
+                            pending_tool = {"id": cb.id, "name": cb.name}
+                            pending_tool_json = ""
 
-                # Accumulate tool call argument chunks
-                # (OpenAI sends name+id in first chunk, arguments across many chunks)
-                for tc in delta.tool_calls or []:
-                    idx = tc.index
-                    if idx not in pending:
-                        pending[idx] = {"id": tc.id or "", "name": tc.function.name or "", "arguments": ""}
-                    else:
-                        if tc.id:
-                            pending[idx]["id"] = tc.id
-                        if tc.function.name:
-                            pending[idx]["name"] = tc.function.name
-                    if tc.function.arguments:
-                        pending[idx]["arguments"] += tc.function.arguments
+                    elif etype == "content_block_delta":
+                        d = event.delta
+                        if d.type == "text_delta":
+                            assistant_text += d.text
+                            yield sse("text_delta", {"delta": d.text})
+                        elif d.type == "input_json_delta" and pending_tool is not None:
+                            pending_tool_json += d.partial_json
 
-            # ---- Turn complete: async for loop has exited ----
+                    elif etype == "content_block_stop":
+                        if pending_tool is not None:
+                            try:
+                                inp = json.loads(pending_tool_json or "{}")
+                            except json.JSONDecodeError:
+                                inp = {}
+                            tool_uses.append({**pending_tool, "input": inp})
+                            pending_tool = None
+                            pending_tool_json = ""
 
-            # Append assistant turn to conversation history
-            if pending:
-                tool_calls_for_history = [
-                    {
-                        "id": tc["id"],
-                        "type": "function",
-                        "function": {"name": tc["name"], "arguments": tc["arguments"]},
-                    }
-                    for tc in (pending[i] for i in sorted(pending))
-                ]
-                messages.append({
-                    "role": "assistant",
-                    "content": assistant_text or None,
-                    "tool_calls": tool_calls_for_history,
+                    elif etype == "message_delta":
+                        if hasattr(event.delta, "stop_reason") and event.delta.stop_reason:
+                            stop_reason = event.delta.stop_reason
+
+            # ---- Turn complete ----
+
+            # Build the assistant content blocks for DB and next-turn messages
+            content_blocks: list[dict] = []
+            if assistant_text:
+                content_blocks.append({"type": "text", "text": assistant_text})
+            for tu in tool_uses:
+                content_blocks.append({
+                    "type": "tool_use",
+                    "id": tu["id"],
+                    "name": tu["name"],
+                    "input": tu["input"],
                 })
-                if session:
-                    save_message(db, session, "assistant", assistant_text or None,
-                                 metadata=tool_calls_for_history)
-            else:
-                messages.append({"role": "assistant", "content": assistant_text})
-                if session:
-                    save_message(db, session, "assistant", assistant_text)
 
-            # No tool calls → model is done; terminate the loop
-            if not pending:
-                if session:
-                    await maybe_summarize(db, session, client, MODEL)
+            # Append assistant turn to in-memory message list
+            messages.append({"role": "assistant", "content": content_blocks})
+
+            # Persist assistant turn
+            if tool_uses:
+                # Store tool_use blocks as metadata so history can be reconstructed
+                save_message(db, session, "assistant", assistant_text or None,
+                             metadata=[{"id": tu["id"], "name": tu["name"], "input": tu["input"]}
+                                       for tu in tool_uses])
+            else:
+                save_message(db, session, "assistant", assistant_text)
+
+            # No tool calls → model is done
+            if stop_reason == "end_turn" or not tool_uses:
+                await maybe_summarize(db, session, client, MODEL)
                 yield sse("done", {
                     "data_changed": data_changed,
-                    "session_id": session.id if session else None,
+                    "session_id": session.id,
                 })
                 return
 
-            # ---- Execute all tool calls for this turn ----
-            for idx in sorted(pending):
-                tc = pending[idx]
-                try:
-                    args = json.loads(tc["arguments"] or "{}")
-                except json.JSONDecodeError:
-                    args = {}
+            # ---- Execute all tool calls and build the tool_result user turn ----
+            tool_result_blocks: list[dict] = []
 
-                # Emit tool_call_start after full arg accumulation
+            for tu in tool_uses:
                 yield sse("tool_call_start", {
-                    "tool_call_id": tc["id"],
-                    "name": tc["name"],
-                    "args": args,
+                    "tool_call_id": tu["id"],
+                    "name": tu["name"],
+                    "args": tu["input"],
                 })
 
                 tool_traceback: str | None = None
                 try:
-                    result = _dispatch_tool(tc["name"], args, db, user_id=user_id)
+                    result = _dispatch_tool(tu["name"], tu["input"], db, user_id=user_id)
                 except Exception as tool_exc:
                     import traceback as _tb
                     tool_traceback = _tb.format_exc()
                     result = f"ERROR: {tool_exc}"
 
                 ok = not result.startswith("ERROR:")
-                if result.startswith("OK:") and tc["name"] not in READ_ONLY_TOOLS:
+                if result.startswith("OK:") and tu["name"] not in READ_ONLY_TOOLS:
                     data_changed = True
 
                 yield sse("tool_result", {
-                    "tool_call_id": tc["id"],
-                    "name": tc["name"],
+                    "tool_call_id": tu["id"],
+                    "name": tu["name"],
                     "result": result,
                     "ok": ok,
                     **({"traceback": tool_traceback} if tool_traceback else {}),
                 })
 
-                messages.append({"role": "tool", "tool_call_id": tc["id"], "content": result})
-                if session:
-                    save_message(db, session, "tool", result,
-                                 metadata={"tool_call_id": tc["id"], "name": tc["name"]})
+                tool_result_blocks.append({
+                    "type": "tool_result",
+                    "tool_use_id": tu["id"],
+                    "content": result,
+                })
 
-            # Loop continues: model will see tool results and either call more tools or reply
+                # Persist each tool result individually for DB history
+                save_message(db, session, "tool", result,
+                             metadata={"tool_use_id": tu["id"], "name": tu["name"]})
+
+            # Append all tool results as a single user turn (Claude's required format)
+            messages.append({"role": "user", "content": tool_result_blocks})
 
         # Exhausted max iterations without a clean exit
         yield sse("error", {"message": f"Agent reached the maximum of {MAX_ITERATIONS} iterations."})

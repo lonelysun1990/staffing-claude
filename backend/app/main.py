@@ -58,7 +58,6 @@ from .models import (
 )
 from .orm_models import AgentMemoryORM, ChatSessionORM, ChatMessageORM
 from .agent import AgentRequest, run_agent_stream
-from .agent.dynamic_tools import ensure_tool_environments
 from .agent.chat_storage import create_session, get_session
 from .seed_db import seed
 
@@ -90,7 +89,6 @@ async def lifespan(app: FastAPI):
     seed()
     with SessionLocal() as db:
         bootstrap_admin(db)
-    ensure_tool_environments()  # spawns background threads; returns immediately
     yield
 
 

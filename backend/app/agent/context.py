@@ -2,8 +2,6 @@
 System prompt builder.
 
 Reads current DB state and assembles the context string given to the model.
-Keeping this separate makes it easy to add or remove context sections
-without touching the loop or execution logic.
 """
 
 from __future__ import annotations
@@ -14,11 +12,8 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
-import json as _json
-
 from .. import storage
 from ..orm_models import AgentMemoryORM
-from .dynamic_tools import list_dynamic_tools as _list_dyn_tools
 
 
 def _memory_section(db: Session, user_id: Optional[int]) -> str:
@@ -35,18 +30,6 @@ def _memory_section(db: Session, user_id: Optional[int]) -> str:
         for m in memories
     ]
     return "\n## Your long-term memory about this user\n" + "\n".join(lines) + "\n"
-
-
-def _dynamic_tools_section(db: Session) -> str:
-    tools = [t for t in _list_dyn_tools(db) if t.env_status == "ready"]
-    if not tools:
-        return ""
-    lines = ["\n## Available custom dynamic tools (call by name)"]
-    for t in tools:
-        params = _json.loads(t.parameters_schema).get("properties", {})
-        param_str = ", ".join(params.keys()) if params else "no parameters"
-        lines.append(f"  - {t.name}({param_str}): {t.description}")
-    return "\n".join(lines) + "\n"
 
 
 def _summary_section(context_summary: Optional[str]) -> str:
@@ -121,19 +104,6 @@ Rules:
 - Use remember_fact to store user preferences or patterns you observe across sessions
 - Use list_memories to recall stored preferences at the start of a new session
 
-## Dynamic Tools (Custom Python Code)
-You can create and run custom Python tools for tasks like plotting, calculations, or data analysis.
-IMPORTANT: Dynamic tools run in an ISOLATED sandbox with NO database access.
-
-Workflow for dynamic tools:
-1. Create the tool with create_dynamic_tool, defining parameters for any data it needs
-2. If packages are required, wait briefly then check list_dynamic_tools for env_status='ready'
-3. Fetch the required data using existing tools (get_availability, check_conflicts, etc.)
-4. Call the dynamic tool BY NAME, passing the fetched data as arguments
-5. Return the result to the user
-
-DO NOT stop after creating a tool — always continue to fetch data and run the tool to complete the user's request.
-
 ## Current roster (name, level, efficiency, max_projects, skills)
 {ds_lines}
 
@@ -142,4 +112,4 @@ DO NOT stop after creating a tool — always continue to fetch data and run the 
 
 ## Current assignments (summary)
 {assign_summary}
-{_memory_section(db, user_id)}{_summary_section(context_summary)}{_dynamic_tools_section(db)}"""
+{_memory_section(db, user_id)}{_summary_section(context_summary)}"""

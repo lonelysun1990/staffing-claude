@@ -3,6 +3,11 @@ Chat session persistence helpers.
 
 Provides save/load functions used by run_agent_stream to persist conversations
 to the database and support context summarization for long sessions.
+
+Message format uses Anthropic's content-block structure:
+  - User turns: {"role": "user", "content": str | list[tool_result_block]}
+  - Assistant turns: {"role": "assistant", "content": str | list[content_block]}
+  - Tool results are batched into a single user turn per assistant turn.
 """
 
 from __future__ import annotations
@@ -49,8 +54,6 @@ def get_session(db: Session, session_id: int, user_id: Optional[int]) -> Optiona
     session = db.query(ChatSessionORM).filter(ChatSessionORM.id == session_id).first()
     if session is None:
         return None
-    # Ownership check: if both user_id and session.user_id are set, they must match.
-    # Anonymous sessions (user_id=NULL) are accessible without auth.
     if user_id is not None and session.user_id is not None and session.user_id != user_id:
         return None
     return session
@@ -72,7 +75,7 @@ def save_message(
     session: ChatSessionORM,
     role: str,
     content: Optional[str],
-    metadata: Optional[dict] = None,
+    metadata: Optional[dict | list] = None,
 ) -> ChatMessageORM:
     """Insert a message row and bump the session's message_count and updated_at."""
     msg = ChatMessageORM(
@@ -96,7 +99,13 @@ def save_message(
 
 def load_session_messages(db: Session, session: ChatSessionORM) -> list[dict]:
     """
-    Reconstruct a list of OpenAI message dicts from stored ChatMessageORM rows.
+    Reconstruct a list of Anthropic message dicts from stored ChatMessageORM rows.
+
+    DB row roles:
+      "user"      → plain user text (content = str)
+      "assistant" → may have meta = [{id, name, input}, ...] for tool use blocks
+      "tool"      → tool result; meta = {tool_use_id, name}
+                    Consecutive tool rows are batched into one user turn.
 
     If the session has a context_summary and is long, returns only the most
     recent SUMMARY_TAIL messages (the summary is injected via the system prompt).
@@ -113,28 +122,49 @@ def load_session_messages(db: Session, session: ChatSessionORM) -> list[dict]:
         rows = rows[-SUMMARY_TAIL:]
 
     messages: list[dict] = []
-    for row in rows:
+    i = 0
+    while i < len(rows):
+        row = rows[i]
         meta = json.loads(row.meta) if row.meta else None
 
         if row.role == "user":
             messages.append({"role": "user", "content": row.content or ""})
+            i += 1
 
         elif row.role == "assistant":
             if meta and isinstance(meta, list):
-                # assistant turn that had tool calls
-                msg: dict = {"role": "assistant", "content": row.content}
-                msg["tool_calls"] = meta
-                messages.append(msg)
+                # Assistant turn that included tool use — rebuild content blocks
+                content_blocks: list[dict] = []
+                if row.content:
+                    content_blocks.append({"type": "text", "text": row.content})
+                for tu in meta:
+                    content_blocks.append({
+                        "type": "tool_use",
+                        "id": tu["id"],
+                        "name": tu["name"],
+                        "input": tu.get("input", {}),
+                    })
+                messages.append({"role": "assistant", "content": content_blocks})
             else:
                 messages.append({"role": "assistant", "content": row.content or ""})
+            i += 1
 
         elif row.role == "tool":
-            if meta and "tool_call_id" in meta:
-                messages.append({
-                    "role": "tool",
-                    "tool_call_id": meta["tool_call_id"],
-                    "content": row.content or "",
+            # Batch consecutive tool rows into a single user turn with tool_result blocks
+            tool_result_blocks: list[dict] = []
+            while i < len(rows) and rows[i].role == "tool":
+                r = rows[i]
+                m = json.loads(r.meta) if r.meta else {}
+                tool_result_blocks.append({
+                    "type": "tool_result",
+                    "tool_use_id": m.get("tool_use_id", ""),
+                    "content": r.content or "",
                 })
+                i += 1
+            messages.append({"role": "user", "content": tool_result_blocks})
+
+        else:
+            i += 1
 
     return messages
 
@@ -146,15 +176,12 @@ def load_session_messages(db: Session, session: ChatSessionORM) -> list[dict]:
 async def maybe_summarize(
     db: Session,
     session: ChatSessionORM,
-    client,  # AsyncOpenAI instance
+    client,  # AsyncAnthropic instance
     model: str,
 ) -> None:
     """
     If the session has grown past SUMMARY_THRESHOLD and the count is a multiple
     of 10, generate a fresh context summary from messages excluding the tail.
-
-    This bounds the active context window to SUMMARY_TAIL messages without
-    losing any history from the database.
     """
     if session.message_count <= SUMMARY_THRESHOLD:
         return
@@ -171,7 +198,6 @@ async def maybe_summarize(
     if not rows_to_summarize:
         return
 
-    # Build a minimal text representation for the summarization call
     convo_text = []
     for row in rows_to_summarize:
         if row.role in ("user", "assistant") and row.content:
@@ -188,11 +214,12 @@ async def maybe_summarize(
     )
 
     try:
-        resp = await client.chat.completions.create(
+        resp = await client.messages.create(
             model=model,
+            max_tokens=500,
             messages=[{"role": "user", "content": summary_prompt}],
         )
-        summary = resp.choices[0].message.content or ""
+        summary = resp.content[0].text if resp.content else ""
         session.context_summary = summary
         db.commit()
     except Exception:

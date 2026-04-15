@@ -2,7 +2,7 @@
 Tool execution layer.
 
 Each _execute_* function maps 1:1 to a tool in tools.py.
-_dispatch_tool is the single routing entry point called by both loop variants.
+_dispatch_tool is the single routing entry point called by the loop.
 
 To add a new tool:
   1. Write _execute_<name>() here.
@@ -26,15 +26,8 @@ from ..models import (
     ProjectCreate,
     ProjectWeek,
 )
-from ..orm_models import AgentMemoryORM, DynamicToolORM
+from ..orm_models import AgentMemoryORM
 from .tools import READ_ONLY_TOOLS  # re-exported for loop.py convenience
-from .dynamic_tools import (
-    RESERVED_NAMES, validate_tool_code,
-    create_dynamic_tool, get_dynamic_tool_by_name,
-    list_dynamic_tools, delete_dynamic_tool, increment_usage,
-    wait_for_tool_ready, ensure_tool_environment_ready,
-)
-from .sandbox import execute_in_sandbox
 
 
 # ---------------------------------------------------------------------------
@@ -410,7 +403,6 @@ def _execute_create_project(
     start = date.fromisoformat(start_date_str)
     end = date.fromisoformat(end_date_str)
 
-    # Auto-generate weekly FTE rows at 1.0 — adjustable later via update_project
     weeks: list[ProjectWeek] = []
     current = start
     while current <= end:
@@ -427,12 +419,6 @@ def _execute_create_project(
     proj = storage.create_project(db, payload)
     return f"OK: Created project '{proj.name}' (id={proj.id}, {proj.start_date} to {proj.end_date}, {len(weeks)} weeks)."
 
-
-# ---------------------------------------------------------------------------
-# Dispatch table — add new tools here
-# ---------------------------------------------------------------------------
-# Long-term memory tools
-# ---------------------------------------------------------------------------
 
 def _execute_remember_fact(
     db: Session,
@@ -487,116 +473,8 @@ def _execute_list_memories(
 
 
 # ---------------------------------------------------------------------------
-
-def _execute_create_dynamic_tool(db: Session, args: dict) -> str:
-    required_fields = ["name", "description", "code"]
-    missing = [f for f in required_fields if f not in args]
-    if missing:
-        return f"ERROR: Missing required fields: {', '.join(missing)}"
-
-    name = args["name"]
-    if name in RESERVED_NAMES:
-        return f"ERROR: '{name}' is a reserved tool name and cannot be used"
-    if get_dynamic_tool_by_name(db, name):
-        return f"ERROR: Tool '{name}' already exists. Delete it first to recreate."
-    err = validate_tool_code(args["code"], name)
-    if err:
-        return f"ERROR: {err}"
-
-    parameters_schema = args.get("parameters_schema", {"type": "object", "properties": {}})
-
-    _, msg = create_dynamic_tool(
-        db, name=name, description=args["description"],
-        parameters_schema=parameters_schema,
-        code=args["code"], requirements=args.get("requirements", []),
-        tags=args.get("tags"),
-    )
-    return f"OK: {msg}"
-
-
-def _execute_list_dynamic_tools(db: Session) -> str:
-    import json as _json
-    tools = list_dynamic_tools(db)
-    if not tools:
-        return "OK: No dynamic tools created yet."
-    lines = ["OK: Dynamic tools:"]
-    for t in tools:
-        reqs = _json.loads(t.requirements) if t.requirements else []
-        req_str = f" [{', '.join(reqs)}]" if reqs else ""
-        lines.append(f"  - {t.name}: {t.description}")
-        lines.append(f"    status={t.env_status}{req_str}, used={t.usage_count}x")
-        if t.env_status == "failed" and t.env_error:
-            lines.append(f"    error: {t.env_error}")
-    return "\n".join(lines)
-
-
-def _execute_delete_dynamic_tool(db: Session, args: dict) -> str:
-    name = args["name"]
-    return f"OK: Deleted tool '{name}'" if delete_dynamic_tool(db, name) \
-        else f"ERROR: Tool '{name}' not found"
-
-
-def _execute_check_dynamic_tool_status(db: Session, args: dict) -> str:
-    """Wait for a dynamic tool's environment to be ready."""
-    name = args.get("name")
-    if not name:
-        return "ERROR: Missing required parameter 'name'"
-
-    tool = get_dynamic_tool_by_name(db, name)
-    if not tool:
-        return f"ERROR: Tool '{name}' not found"
-
-    if tool.env_status == "ready":
-        param_schema = {}
-        try:
-            import json as _json
-            param_schema = _json.loads(tool.parameters_schema)
-        except:
-            pass
-        param_names = list(param_schema.get("properties", {}).keys())
-        return (
-            f"OK: Tool '{name}' is ready. "
-            f"NEXT: Fetch required data using existing tools, then call {name}(). "
-            f"Parameters: {param_names or ['none']}"
-        )
-
-    if tool.env_status == "failed":
-        return f"ERROR: Tool '{name}' environment setup failed: {tool.env_error}"
-
-    # Status is pending - wait for it
-    status, error = wait_for_tool_ready(db, name, max_wait_seconds=60, poll_interval=3.0)
-
-    if status == "ready":
-        param_schema = {}
-        try:
-            import json as _json
-            param_schema = _json.loads(tool.parameters_schema)
-        except:
-            pass
-        param_names = list(param_schema.get("properties", {}).keys())
-        return (
-            f"OK: Tool '{name}' is now ready. "
-            f"NEXT: Fetch required data using existing tools, then call {name}(). "
-            f"Parameters: {param_names or ['none']}"
-        )
-    elif status == "failed":
-        return f"ERROR: Tool '{name}' environment setup failed: {error}"
-    else:
-        return f"ERROR: Tool '{name}' is still installing packages. Try again in a moment."
-
-
-def _execute_run_dynamic_tool(db: Session, tool: DynamicToolORM, args: dict) -> str:
-    """Execute a dynamic tool, handling missing venv and pending status."""
-    # Ensure environment is ready (handles missing venv, pending status)
-    is_ready, message = ensure_tool_environment_ready(db, tool, max_wait_seconds=30)
-    if not is_ready:
-        return f"ERROR: {message}"
-
-    # Execute the tool
-    result = execute_in_sandbox(tool.name, tool.code, tool.name, args)
-    increment_usage(db, tool.id)
-    return f"OK: {result['result']}" if result["ok"] else f"ERROR: {result['error']}"
-
+# Dispatch table
+# ---------------------------------------------------------------------------
 
 def _dispatch_tool(fn_name: str, args: dict, db: Session, user_id: Optional[int] = None) -> str:
     """Route a tool call to the appropriate execute function."""
@@ -649,16 +527,5 @@ def _dispatch_tool(fn_name: str, args: dict, db: Session, user_id: Optional[int]
             )
         case "list_memories":
             return _execute_list_memories(db, user_id, args.get("category"))
-        case "create_dynamic_tool":
-            return _execute_create_dynamic_tool(db, args)
-        case "list_dynamic_tools":
-            return _execute_list_dynamic_tools(db)
-        case "delete_dynamic_tool":
-            return _execute_delete_dynamic_tool(db, args)
-        case "check_dynamic_tool_status":
-            return _execute_check_dynamic_tool_status(db, args)
         case _:
-            tool = get_dynamic_tool_by_name(db, fn_name)
-            if tool:
-                return _execute_run_dynamic_tool(db, tool, args)
             return f"ERROR: Unknown tool '{fn_name}'"
