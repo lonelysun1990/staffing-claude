@@ -11,7 +11,7 @@ To add a new tool:
 from __future__ import annotations
 
 from collections import defaultdict
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import Optional
 
 from sqlalchemy.orm import Session
@@ -53,7 +53,43 @@ def _upcoming_mondays(horizon_weeks: int) -> list[str]:
 
 
 def _week_start_str(w) -> str:
-    return w.isoformat() if isinstance(w, date) else str(w)
+    """Normalize DB / API week values to YYYY-MM-DD (handles datetime and date)."""
+    if isinstance(w, datetime):
+        return w.date().isoformat()
+    if isinstance(w, date):
+        return w.isoformat()
+    s = str(w).strip()
+    return s[:10] if len(s) >= 10 and s[4] == "-" and s[7] == "-" else s
+
+
+def _to_date(w) -> date:
+    """Coerce assignment week_start to a date."""
+    if isinstance(w, datetime):
+        return w.date()
+    if isinstance(w, date):
+        return w
+    return date.fromisoformat(_week_start_str(w))
+
+
+def _iso_week_monday(d: date) -> date:
+    """Monday of the ISO week containing d (weekday: Mon=0 .. Sun=6)."""
+    return d - timedelta(days=d.weekday())
+
+
+def _week_bucket_key(w) -> str:
+    """Canonical key for allocation: Monday of the calendar week containing this assignment."""
+    return _iso_week_monday(_to_date(w)).isoformat()
+
+
+def _mondays_in_inclusive_range(range_start: date, range_end: date) -> list[str]:
+    """Every Monday from the week of range_start through the week of range_end (inclusive)."""
+    cur = _iso_week_monday(range_start)
+    last = _iso_week_monday(range_end)
+    out: list[str] = []
+    while cur <= last:
+        out.append(cur.isoformat())
+        cur += timedelta(weeks=1)
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -202,16 +238,18 @@ def _execute_get_availability(
     ds_list = storage.list_data_scientists(db)
     assignments = storage.list_assignments(db)
 
+    # Use the same Monday-based week grid as set_assignment (see _upcoming_mondays).
+    # If we stepped day-by-day from an arbitrary ISO date (e.g. Wed from the planning
+    # horizon), keys would not match rows stored on Mondays — availability looked 100% free.
     if week_start_str is None:
-        start = _next_monday(date.today())
-        weeks = [(start + timedelta(weeks=i)).isoformat() for i in range(4)]
+        weeks = _upcoming_mondays(4)
     else:
-        start = date.fromisoformat(week_start_str)
-        end = date.fromisoformat(week_end_str) if week_end_str else start + timedelta(weeks=4)
-        weeks, current = [], start
-        while current <= end:
-            weeks.append(current.isoformat())
-            current += timedelta(weeks=1)
+        rs = _to_date(week_start_str)
+        if week_end_str:
+            re_end = _to_date(week_end_str)
+        else:
+            re_end = rs + timedelta(weeks=4)
+        weeks = _mondays_in_inclusive_range(rs, re_end)
 
     if ds_name_query:
         matches = resolve_name(ds_name_query, [ds.name for ds in ds_list])
@@ -223,7 +261,7 @@ def _execute_get_availability(
 
     alloc_map: dict[tuple[int, str], float] = defaultdict(float)
     for a in assignments:
-        alloc_map[(a.data_scientist_id, _week_start_str(a.week_start))] += a.allocation
+        alloc_map[(a.data_scientist_id, _week_bucket_key(a.week_start))] += a.allocation
 
     lines = []
     for ds in ds_list:
