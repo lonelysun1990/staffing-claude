@@ -111,18 +111,12 @@ export function ChatPanel({ isOpen, onClose, onDataChanged }: ChatPanelProps) {
     try {
       const list = await api.listSessions();
       setSessions(list);
-      // Auto-load the most recent session when opening the panel with no active session
-      if (autoSelectIfNone && list.length > 0) {
-        setActiveSessionId((current) => {
-          if (current === null) {
-            const first = list[0];
-            api.getSessionMessages(first.id)
-              .then((msgs) => setItems(dbMessagesToItems(msgs)))
-              .catch(() => {});
-            return first.id;
-          }
-          return current;
-        });
+      // Auto-load the most recent session when opening with no active session
+      if (autoSelectIfNone && list.length > 0 && activeSessionId === null) {
+        const first = list[0];
+        const msgs = await api.getSessionMessages(first.id);
+        setItems(dbMessagesToItems(msgs));
+        setActiveSessionId(first.id);
       }
     } catch {
       // ignore — sessions just won't show
