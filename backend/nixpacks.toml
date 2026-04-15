@@ -1,0 +1,4 @@
+# Ensure `git` exists so we can `git init` a minimal workspace for Claude Code CLI
+# (deploy trees often have no `.git` under the app root).
+[phases.setup]
+aptPkgs = ["git"]

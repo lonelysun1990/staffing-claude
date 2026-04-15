@@ -15,7 +15,13 @@ SSE event types emitted:
 
 from __future__ import annotations
 
+import logging
 import os
+import shutil
+import subprocess
+import tempfile
+import traceback
+from pathlib import Path
 from typing import AsyncGenerator, Optional
 
 from sqlalchemy.orm import Session
@@ -31,6 +37,7 @@ from claude_agent_sdk import (
     TextBlock,
     ToolUseBlock,
     ToolResultBlock,
+    ProcessError,
 )
 
 from .chat_storage import (
@@ -49,6 +56,30 @@ from .tools import READ_ONLY_TOOLS, ALL_TOOL_NAMES, build_mcp_server
 
 MODEL = "claude-sonnet-4-6"
 MAX_TURNS = 12
+
+logger = logging.getLogger(__name__)
+
+
+def _ensure_claude_cwd() -> str:
+    """Claude Code expects a normal project directory; deploy images often lack .git under /app."""
+    default = str(Path(tempfile.gettempdir()) / "staffing-claude-agent")
+    root = Path(os.environ.get("AGENT_WORKSPACE_DIR", default))
+    root.mkdir(parents=True, exist_ok=True)
+    if not (root / ".git").exists():
+        git = shutil.which("git")
+        if git:
+            subprocess.run(
+                [git, "init", "-q"],
+                cwd=root,
+                check=False,
+                capture_output=True,
+            )
+        else:
+            logger.warning(
+                "git not found on PATH; Claude Code cwd may need a git repo "
+                "(install git in the container or set AGENT_WORKSPACE_DIR)."
+            )
+    return str(root)
 
 
 async def run_agent_stream(
@@ -97,6 +128,13 @@ async def run_agent_stream(
     # Build in-process MCP server with direct DB access via closures
     mcp_server = build_mcp_server(db, user_id)
 
+    claude_cwd = _ensure_claude_cwd()
+    cli_stderr: list[str] = []
+
+    def _on_cli_stderr(line: str) -> None:
+        cli_stderr.append(line)
+        logger.warning("Claude Code CLI: %s", line)
+
     options = ClaudeAgentOptions(
         system_prompt=system_prompt,
         mcp_servers={"staffing": mcp_server},
@@ -105,6 +143,8 @@ async def run_agent_stream(
         permission_mode="bypassPermissions",
         allowed_tools=ALL_TOOL_NAMES,
         include_partial_messages=True,
+        cwd=claude_cwd,
+        stderr=_on_cli_stderr,
         env={"ANTHROPIC_API_KEY": api_key},
     )
 
@@ -202,6 +242,15 @@ async def run_agent_stream(
                 })
                 return
 
+    except ProcessError as exc:
+        stderr_blob = "\n".join(cli_stderr[-40:]) if cli_stderr else (exc.stderr or "")
+        msg = f"Agent error: {exc}"
+        if stderr_blob.strip():
+            msg = f"{msg}\n--- Claude Code stderr ---\n{stderr_blob.strip()}"
+        yield sse("error", {"message": msg, "traceback": traceback.format_exc()})
     except Exception as exc:
-        import traceback as _tb
-        yield sse("error", {"message": f"Agent error: {exc}", "traceback": _tb.format_exc()})
+        stderr_blob = "\n".join(cli_stderr[-40:]) if cli_stderr else ""
+        msg = f"Agent error: {exc}"
+        if stderr_blob.strip():
+            msg = f"{msg}\n--- Claude Code stderr ---\n{stderr_blob.strip()}"
+        yield sse("error", {"message": msg, "traceback": traceback.format_exc()})
