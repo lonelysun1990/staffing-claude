@@ -30,27 +30,48 @@ from .executor import (
     _execute_list_memories,
 )
 
-# Tools that do not modify data — used by loop.py to decide whether to set data_changed=True.
-READ_ONLY_TOOLS: frozenset[str] = frozenset({
-    "get_availability",
-    "check_conflicts",
-    "suggest_data_scientists",
-    "list_memories",
-})
+_MCP_SERVER = "staffing"
 
-# All tool names — used to populate ClaudeAgentOptions.allowed_tools
+
+def mcp_tool_id(short_name: str) -> str:
+    """Wire name for SDK MCP tools (matches Claude Code --allowedTools / ToolUseBlock.name)."""
+    return f"mcp__{_MCP_SERVER}__{short_name}"
+
+
+def is_read_only_tool(name: str) -> bool:
+    """True if this tool does not mutate scheduling data (handles short or MCP-qualified names)."""
+    if name in READ_ONLY_TOOLS:
+        return True
+    return mcp_tool_id(name) in READ_ONLY_TOOLS
+
+
+# Tools that do not modify data — used by loop.py to decide whether to set data_changed=True.
+READ_ONLY_TOOLS: frozenset[str] = frozenset(
+    mcp_tool_id(n)
+    for n in (
+        "get_availability",
+        "check_conflicts",
+        "suggest_data_scientists",
+        "list_memories",
+    )
+)
+
+# All tool names — used to populate ClaudeAgentOptions.allowed_tools (required for dontAsk mode).
 ALL_TOOL_NAMES: list[str] = [
-    "set_assignment",
-    "clear_assignment",
-    "get_availability",
-    "check_conflicts",
-    "suggest_data_scientists",
-    "update_data_scientist",
-    "update_project",
-    "create_data_scientist",
-    "create_project",
-    "remember_fact",
-    "list_memories",
+    mcp_tool_id(n)
+    for n in (
+        "set_assignment",
+        "clear_assignment",
+        "get_availability",
+        "check_conflicts",
+        "suggest_data_scientists",
+        "update_data_scientist",
+        "update_project",
+        "create_data_scientist",
+        "create_project",
+        "remember_fact",
+        "list_memories",
+    )
 ]
 
 # ---------------------------------------------------------------------------
