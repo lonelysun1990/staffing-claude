@@ -18,3 +18,4 @@ frontend/vite.config.d.ts
 .claude/worktrees/
 .claude/memory/
 backend/.env
+.playwright-mcp/
