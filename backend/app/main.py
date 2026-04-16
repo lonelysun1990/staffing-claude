@@ -89,6 +89,12 @@ async def lifespan(app: FastAPI):
     seed()
     with SessionLocal() as db:
         bootstrap_admin(db)
+    from .agent.artifacts import purge_expired_artifacts
+    from .agent.dynamic_tools import ensure_tool_environments
+
+    ensure_tool_environments()
+    with SessionLocal() as db:
+        purge_expired_artifacts(db)
     yield
 
 

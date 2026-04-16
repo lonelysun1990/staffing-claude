@@ -126,7 +126,7 @@ async def run_agent_stream(
     auto_title_session(db, session, new_user_msg.content)
 
     # Build in-process MCP server with direct DB access via closures
-    mcp_server = build_mcp_server(db, user_id)
+    mcp_server = build_mcp_server(db, user_id, session.id)
 
     claude_cwd = _ensure_claude_cwd()
     cli_stderr: list[str] = []

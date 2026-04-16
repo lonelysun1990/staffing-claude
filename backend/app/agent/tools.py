@@ -4,7 +4,7 @@ In-process MCP server for the staffing agent.
 Each tool wraps an _execute_* function from executor.py via a closure that
 captures the SQLAlchemy Session so tool handlers have direct DB access.
 
-Call build_mcp_server(db, user_id) per request to get a McpSdkServerConfig
+Call build_mcp_server(db, user_id, session_id) per request to get a McpSdkServerConfig
 ready for ClaudeAgentOptions.mcp_servers.
 """
 
@@ -28,6 +28,14 @@ from .executor import (
     _execute_create_project,
     _execute_remember_fact,
     _execute_list_memories,
+    _execute_store_artifact,
+    _execute_get_ds_team_weekly_aggregates,
+    _execute_create_dynamic_tool,
+    _execute_update_dynamic_tool,
+    _execute_list_dynamic_tools,
+    _execute_delete_dynamic_tool,
+    _execute_run_dynamic_tool,
+    _execute_check_dynamic_tool_status,
 )
 
 _MCP_SERVER = "staffing"
@@ -53,6 +61,14 @@ READ_ONLY_TOOLS: frozenset[str] = frozenset(
         "check_conflicts",
         "suggest_data_scientists",
         "list_memories",
+        "store_artifact",
+        "get_ds_team_weekly_aggregates",
+        "create_dynamic_tool",
+        "update_dynamic_tool",
+        "list_dynamic_tools",
+        "delete_dynamic_tool",
+        "run_dynamic_tool",
+        "check_dynamic_tool_status",
     )
 )
 
@@ -71,6 +87,14 @@ ALL_TOOL_NAMES: list[str] = [
         "create_project",
         "remember_fact",
         "list_memories",
+        "store_artifact",
+        "get_ds_team_weekly_aggregates",
+        "create_dynamic_tool",
+        "update_dynamic_tool",
+        "list_dynamic_tools",
+        "delete_dynamic_tool",
+        "run_dynamic_tool",
+        "check_dynamic_tool_status",
     )
 ]
 
@@ -194,12 +218,107 @@ _LIST_MEMORIES_SCHEMA = {
     "required": [],
 }
 
+_STORE_ARTIFACT_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "payload": {
+            "type": "object",
+            "description": "JSON blob referenced by artifact_id for run_dynamic_tool",
+        },
+        "ttl_minutes": {
+            "type": "integer",
+            "description": "TTL in minutes (default 60, max 1440)",
+        },
+    },
+    "required": ["payload"],
+}
+
+_GET_DS_AGG_SCHEMA = {
+    "type": "object",
+    "properties": {},
+    "required": [],
+}
+
+_CREATE_DYNAMIC_TOOL_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "name": {"type": "string", "description": "Unique tool name (letters, digits, _, -)"},
+        "description": {"type": "string"},
+        "parameters_schema": {
+            "type": "object",
+            "description": "JSON Schema for kwargs passed to run()",
+        },
+        "code": {
+            "type": "string",
+            "description": "Python source defining run(**kwargs). Use matplotlib Agg for plots.",
+        },
+        "requirements": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "pip requirements e.g. [\"matplotlib\"]",
+        },
+        "tags": {"type": "array", "items": {"type": "string"}},
+    },
+    "required": ["name", "description", "parameters_schema", "code"],
+}
+
+_UPDATE_DYNAMIC_TOOL_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "name": {"type": "string"},
+        "description": {"type": ["string", "null"]},
+        "parameters_schema": {"type": ["object", "null"]},
+        "code": {"type": ["string", "null"]},
+        "requirements": {"type": ["array", "null"], "items": {"type": "string"}},
+        "tags": {"type": ["array", "null"], "items": {"type": "string"}},
+    },
+    "required": ["name"],
+}
+
+_LIST_DYNAMIC_TOOLS_SCHEMA = {
+    "type": "object",
+    "properties": {},
+    "required": [],
+}
+
+_DELETE_DYNAMIC_TOOL_SCHEMA = {
+    "type": "object",
+    "properties": {"name": {"type": "string"}},
+    "required": ["name"],
+}
+
+_RUN_DYNAMIC_TOOL_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "name": {"type": "string"},
+        "arguments": {
+            "type": "object",
+            "description": "Keyword arguments for run(); merged over artifact payload if artifact_id set",
+        },
+        "artifact_id": {
+            "type": ["string", "null"],
+            "description": "Optional artifact from store_artifact; dict payloads merge into arguments",
+        },
+    },
+    "required": ["name"],
+}
+
+_CHECK_DYNAMIC_TOOL_STATUS_SCHEMA = {
+    "type": "object",
+    "properties": {"name": {"type": "string"}},
+    "required": ["name"],
+}
+
 
 # ---------------------------------------------------------------------------
 # Per-request MCP server factory
 # ---------------------------------------------------------------------------
 
-def build_mcp_server(db: Session, user_id: Optional[int]) -> McpSdkServerConfig:
+def build_mcp_server(
+    db: Session,
+    user_id: Optional[int],
+    session_id: Optional[int] = None,
+) -> McpSdkServerConfig:
     """
     Create an in-process MCP server per request.
 
@@ -365,6 +484,124 @@ def build_mcp_server(db: Session, user_id: Optional[int]) -> McpSdkServerConfig:
     async def list_memories(args: dict) -> dict:
         return _result(_execute_list_memories(db, user_id, args.get("category")))
 
+    @tool(
+        name="store_artifact",
+        description=(
+            "Store a compact JSON payload server-side and get an artifact_id. "
+            "Use with run_dynamic_tool to avoid passing large data in chat. "
+            "Payloads expire after ttl_minutes."
+        ),
+        input_schema=_STORE_ARTIFACT_SCHEMA,
+    )
+    async def store_artifact_tool(args: dict) -> dict:
+        return _result(
+            _execute_store_artifact(
+                db,
+                user_id,
+                session_id,
+                args["payload"],
+                args.get("ttl_minutes"),
+            ),
+        )
+
+    @tool(
+        name="get_ds_team_weekly_aggregates",
+        description=(
+            "Returns weekly team average allocation %% for all data scientists over the planning horizon. "
+            "Small JSON for charts — prefer this over raw get_availability for plotting."
+        ),
+        input_schema=_GET_DS_AGG_SCHEMA,
+    )
+    async def get_ds_team_weekly_aggregates(args: dict) -> dict:
+        return _result(_execute_get_ds_team_weekly_aggregates(db))
+
+    @tool(
+        name="create_dynamic_tool",
+        description=(
+            "Register a Python tool with its own venv and pip requirements. "
+            "Code must define run(**kwargs). After create, call check_dynamic_tool_status then "
+            "run_dynamic_tool to test; on failure use update_dynamic_tool to fix and override."
+        ),
+        input_schema=_CREATE_DYNAMIC_TOOL_SCHEMA,
+    )
+    async def create_dynamic_tool(args: dict) -> dict:
+        return _result(
+            _execute_create_dynamic_tool(
+                db,
+                args["name"],
+                args["description"],
+                args["parameters_schema"],
+                args["code"],
+                args.get("requirements"),
+                args.get("tags"),
+            ),
+        )
+
+    @tool(
+        name="update_dynamic_tool",
+        description=(
+            "Replace an existing dynamic tool by name (code, schema, requirements). "
+            "Bumps code_revision; reinstalls venv if requirements change."
+        ),
+        input_schema=_UPDATE_DYNAMIC_TOOL_SCHEMA,
+    )
+    async def update_dynamic_tool(args: dict) -> dict:
+        return _result(
+            _execute_update_dynamic_tool(
+                db,
+                args["name"],
+                args.get("description"),
+                args.get("parameters_schema"),
+                args.get("code"),
+                args.get("requirements"),
+                args.get("tags"),
+            ),
+        )
+
+    @tool(
+        name="list_dynamic_tools",
+        description="List registered dynamic tools and their env_status.",
+        input_schema=_LIST_DYNAMIC_TOOLS_SCHEMA,
+    )
+    async def list_dynamic_tools(args: dict) -> dict:
+        return _result(_execute_list_dynamic_tools(db))
+
+    @tool(
+        name="delete_dynamic_tool",
+        description="Remove a dynamic tool and delete its virtual environment.",
+        input_schema=_DELETE_DYNAMIC_TOOL_SCHEMA,
+    )
+    async def delete_dynamic_tool(args: dict) -> dict:
+        return _result(_execute_delete_dynamic_tool(db, args["name"]))
+
+    @tool(
+        name="run_dynamic_tool",
+        description=(
+            "Execute a registered dynamic tool in its venv. Returns JSON including result or "
+            "structured error (stderr_tail, env_status). Always run after create/update to verify."
+        ),
+        input_schema=_RUN_DYNAMIC_TOOL_SCHEMA,
+    )
+    async def run_dynamic_tool(args: dict) -> dict:
+        return _result(
+            _execute_run_dynamic_tool(
+                db,
+                args["name"],
+                args.get("arguments"),
+                args.get("artifact_id"),
+                user_id,
+                session_id,
+            ),
+        )
+
+    @tool(
+        name="check_dynamic_tool_status",
+        description="Poll pip install / env_status for a dynamic tool before run_dynamic_tool.",
+        input_schema=_CHECK_DYNAMIC_TOOL_STATUS_SCHEMA,
+    )
+    async def check_dynamic_tool_status(args: dict) -> dict:
+        return _result(_execute_check_dynamic_tool_status(db, args["name"]))
+
     return create_sdk_mcp_server("staffing", tools=[
         set_assignment,
         clear_assignment,
@@ -377,4 +614,12 @@ def build_mcp_server(db: Session, user_id: Optional[int]) -> McpSdkServerConfig:
         create_project,
         remember_fact,
         list_memories,
+        store_artifact_tool,
+        get_ds_team_weekly_aggregates,
+        create_dynamic_tool,
+        update_dynamic_tool,
+        list_dynamic_tools,
+        delete_dynamic_tool,
+        run_dynamic_tool,
+        check_dynamic_tool_status,
     ])

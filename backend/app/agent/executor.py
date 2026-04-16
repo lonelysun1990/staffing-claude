@@ -10,6 +10,7 @@ To add a new tool:
 
 from __future__ import annotations
 
+import json
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from typing import Optional
@@ -493,4 +494,143 @@ def _execute_list_memories(
         for m in memories
     ]
     return "OK:\n" + "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Artifacts & dynamic Python tools (server-side venv; see .claude/plans)
+# ---------------------------------------------------------------------------
+
+def _execute_store_artifact(
+    db: Session,
+    user_id: Optional[int],
+    session_id: Optional[int],
+    payload: dict,
+    ttl_minutes: Optional[int],
+) -> str:
+    from .artifacts import store_artifact
+
+    _, msg = store_artifact(
+        db, user_id, session_id, payload, ttl_minutes or 60,
+    )
+    return msg
+
+
+def _execute_get_ds_team_weekly_aggregates(db: Session) -> str:
+    """
+    Compact series for plotting: mean allocation % across all data scientists per week.
+    """
+    config = storage.get_config(db)
+    weeks = _upcoming_mondays(config.horizon_weeks)
+    ds_list = storage.list_data_scientists(db)
+    assignments = storage.list_assignments(db)
+    alloc_map: dict[tuple[int, str], float] = defaultdict(float)
+    for a in assignments:
+        alloc_map[(a.data_scientist_id, _week_bucket_key(a.week_start))] += a.allocation
+    n = len(ds_list)
+    if n == 0:
+        return "OK: " + json.dumps(
+            {"weeks": weeks, "team_avg_allocation_pct": [], "n_data_scientists": 0},
+        )
+    team_pcts: list[float] = []
+    for w in weeks:
+        total = sum(alloc_map.get((ds.id, w), 0.0) for ds in ds_list)
+        team_pcts.append(round(100.0 * total / n, 4))
+    return "OK: " + json.dumps(
+        {
+            "weeks": weeks,
+            "team_avg_allocation_pct": team_pcts,
+            "n_data_scientists": n,
+        },
+    )
+
+
+def _execute_create_dynamic_tool(
+    db: Session,
+    name: str,
+    description: str,
+    parameters_schema: dict,
+    code: str,
+    requirements: Optional[list],
+    tags: Optional[list],
+) -> str:
+    from .dynamic_tools import create_dynamic_tool
+
+    _tool, msg = create_dynamic_tool(
+        db,
+        name=name,
+        description=description,
+        parameters_schema=parameters_schema,
+        code=code,
+        requirements=requirements or [],
+        tags=tags,
+    )
+    return msg
+
+
+def _execute_update_dynamic_tool(
+    db: Session,
+    name: str,
+    description: Optional[str],
+    parameters_schema: Optional[dict],
+    code: Optional[str],
+    requirements: Optional[list],
+    tags: Optional[list],
+) -> str:
+    from .dynamic_tools import update_dynamic_tool
+
+    _ok, msg = update_dynamic_tool(
+        db,
+        name,
+        description=description,
+        parameters_schema=parameters_schema,
+        code=code,
+        requirements=requirements,
+        tags=tags,
+    )
+    return msg
+
+
+def _execute_list_dynamic_tools(db: Session) -> str:
+    from .dynamic_tools import list_dynamic_tools
+
+    tools = list_dynamic_tools(db)
+    if not tools:
+        return "OK: No dynamic tools registered."
+    rows = [
+        {
+            "name": t.name,
+            "env_status": t.env_status,
+            "code_revision": t.code_revision,
+            "description": (t.description or "")[:120],
+        }
+        for t in tools
+    ]
+    return "OK: " + json.dumps(rows, indent=2)
+
+
+def _execute_delete_dynamic_tool(db: Session, name: str) -> str:
+    from .dynamic_tools import delete_dynamic_tool
+
+    if delete_dynamic_tool(db, name):
+        return f"OK: Deleted dynamic tool '{name}'."
+    return f"ERROR: Tool '{name}' not found."
+
+
+def _execute_run_dynamic_tool(
+    db: Session,
+    name: str,
+    arguments: Optional[dict],
+    artifact_id: Optional[str],
+    user_id: Optional[int],
+    session_id: Optional[int],
+) -> str:
+    from .dynamic_tools import run_dynamic_tool
+
+    return run_dynamic_tool(db, name, arguments, artifact_id, user_id, session_id)
+
+
+def _execute_check_dynamic_tool_status(db: Session, name: str) -> str:
+    from .dynamic_tools import check_dynamic_tool_status
+
+    return check_dynamic_tool_status(db, name)
 

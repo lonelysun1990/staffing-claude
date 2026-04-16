@@ -170,6 +170,21 @@ class AgentMemoryORM(Base):
     __table_args__ = (UniqueConstraint("user_id", "key"),)
 
 
+class ArtifactORM(Base):
+    """Ephemeral JSON payloads referenced by artifact_id (avoid large data in chat context)."""
+
+    __tablename__ = "artifacts"
+
+    id = Column(String(36), primary_key=True)  # UUID string
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    session_id = Column(Integer, ForeignKey("chat_sessions.id"), nullable=True)
+    content_type = Column(String(80), nullable=False, default="application/json")
+    payload_json = Column(Text, nullable=False)
+    byte_size = Column(Integer, nullable=False)
+    created_at = Column(String, nullable=False)
+    expires_at = Column(String, nullable=False)
+
+
 class DynamicToolORM(Base):
     __tablename__ = "dynamic_tools"
 
@@ -178,7 +193,7 @@ class DynamicToolORM(Base):
     description = Column(Text, nullable=False)
     parameters_schema = Column(Text, nullable=False)  # JSON string of JSON Schema
     code = Column(Text, nullable=False)
-    requirements = Column(Text, nullable=False, default="[]")  # JSON array: ["pandas==2.2.3"]
+    requirements = Column(Text, nullable=False, default="[]")  # JSON array: ["matplotlib"]
     env_status = Column(String(20), nullable=False, default="pending")  # pending | ready | failed
     env_error = Column(Text, nullable=True)
 
@@ -187,3 +202,4 @@ class DynamicToolORM(Base):
     usage_count = Column(Integer, default=0)
     last_used_at = Column(String, nullable=True)
     tags = Column(Text, nullable=True)  # JSON array string
+    code_revision = Column(Integer, nullable=False, default=0)
