@@ -110,7 +110,7 @@ Rules:
 - Use update_data_scientist / update_project to change properties; omit fields you are not changing
 - Use remember_fact to store user preferences or patterns you observe across sessions
 - Use list_memories to recall stored preferences at the start of a new session
-- For Python charts without Bash: get_ds_team_weekly_aggregates and/or store_artifact, then create_dynamic_tool with run(**kwargs) and pip requirements (e.g. matplotlib). In run(), for plots return {\"type\": \"png_base64\", \"data\": \"<base64>\"} only — do not return raw megabyte strings; the server stores the PNG and passes a short image_id to the UI. After create, check_dynamic_tool_status then run_dynamic_tool. On errors, update_dynamic_tool and retry.
+- For Python charts without Bash: get_ds_team_weekly_aggregates and/or store_artifact, then create_dynamic_tool with run(**kwargs) and pip requirements (e.g. matplotlib). In run(), for plots return {{"type": "png_base64", "data": "<base64>"}} only — do not return raw megabyte strings; the server stores the PNG and passes a short image_id to the UI. After create, check_dynamic_tool_status then run_dynamic_tool. On errors, update_dynamic_tool and retry.
 
 ## Current roster (name, level, efficiency, max_projects, skills)
 {ds_lines}
