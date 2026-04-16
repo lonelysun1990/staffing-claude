@@ -629,8 +629,18 @@ def _execute_run_dynamic_tool(
     return run_dynamic_tool(db, name, arguments, artifact_id, user_id, session_id)
 
 
-def _execute_check_dynamic_tool_status(db: Session, name: str) -> str:
+def _execute_check_dynamic_tool_status(
+    db: Session,
+    name: str,
+    max_wait_seconds: int = 0,
+    poll_interval_seconds: float = 10.0,
+) -> str:
     from .dynamic_tools import check_dynamic_tool_status
 
-    return check_dynamic_tool_status(db, name)
+    return check_dynamic_tool_status(
+        db,
+        name,
+        max_wait_seconds=max_wait_seconds,
+        poll_interval_seconds=poll_interval_seconds,
+    )
 

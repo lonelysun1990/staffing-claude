@@ -305,7 +305,21 @@ _RUN_DYNAMIC_TOOL_SCHEMA = {
 
 _CHECK_DYNAMIC_TOOL_STATUS_SCHEMA = {
     "type": "object",
-    "properties": {"name": {"type": "string"}},
+    "properties": {
+        "name": {"type": "string"},
+        "max_wait_seconds": {
+            "type": "integer",
+            "description": (
+                "If >0, wait (blocking) until env is ready/failed or timeout. "
+                "Polls every poll_interval_seconds. Typical after create/update: 120. "
+                "Use 0 for an instant snapshot only."
+            ),
+        },
+        "poll_interval_seconds": {
+            "type": "number",
+            "description": "Seconds between polls while waiting; default 10. Ignored when max_wait_seconds is 0.",
+        },
+    },
     "required": ["name"],
 }
 
@@ -519,8 +533,9 @@ def build_mcp_server(
         name="create_dynamic_tool",
         description=(
             "Register a Python tool with its own venv and pip requirements. "
-            "Code must define run(**kwargs). After create, call check_dynamic_tool_status then "
-            "run_dynamic_tool to test; on failure use update_dynamic_tool to fix and override."
+            "Code must define run(**kwargs). After create, either call "
+            "check_dynamic_tool_status(name, max_wait_seconds=120) once, or call run_dynamic_tool "
+            "(it waits for the venv). On failure use update_dynamic_tool to fix and override."
         ),
         input_schema=_CREATE_DYNAMIC_TOOL_SCHEMA,
     )
@@ -578,6 +593,7 @@ def build_mcp_server(
         name="run_dynamic_tool",
         description=(
             "Execute a registered dynamic tool in its venv. Returns small JSON (result or structured error). "
+            "Blocks up to ~2 minutes if the tool venv is still installing (same wait as status check). "
             "For matplotlib plots, return {\"type\": \"png_base64\", \"data\": \"<base64>\"} from run() — "
             "the server stores the image and returns {\"type\": \"image\", \"image_id\": \"...\"} for the chat UI. "
             "Always run after create/update to verify."
@@ -598,11 +614,22 @@ def build_mcp_server(
 
     @tool(
         name="check_dynamic_tool_status",
-        description="Poll pip install / env_status for a dynamic tool before run_dynamic_tool.",
+        description=(
+            "Read env_status for a dynamic tool (instant if max_wait_seconds=0). "
+            "After create/update with new requirements, prefer max_wait_seconds=120 (poll ~every 10s) "
+            "instead of many rapid checks. run_dynamic_tool also waits for the venv."
+        ),
         input_schema=_CHECK_DYNAMIC_TOOL_STATUS_SCHEMA,
     )
     async def check_dynamic_tool_status(args: dict) -> dict:
-        return _result(_execute_check_dynamic_tool_status(db, args["name"]))
+        return _result(
+            _execute_check_dynamic_tool_status(
+                db,
+                args["name"],
+                max(0, int(args.get("max_wait_seconds") or 0)),
+                max(2.0, float(args.get("poll_interval_seconds") or 10.0)),
+            ),
+        )
 
     return create_sdk_mcp_server("staffing", tools=[
         set_assignment,

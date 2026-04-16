@@ -57,7 +57,7 @@ export type AgentStreamEvent =
   | { type: "tool_call_start"; tool_call_id: string; name: string; args: Record<string, unknown> }
   | { type: "tool_result"; tool_call_id: string; name: string; result: string; ok: boolean; traceback?: string }
   | { type: "done"; data_changed: boolean; session_id: number | null }
-  | { type: "error"; message: string; traceback?: string };
+  | { type: "error"; message: string; traceback?: string; details?: Record<string, unknown> };
 
 export const api = {
   // Auth
@@ -153,7 +153,9 @@ export const api = {
   },
 
   getPlotImageBlob: async (imageId: string, sessionId?: number | null): Promise<Blob> => {
-    const q = sessionId != null ? `?session_id=${sessionId}` : "";
+    const params = new URLSearchParams();
+    if (sessionId != null) params.set("session_id", String(sessionId));
+    const q = params.toString() ? `?${params.toString()}` : "";
     const response = await fetch(`${API_BASE}/agent/plot-images/${encodeURIComponent(imageId)}${q}`, {
       headers: { ...getAuthHeaders() },
     });
@@ -165,6 +167,32 @@ export const api = {
       throw new Error("Failed to load plot image");
     }
     return response.blob();
+  },
+
+  /** Download plot bytes only (not the conversation). Uses auth headers. */
+  downloadPlotImage: async (imageId: string, sessionId?: number | null): Promise<void> => {
+    const params = new URLSearchParams();
+    params.set("download", "1");
+    if (sessionId != null) params.set("session_id", String(sessionId));
+    const response = await fetch(
+      `${API_BASE}/agent/plot-images/${encodeURIComponent(imageId)}?${params.toString()}`,
+      { headers: { ...getAuthHeaders() } },
+    );
+    if (!response.ok) {
+      if (response.status === 401) {
+        localStorage.removeItem("auth_token");
+        window.dispatchEvent(new Event("auth:unauthorized"));
+      }
+      throw new Error("Failed to download plot");
+    }
+    const blob = await response.blob();
+    const ext = blob.type.includes("png") ? "png" : "bin";
+    const objectUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = objectUrl;
+    a.download = `plot-${imageId}.${ext}`;
+    a.click();
+    URL.revokeObjectURL(objectUrl);
   },
 
   async *streamAgentMessage(messages: ChatMessage[], sessionId?: number): AsyncGenerator<AgentStreamEvent> {

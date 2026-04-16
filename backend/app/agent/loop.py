@@ -15,6 +15,7 @@ SSE event types emitted:
 
 from __future__ import annotations
 
+import dataclasses
 import logging
 import os
 import shutil
@@ -22,7 +23,7 @@ import subprocess
 import tempfile
 import traceback
 from pathlib import Path
-from typing import AsyncGenerator, Optional
+from typing import Any, AsyncGenerator, Optional
 
 from sqlalchemy.orm import Session
 
@@ -58,6 +59,29 @@ MODEL = "claude-sonnet-4-6"
 MAX_TURNS = 12
 
 logger = logging.getLogger(__name__)
+
+
+def _serialize_result_message(message: ResultMessage) -> dict[str, Any]:
+    """Best-effort dump for diagnostics (SDK / version differences)."""
+    data: dict[str, Any] = {}
+    try:
+        model_dump = getattr(message, "model_dump", None)
+        if callable(model_dump):
+            data = model_dump()
+        else:
+            as_dict = getattr(message, "dict", None)
+            if callable(as_dict):
+                data = as_dict()
+    except Exception as exc:
+        data["serialize_error"] = str(exc)
+    if not data and dataclasses.is_dataclass(message) and not isinstance(message, type):
+        try:
+            data = dataclasses.asdict(message)
+        except Exception as exc:
+            data["dataclass_asdict_error"] = str(exc)
+    if not data:
+        data["repr"] = repr(message)[:8000]
+    return data
 
 
 def _ensure_claude_cwd() -> str:
@@ -154,6 +178,7 @@ async def run_agent_stream(
     data_changed = False
     # Map tool_use_id → tool_name so we can label tool_result SSE events
     tool_id_to_name: dict[str, str] = {}
+    recent_tool_context: Optional[dict[str, Any]] = None
 
     try:
         async for message in query(prompt=new_user_msg.content, options=options):
@@ -221,6 +246,13 @@ async def run_agent_stream(
                             )
                         result_text = str(result_text) if result_text is not None else ""
                         tool_name = tool_id_to_name.get(block.tool_use_id, "unknown")
+                        recent_tool_context = {
+                            "tool_name": tool_name,
+                            "tool_use_id": block.tool_use_id,
+                            "ok": not block.is_error,
+                            "result_length": len(result_text),
+                            "result_preview": result_text[:1200],
+                        }
                         if not is_read_only_tool(tool_name):
                             data_changed = True
                         yield sse("tool_result", {
@@ -238,7 +270,27 @@ async def run_agent_stream(
             # ---- Final result ----
             if isinstance(message, ResultMessage):
                 if message.is_error:
-                    yield sse("error", {"message": f"Agent error: {message.result or 'unknown'}"})
+                    raw_dump = _serialize_result_message(message)
+                    logger.error("Agent ResultMessage.is_error: %s", raw_dump)
+                    primary = getattr(message, "result", None)
+                    if isinstance(primary, str) and primary.strip():
+                        human = primary.strip()
+                    else:
+                        human = (
+                            "Agent run failed inside the Claude process, but no error text was returned "
+                            "(see diagnostics below)."
+                        )
+                    yield sse(
+                        "error",
+                        {
+                            "message": human,
+                            "details": {
+                                "source": "result_message",
+                                "result_message": raw_dump,
+                                "recent_tool_context": recent_tool_context,
+                            },
+                        },
+                    )
                     return
                 await maybe_summarize(db, session)
                 yield sse("done", {

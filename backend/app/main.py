@@ -451,6 +451,7 @@ def get_agent_plot_image(
     db: Session = Depends(get_db),
     current_user: UserORM = Depends(require_auth),
     session_id: Optional[int] = Query(None, description="Chat session that created the plot"),
+    download: bool = Query(False, description="If true, send Content-Disposition attachment"),
 ) -> Response:
     """Return a PNG (or other mime) stored by run_dynamic_tool for inline chat display."""
     from .agent.plot_storage import get_plot_image_row
@@ -458,7 +459,16 @@ def get_agent_plot_image(
     row = get_plot_image_row(db, image_id, current_user.id, session_id)
     if row is None:
         raise HTTPException(status_code=404, detail="Plot not found")
-    return Response(content=bytes(row.data), media_type=row.mime_type)
+    ext = ".png" if (row.mime_type or "").endswith("/png") else ""
+    filename = f"plot-{image_id}{ext}"
+    headers: dict[str, str] = {}
+    if download:
+        headers["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return Response(
+        content=bytes(row.data),
+        media_type=row.mime_type,
+        headers=headers,
+    )
 
 
 # ---------------------------------------------------------------------------

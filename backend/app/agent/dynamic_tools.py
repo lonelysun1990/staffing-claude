@@ -134,7 +134,9 @@ def create_dynamic_tool(
         msg = (
             f"Tool '{name}' registered (code_revision={tool.code_revision}). "
             f"Installing packages in background: {', '.join(reqs)}. "
-            f"Call check_dynamic_tool_status('{name}'), then run_dynamic_tool to test."
+            f"Prefer ONE call: check_dynamic_tool_status('{name}', max_wait_seconds=120) "
+            f"(polls every ~10s, up to 2 min), or call run_dynamic_tool (it waits for the venv internally). "
+            f"Avoid tight polling."
         )
     else:
         msg = (
@@ -197,7 +199,7 @@ def update_dynamic_tool(
         return True, (
             f"OK: Updated '{name}' (code_revision={tool.code_revision}). "
             f"Environment rebuilding due to requirement change. "
-            f"Use check_dynamic_tool_status('{name}') then run_dynamic_tool again."
+            f"Use check_dynamic_tool_status('{name}', max_wait_seconds=120) or run_dynamic_tool again."
         )
 
     db.commit()
@@ -236,17 +238,22 @@ def delete_dynamic_tool(db: Session, name: str) -> bool:
 def wait_for_tool_ready(
     db: Session,
     tool_name: str,
-    max_wait_seconds: int = 90,
-    poll_interval: float = 2.0,
+    max_wait_seconds: int = 120,
+    poll_interval: float = 10.0,
 ) -> tuple[str, Optional[str]]:
     tool = get_dynamic_tool_by_name(db, tool_name)
     if not tool:
         return "not_found", f"Tool '{tool_name}' does not exist"
     elapsed = 0.0
-    while tool.env_status == "pending" and elapsed < max_wait_seconds:
-        time.sleep(poll_interval)
-        elapsed += poll_interval
+    while True:
         db.refresh(tool)
+        if tool.env_status != "pending":
+            break
+        if elapsed >= max_wait_seconds:
+            return "pending", f"Still installing after {max_wait_seconds}s"
+        step = min(poll_interval, max_wait_seconds - elapsed)
+        time.sleep(step)
+        elapsed += step
     if tool.env_status == "ready":
         return "ready", None
     if tool.env_status == "failed":
@@ -257,7 +264,7 @@ def wait_for_tool_ready(
 def ensure_tool_environment_ready(
     db: Session,
     tool: DynamicToolORM,
-    max_wait_seconds: int = 60,
+    max_wait_seconds: int = 120,
 ) -> tuple[bool, str]:
     requirements = json.loads(tool.requirements or "[]")
 
@@ -277,7 +284,11 @@ def ensure_tool_environment_ready(
             return True, "Environment ready"
         if status == "failed":
             return False, f"Environment setup failed: {error}"
-        return False, "Environment still installing. Try check_dynamic_tool_status and run again shortly."
+        return (
+            False,
+            "Environment still installing. Use check_dynamic_tool_status(name, max_wait_seconds=120) "
+            "or run_dynamic_tool again shortly.",
+        )
 
     if tool.env_status == "ready":
         return True, "Environment ready"
@@ -343,20 +354,40 @@ def _format_run_result(payload: dict) -> str:
     return text
 
 
-def check_dynamic_tool_status(db: Session, name: str) -> str:
+def check_dynamic_tool_status(
+    db: Session,
+    name: str,
+    max_wait_seconds: int = 0,
+    poll_interval_seconds: float = 10.0,
+) -> str:
     tool = get_dynamic_tool_by_name(db, name)
     if not tool:
         return f"ERROR: Tool '{name}' not found."
-    return "OK: " + json.dumps(
-        {
-            "name": tool.name,
-            "env_status": tool.env_status,
-            "env_error": tool.env_error,
-            "code_revision": tool.code_revision,
-            "requirements": json.loads(tool.requirements or "[]"),
-        },
-        default=str,
-    )
+
+    wait_meta: dict[str, Any] = {}
+    if max_wait_seconds > 0 and tool.env_status == "pending":
+        cap = min(int(max_wait_seconds), 180)
+        poll = max(2.0, float(poll_interval_seconds))
+        status, err = wait_for_tool_ready(db, tool.name, max_wait_seconds=cap, poll_interval=poll)
+        db.refresh(tool)
+        wait_meta = {
+            "waited": True,
+            "max_wait_seconds": cap,
+            "poll_interval_seconds": poll,
+            "outcome": status,
+            "wait_error": err,
+        }
+
+    payload: dict[str, Any] = {
+        "name": tool.name,
+        "env_status": tool.env_status,
+        "env_error": tool.env_error,
+        "code_revision": tool.code_revision,
+        "requirements": json.loads(tool.requirements or "[]"),
+    }
+    if wait_meta:
+        payload["wait"] = wait_meta
+    return "OK: " + json.dumps(payload, default=str)
 
 
 def ensure_tool_environments() -> None:

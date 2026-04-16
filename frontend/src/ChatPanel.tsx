@@ -26,6 +26,7 @@ type MessageItem =
       kind: "error";
       message: string;
       traceback?: string;
+      details?: Record<string, unknown>;
     };
 
 // ── Tool name display labels ─────────────────────────────────────────────────
@@ -86,6 +87,7 @@ function PlotImageResult({
 }) {
   const [url, setUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     let objectUrl: string | null = null;
@@ -106,10 +108,31 @@ function PlotImageResult({
     };
   }, [imageId, sessionId]);
 
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      await api.downloadPlotImage(imageId, sessionId);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Download failed");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   if (error) return <div className="tool-step__plot-error">{error}</div>;
   if (!url) return <div className="tool-step__plot-loading">Loading plot…</div>;
   return (
     <div className="tool-step__plot-wrap">
+      <div className="tool-step__plot-toolbar">
+        <button
+          type="button"
+          className="tool-step__plot-download"
+          onClick={() => void handleDownload()}
+          disabled={downloading}
+        >
+          {downloading ? "Downloading…" : "Download PNG"}
+        </button>
+      </div>
       <img src={url} alt="Plot output" className="tool-step__plot-img" />
     </div>
   );
@@ -295,6 +318,9 @@ export function ChatPanel({ isOpen, onClose, onDataChanged }: ChatPanelProps) {
       } else if (item.kind === "error") {
         lines.push("[Error]");
         lines.push(item.message);
+        if (item.details) {
+          lines.push("--- diagnostics ---", JSON.stringify(item.details, null, 2), "--- end diagnostics ---");
+        }
         if (item.traceback) lines.push("--- trace ---", item.traceback, "--- end trace ---");
         lines.push("");
       }
@@ -403,6 +429,7 @@ export function ChatPanel({ isOpen, onClose, onDataChanged }: ChatPanelProps) {
             kind: "error",
             message: event.message,
             traceback: event.traceback,
+            details: event.details,
           } as MessageItem];
           setItems([...localItems]);
           setStreamingText("");
@@ -504,6 +531,14 @@ export function ChatPanel({ isOpen, onClose, onDataChanged }: ChatPanelProps) {
                   <div key={idx} className="chat-error">
                     <span className="chat-error__icon">✗</span>
                     <span className="chat-error__message">{item.message}</span>
+                    {item.details && Object.keys(item.details).length > 0 && (
+                      <details className="chat-error__details">
+                        <summary>Diagnostics</summary>
+                        <pre className="chat-error__trace">
+                          {JSON.stringify(item.details, null, 2)}
+                        </pre>
+                      </details>
+                    )}
                     {item.traceback && (
                       <details className="chat-error__details">
                         <summary>Show full trace</summary>
