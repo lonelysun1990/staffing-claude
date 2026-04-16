@@ -35,6 +35,7 @@ from .auth import (
     verify_password,
 )
 from .database import Base, engine, get_db, SessionLocal
+from .schema_patches import apply_runtime_schema_patches
 from .models import (
     Assignment,
     AssignmentCreate,
@@ -86,6 +87,7 @@ def bootstrap_admin(db: Session) -> None:
 async def lifespan(app: FastAPI):
     """Startup: create tables, seed data, and bootstrap admin if configured."""
     Base.metadata.create_all(bind=engine)
+    apply_runtime_schema_patches(engine)
     seed()
     with SessionLocal() as db:
         bootstrap_admin(db)
