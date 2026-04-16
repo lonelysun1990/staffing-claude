@@ -36,6 +36,8 @@ from .executor import (
     _execute_delete_dynamic_tool,
     _execute_run_dynamic_tool,
     _execute_check_dynamic_tool_status,
+    _execute_list_skills,
+    _execute_get_skill,
 )
 
 _MCP_SERVER = "staffing"
@@ -69,6 +71,8 @@ READ_ONLY_TOOLS: frozenset[str] = frozenset(
         "delete_dynamic_tool",
         "run_dynamic_tool",
         "check_dynamic_tool_status",
+        "list_skills",
+        "get_skill",
     )
 )
 
@@ -95,6 +99,8 @@ ALL_TOOL_NAMES: list[str] = [
         "delete_dynamic_tool",
         "run_dynamic_tool",
         "check_dynamic_tool_status",
+        "list_skills",
+        "get_skill",
     )
 ]
 
@@ -321,6 +327,23 @@ _CHECK_DYNAMIC_TOOL_STATUS_SCHEMA = {
         },
     },
     "required": ["name"],
+}
+
+_LIST_SKILLS_SCHEMA = {
+    "type": "object",
+    "properties": {},
+    "required": [],
+}
+
+_GET_SKILL_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "skill_id": {
+            "type": "string",
+            "description": "Skill directory id (from list_skills), e.g. staffing-analytics-charts",
+        },
+    },
+    "required": ["skill_id"],
 }
 
 
@@ -631,6 +654,28 @@ def build_mcp_server(
             ),
         )
 
+    @tool(
+        name="list_skills",
+        description=(
+            "List bundled playbook skills (markdown) shipped with the staffing agent. "
+            "Each skill has an id and short description; use get_skill(skill_id) to load full instructions."
+        ),
+        input_schema=_LIST_SKILLS_SCHEMA,
+    )
+    async def list_skills_tool(args: dict) -> dict:
+        return _result(_execute_list_skills())
+
+    @tool(
+        name="get_skill",
+        description=(
+            "Load the full markdown body of a bundled skill by skill_id (from list_skills). "
+            "Use before complex analytics or dynamic-tool workflows when a skill matches the task."
+        ),
+        input_schema=_GET_SKILL_SCHEMA,
+    )
+    async def get_skill_tool(args: dict) -> dict:
+        return _result(_execute_get_skill(args["skill_id"]))
+
     return create_sdk_mcp_server("staffing", tools=[
         set_assignment,
         clear_assignment,
@@ -651,4 +696,6 @@ def build_mcp_server(
         delete_dynamic_tool,
         run_dynamic_tool,
         check_dynamic_tool_status,
+        list_skills_tool,
+        get_skill_tool,
     ])

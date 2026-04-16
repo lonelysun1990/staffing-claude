@@ -644,3 +644,18 @@ def _execute_check_dynamic_tool_status(
         poll_interval_seconds=poll_interval_seconds,
     )
 
+
+def _execute_list_skills() -> str:
+    from .skill_loader import format_list_skills_ok
+
+    return format_list_skills_ok()
+
+
+def _execute_get_skill(skill_id: str) -> str:
+    from .skill_loader import format_error, format_get_skill_ok, get_skill_body
+
+    ok, msg = get_skill_body(skill_id.strip())
+    if not ok:
+        return format_error(msg)
+    return format_get_skill_ok(msg)
+

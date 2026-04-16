@@ -45,6 +45,8 @@ RESERVED_NAMES = frozenset({
     "delete_dynamic_tool",
     "run_dynamic_tool",
     "check_dynamic_tool_status",
+    "list_skills",
+    "get_skill",
 })
 
 TOOL_NAME_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9_-]{0,63}$")

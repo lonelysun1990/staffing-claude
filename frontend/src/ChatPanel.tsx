@@ -51,6 +51,8 @@ const TOOL_LABELS: Record<string, string> = {
   delete_dynamic_tool: "Delete Python tool",
   run_dynamic_tool: "Run Python tool",
   check_dynamic_tool_status: "Python tool env status",
+  list_skills: "List bundled skills",
+  get_skill: "Load skill playbook",
 };
 
 function formatToolName(name: string): string {

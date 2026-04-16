@@ -114,6 +114,7 @@ Rules:
 - Use update_data_scientist / update_project to change properties; omit fields you are not changing
 - Use remember_fact to store user preferences or patterns you observe across sessions
 - Use list_memories to recall stored preferences at the start of a new session
+- Optional playbooks: call list_skills to see bundled task guides, then get_skill(skill_id) to load one before complex analytics or chart tooling
 - For Python charts without Bash: confirm data sources in your plan, then store_artifact if you need to pass large JSON into run(), then create_dynamic_tool with run(**kwargs) and pip requirements (e.g. matplotlib). In run(), for plots return {{"type": "png_base64", "data": "<base64>"}} only — do not return raw megabyte strings; the server stores the PNG and passes a short image_id to the UI. After create or after requirements change, call check_dynamic_tool_status(name, max_wait_seconds=120) once (or call run_dynamic_tool, which waits for the venv). Avoid polling faster than ~10 seconds. On errors, update_dynamic_tool and retry.
 
 ## Current roster (name, level, efficiency, max_projects, skills)
