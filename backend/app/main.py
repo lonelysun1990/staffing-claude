@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=True)
 
-from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, UploadFile
 from pydantic import BaseModel
 from sqlalchemy import text as sa_text
 from fastapi.middleware.cors import CORSMiddleware
@@ -93,10 +93,12 @@ async def lifespan(app: FastAPI):
         bootstrap_admin(db)
     from .agent.artifacts import purge_expired_artifacts
     from .agent.dynamic_tools import ensure_tool_environments
+    from .agent.plot_storage import purge_expired_plot_images
 
     ensure_tool_environments()
     with SessionLocal() as db:
         purge_expired_artifacts(db)
+        purge_expired_plot_images(db)
     yield
 
 
@@ -441,6 +443,22 @@ async def agent_chat_stream(
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+@app.get("/agent/plot-images/{image_id}")
+def get_agent_plot_image(
+    image_id: str,
+    db: Session = Depends(get_db),
+    current_user: UserORM = Depends(require_auth),
+    session_id: Optional[int] = Query(None, description="Chat session that created the plot"),
+) -> Response:
+    """Return a PNG (or other mime) stored by run_dynamic_tool for inline chat display."""
+    from .agent.plot_storage import get_plot_image_row
+
+    row = get_plot_image_row(db, image_id, current_user.id, session_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Plot not found")
+    return Response(content=bytes(row.data), media_type=row.mime_type)
 
 
 # ---------------------------------------------------------------------------

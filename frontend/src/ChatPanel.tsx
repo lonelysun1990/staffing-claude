@@ -42,10 +42,92 @@ const TOOL_LABELS: Record<string, string> = {
   create_project: "Create project",
   remember_fact: "Remember fact",
   list_memories: "Recall memories",
+  store_artifact: "Store data (artifact)",
+  get_ds_team_weekly_aggregates: "Team allocation series",
+  create_dynamic_tool: "Register Python tool",
+  update_dynamic_tool: "Update Python tool",
+  list_dynamic_tools: "List Python tools",
+  delete_dynamic_tool: "Delete Python tool",
+  run_dynamic_tool: "Run Python tool",
+  check_dynamic_tool_status: "Python tool env status",
 };
 
 function formatToolName(name: string): string {
-  return TOOL_LABELS[name] ?? name;
+  const short = name.replace(/^mcp__staffing__/, "");
+  return TOOL_LABELS[short] ?? TOOL_LABELS[name] ?? short ?? name;
+}
+
+type ParsedToolResult = { kind: "plot_image"; imageId: string } | { kind: "text" };
+
+function parseRunDynamicToolResult(result: string): ParsedToolResult {
+  const trimmed = result.trimStart();
+  if (!trimmed.startsWith("OK:")) return { kind: "text" };
+  const jsonPart = trimmed.slice(3).trim();
+  try {
+    const j = JSON.parse(jsonPart) as {
+      ok?: boolean;
+      result?: { type?: string; image_id?: string };
+    };
+    if (j.ok && j.result?.type === "image" && typeof j.result.image_id === "string") {
+      return { kind: "plot_image", imageId: j.result.image_id };
+    }
+  } catch {
+    /* not JSON */
+  }
+  return { kind: "text" };
+}
+
+function PlotImageResult({
+  imageId,
+  sessionId,
+}: {
+  imageId: string;
+  sessionId: number | null;
+}) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let objectUrl: string | null = null;
+    let cancelled = false;
+    api
+      .getPlotImageBlob(imageId, sessionId)
+      .then((blob) => {
+        if (cancelled) return;
+        objectUrl = URL.createObjectURL(blob);
+        setUrl(objectUrl);
+      })
+      .catch((e: unknown) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load plot");
+      });
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [imageId, sessionId]);
+
+  if (error) return <div className="tool-step__plot-error">{error}</div>;
+  if (!url) return <div className="tool-step__plot-loading">Loading plot…</div>;
+  return (
+    <div className="tool-step__plot-wrap">
+      <img src={url} alt="Plot output" className="tool-step__plot-img" />
+    </div>
+  );
+}
+
+function ToolResultBody({
+  result,
+  sessionId,
+}: {
+  result: string | null;
+  sessionId: number | null;
+}) {
+  if (result === null) return <>Running…</>;
+  const parsed = parseRunDynamicToolResult(result);
+  if (parsed.kind === "plot_image") {
+    return <PlotImageResult imageId={parsed.imageId} sessionId={sessionId} />;
+  }
+  return <pre className="tool-step__result">{result}</pre>;
 }
 
 // ── Initial greeting ─────────────────────────────────────────────────────────
@@ -444,7 +526,7 @@ export function ChatPanel({ isOpen, onClose, onDataChanged }: ChatPanelProps) {
                   </button>
                   {!item.collapsed && (
                     <div className="tool-step__body">
-                      <pre className="tool-step__result">{item.result ?? "Running…"}</pre>
+                      <ToolResultBody result={item.result} sessionId={activeSessionId} />
                       {!item.ok && item.traceback && (
                         <details className="chat-error__details">
                           <summary>Show full trace</summary>

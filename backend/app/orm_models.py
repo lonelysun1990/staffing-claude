@@ -8,6 +8,7 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     Integer,
+    LargeBinary,
     String,
     Text,
     UniqueConstraint,
@@ -180,6 +181,21 @@ class ArtifactORM(Base):
     session_id = Column(Integer, ForeignKey("chat_sessions.id"), nullable=True)
     content_type = Column(String(80), nullable=False, default="application/json")
     payload_json = Column(Text, nullable=False)
+    byte_size = Column(Integer, nullable=False)
+    created_at = Column(String, nullable=False)
+    expires_at = Column(String, nullable=False)
+
+
+class PlotImageORM(Base):
+    """PNG (or other) bytes from run_dynamic_tool; served via GET for chat UI."""
+
+    __tablename__ = "plot_images"
+
+    id = Column(String(36), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    session_id = Column(Integer, ForeignKey("chat_sessions.id"), nullable=True)
+    mime_type = Column(String(80), nullable=False, default="image/png")
+    data = Column(LargeBinary, nullable=False)
     byte_size = Column(Integer, nullable=False)
     created_at = Column(String, nullable=False)
     expires_at = Column(String, nullable=False)

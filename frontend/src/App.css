@@ -1415,6 +1415,31 @@ button.ghost.danger {
   line-height: 1.5;
 }
 
+.tool-step__plot-wrap {
+  margin: 0;
+  max-width: 100%;
+}
+
+.tool-step__plot-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+.tool-step__plot-loading,
+.tool-step__plot-error {
+  font-size: 11px;
+  color: #64748b;
+  padding: 4px 0;
+}
+
+.tool-step__plot-error {
+  color: #dc2626;
+}
+
 /* ── Agent error ────────────────────────────────────────────────────────── */
 
 .chat-error {

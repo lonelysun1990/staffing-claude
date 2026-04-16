@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from ..database import SessionLocal
 from ..orm_models import DynamicToolORM
 from .artifacts import load_artifact_json
+from .plot_storage import normalize_plot_result_for_tool_response
 from .env_manager import (
     create_tool_environment,
     delete_tool_environment,
@@ -321,6 +322,7 @@ def run_dynamic_tool(
         args = merged
 
     result = execute_in_sandbox(tool.name, tool.code, args)
+    result = normalize_plot_result_for_tool_response(db, user_id, session_id, result)
     if result.get("ok"):
         increment_usage(db, tool.id)
     return _format_run_result(result)
@@ -329,10 +331,16 @@ def run_dynamic_tool(
 def _format_run_result(payload: dict) -> str:
     """Single-line JSON after OK: / ERROR: for MCP text tools."""
     if payload.get("ok"):
-        return "OK: " + json.dumps(payload, default=str)
-    err = dict(payload)
-    err.setdefault("ok", False)
-    return "ERROR: " + json.dumps(err, default=str)
+        text = "OK: " + json.dumps(payload, default=str)
+    else:
+        err = dict(payload)
+        err.setdefault("ok", False)
+        text = "ERROR: " + json.dumps(err, default=str)
+    if len(text) > 16000:
+        return "ERROR: " + json.dumps(
+            {"ok": False, "error": "Tool result too large; return smaller data or use plot image format."},
+        )
+    return text
 
 
 def check_dynamic_tool_status(db: Session, name: str) -> str:

@@ -152,6 +152,21 @@ export const api = {
     return response.json() as Promise<ImportResult>;
   },
 
+  getPlotImageBlob: async (imageId: string, sessionId?: number | null): Promise<Blob> => {
+    const q = sessionId != null ? `?session_id=${sessionId}` : "";
+    const response = await fetch(`${API_BASE}/agent/plot-images/${encodeURIComponent(imageId)}${q}`, {
+      headers: { ...getAuthHeaders() },
+    });
+    if (!response.ok) {
+      if (response.status === 401) {
+        localStorage.removeItem("auth_token");
+        window.dispatchEvent(new Event("auth:unauthorized"));
+      }
+      throw new Error("Failed to load plot image");
+    }
+    return response.blob();
+  },
+
   async *streamAgentMessage(messages: ChatMessage[], sessionId?: number): AsyncGenerator<AgentStreamEvent> {
     const response = await fetch(`${API_BASE}/agent/chat/stream`, {
       method: "POST",

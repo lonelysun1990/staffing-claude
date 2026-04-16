@@ -577,8 +577,10 @@ def build_mcp_server(
     @tool(
         name="run_dynamic_tool",
         description=(
-            "Execute a registered dynamic tool in its venv. Returns JSON including result or "
-            "structured error (stderr_tail, env_status). Always run after create/update to verify."
+            "Execute a registered dynamic tool in its venv. Returns small JSON (result or structured error). "
+            "For matplotlib plots, return {\"type\": \"png_base64\", \"data\": \"<base64>\"} from run() — "
+            "the server stores the image and returns {\"type\": \"image\", \"image_id\": \"...\"} for the chat UI. "
+            "Always run after create/update to verify."
         ),
         input_schema=_RUN_DYNAMIC_TOOL_SCHEMA,
     )
