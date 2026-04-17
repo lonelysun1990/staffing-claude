@@ -1,0 +1,26 @@
+{
+  "config": {"granularity_weeks": 1, "horizon_weeks": 26},
+  "data_scientists": [
+    {
+      "id": 1,
+      "name": "Eval User DS",
+      "level": "Mid DS",
+      "max_concurrent_projects": 3,
+      "efficiency": 1.0,
+      "notes": null,
+      "skills": ["Python"]
+    }
+  ],
+  "projects": [
+    {
+      "id": 1,
+      "name": "Eval Project Alpha",
+      "start_date": "2026-04-20",
+      "end_date": "2026-10-12",
+      "fte_requirements": [{"week_start": "2026-04-20", "fte": 0.5}],
+      "required_skills": []
+    }
+  ],
+  "assignments": [],
+  "counters": {"data_scientists": 1, "projects": 1, "assignments": 0}
+}

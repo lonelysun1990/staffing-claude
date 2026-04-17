@@ -1,0 +1,11 @@
+# Example eval case — requires ANTHROPIC_API_KEY. Assertions are soft; agent may vary.
+id: example_smoke
+user_message: "List the names of all projects in the staffing roster in one short sentence."
+fixture: fixtures/mini_store.json
+runs: 1
+expect:
+  must_call_tools:
+    - "mcp__staffing__"
+  max_tool_calls: 25
+  response_contains:
+    - "Eval Project Alpha"

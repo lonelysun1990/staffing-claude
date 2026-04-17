@@ -13,3 +13,4 @@ alembic
 passlib[bcrypt]
 bcrypt
 python-jose[cryptography]
+pyyaml>=6.0

@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import json
+import logging
+import time
+import uuid
 import os
 import tempfile
 from contextlib import asynccontextmanager
@@ -11,7 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=True)
 
-from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from pydantic import BaseModel
 from sqlalchemy import text as sa_text
 from fastapi.middleware.cors import CORSMiddleware
@@ -103,6 +106,32 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Staffing Scheduler", version="0.2.0", lifespan=lifespan)
+
+_request_logger = logging.getLogger(__name__)
+
+
+@app.middleware("http")
+async def request_logging_middleware(request: Request, call_next):
+    rid = request.headers.get("X-Request-ID") or str(uuid.uuid4())
+    start = time.perf_counter()
+    request.state.request_id = rid
+    response = await call_next(request)
+    response.headers["X-Request-ID"] = rid
+    dur_ms = (time.perf_counter() - start) * 1000
+    _request_logger.info(
+        json.dumps(
+            {
+                "http_request": True,
+                "request_id": rid,
+                "method": request.method,
+                "path": request.url.path,
+                "status_code": response.status_code,
+                "duration_ms": round(dur_ms, 2),
+            }
+        )
+    )
+    return response
+
 
 app.add_middleware(
     CORSMiddleware,

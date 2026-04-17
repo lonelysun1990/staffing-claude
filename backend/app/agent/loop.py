@@ -11,6 +11,8 @@ SSE event types emitted:
     tool_result     — tool result received (from UserMessage with ToolResultBlock)
     done            — stream finished successfully (includes session_id, data_changed)
     error           — unrecoverable failure
+
+Each event JSON body includes trace_id for correlation with structured logs (agent_trace).
 """
 
 from __future__ import annotations
@@ -55,11 +57,16 @@ from .models import AgentRequest
 from .sse import sse
 from .tavily_mcp import tavily_mcp_server_config
 from .tools import build_allowed_tool_names, build_mcp_server, is_read_only_tool
+from .trace_context import TraceContext, emit_agent_span, enrich_sse_payload, generate_trace_id
 
 MODEL = "claude-sonnet-4-6"
 MAX_TURNS = 12
 
 logger = logging.getLogger(__name__)
+
+
+def _sse_with_trace(trace_id: str, event_type: str, payload: dict) -> str:
+    return sse(event_type, enrich_sse_payload(trace_id, payload))
 
 
 def _serialize_result_message(message: ResultMessage) -> dict[str, Any]:
@@ -120,19 +127,35 @@ async def run_agent_stream(
     the _execute_* functions in executor.py, which have direct DB access via
     closures.
     """
+    trace_id = generate_trace_id()
+    trace_ctx = TraceContext(trace_id=trace_id, model=MODEL, user_id=user_id)
+
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
-        yield sse("error", {"message": "Anthropic API key is not configured."})
+        emit_agent_span(trace_ctx, "error", {"reason": "missing_anthropic_api_key"})
+        yield _sse_with_trace(trace_id, "error", {"message": "Anthropic API key is not configured."})
         return
 
     # ---- Session setup ----
     if request.session_id:
         session = get_session(db, request.session_id, user_id)
         if session is None:
-            yield sse("error", {"message": f"Session {request.session_id} not found."})
+            emit_agent_span(
+                trace_ctx,
+                "error",
+                {"reason": "session_not_found", "session_id": request.session_id},
+            )
+            yield _sse_with_trace(
+                trace_id,
+                "error",
+                {"message": f"Session {request.session_id} not found."},
+            )
             return
     else:
         session = create_session(db, user_id)
+
+    trace_ctx.session_id = session.id
+    emit_agent_span(trace_ctx, "run_start", {"session_id": session.id})
 
     new_user_msg = request.messages[-1]
 
@@ -198,7 +221,7 @@ async def run_agent_stream(
                 ):
                     delta_text = event["delta"].get("text", "")
                     if delta_text:
-                        yield sse("text_delta", {"delta": delta_text})
+                        yield _sse_with_trace(trace_id, "text_delta", {"delta": delta_text})
                 continue
 
             # ---- Skip system/init messages ----
@@ -216,11 +239,16 @@ async def run_agent_stream(
                     elif isinstance(block, ToolUseBlock):
                         tool_uses.append(block)
                         tool_id_to_name[block.id] = block.name
-                        yield sse("tool_call_start", {
+                        yield _sse_with_trace(trace_id, "tool_call_start", {
                             "tool_call_id": block.id,
                             "name": block.name,
                             "args": block.input,
                         })
+                        emit_agent_span(
+                            trace_ctx,
+                            "tool_call_start",
+                            {"name": block.name, "tool_call_id": block.id},
+                        )
                         if not is_read_only_tool(block.name):
                             data_changed = True
 
@@ -261,7 +289,7 @@ async def run_agent_stream(
                         }
                         if not is_read_only_tool(tool_name):
                             data_changed = True
-                        yield sse("tool_result", {
+                        yield _sse_with_trace(trace_id, "tool_result", {
                             "tool_call_id": block.tool_use_id,
                             "name": tool_name,
                             "result": result_text,
@@ -286,7 +314,8 @@ async def run_agent_stream(
                             "Agent run failed inside the Claude process, but no error text was returned "
                             "(see diagnostics below)."
                         )
-                    yield sse(
+                    emit_agent_span(trace_ctx, "result_error", {"message_preview": human[:200]})
+                    yield _sse_with_trace(trace_id, 
                         "error",
                         {
                             "message": human,
@@ -299,7 +328,12 @@ async def run_agent_stream(
                     )
                     return
                 await maybe_summarize(db, session)
-                yield sse("done", {
+                emit_agent_span(
+                    trace_ctx,
+                    "run_done",
+                    {"data_changed": data_changed, "session_id": session.id},
+                )
+                yield _sse_with_trace(trace_id, "done", {
                     "data_changed": data_changed,
                     "session_id": session.id,
                 })
@@ -310,10 +344,10 @@ async def run_agent_stream(
         msg = f"Agent error: {exc}"
         if stderr_blob.strip():
             msg = f"{msg}\n--- Claude Code stderr ---\n{stderr_blob.strip()}"
-        yield sse("error", {"message": msg, "traceback": traceback.format_exc()})
+        yield _sse_with_trace(trace_id, "error", {"message": msg, "traceback": traceback.format_exc()})
     except Exception as exc:
         stderr_blob = "\n".join(cli_stderr[-40:]) if cli_stderr else ""
         msg = f"Agent error: {exc}"
         if stderr_blob.strip():
             msg = f"{msg}\n--- Claude Code stderr ---\n{stderr_blob.strip()}"
-        yield sse("error", {"message": msg, "traceback": traceback.format_exc()})
+        yield _sse_with_trace(trace_id, "error", {"message": msg, "traceback": traceback.format_exc()})
