@@ -53,7 +53,8 @@ from .chat_storage import (
 from .context import build_system_prompt
 from .models import AgentRequest
 from .sse import sse
-from .tools import ALL_TOOL_NAMES, build_mcp_server, is_read_only_tool
+from .tavily_mcp import tavily_mcp_server_config
+from .tools import build_allowed_tool_names, build_mcp_server, is_read_only_tool
 
 MODEL = "claude-sonnet-4-6"
 MAX_TURNS = 12
@@ -152,6 +153,11 @@ async def run_agent_stream(
     # Build in-process MCP server with direct DB access via closures
     mcp_server = build_mcp_server(db, user_id, session.id)
 
+    tavily_key = os.environ.get("TAVILY_API_KEY", "").strip()
+    mcp_servers: dict = {"staffing": mcp_server}
+    if tavily_key:
+        mcp_servers["tavily"] = tavily_mcp_server_config(tavily_key)
+
     claude_cwd = _ensure_claude_cwd()
     cli_stderr: list[str] = []
 
@@ -161,14 +167,14 @@ async def run_agent_stream(
 
     options = ClaudeAgentOptions(
         system_prompt=system_prompt,
-        mcp_servers={"staffing": mcp_server},
+        mcp_servers=mcp_servers,
         max_turns=MAX_TURNS,
         model=MODEL,
         # bypassPermissions maps to --dangerously-skip-permissions; Claude Code
         # refuses that when running as root (typical in Railway). dontAsk only
         # runs tools in allowed_tools — appropriate for this MCP-only agent.
         permission_mode="dontAsk",
-        allowed_tools=ALL_TOOL_NAMES,
+        allowed_tools=build_allowed_tool_names(),
         include_partial_messages=True,
         cwd=claude_cwd,
         stderr=_on_cli_stderr,

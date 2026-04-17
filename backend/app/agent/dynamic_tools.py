@@ -47,6 +47,11 @@ RESERVED_NAMES = frozenset({
     "check_dynamic_tool_status",
     "list_skills",
     "get_skill",
+    "tavily_search",
+    "tavily_extract",
+    "tavily_crawl",
+    "tavily_map",
+    "tavily_research",
 })
 
 TOOL_NAME_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9_-]{0,63}$")

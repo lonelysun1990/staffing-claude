@@ -53,6 +53,11 @@ const TOOL_LABELS: Record<string, string> = {
   check_dynamic_tool_status: "Python tool env status",
   list_skills: "List bundled skills",
   get_skill: "Load skill playbook",
+  tavily_search: "Web search (Tavily)",
+  tavily_extract: "Extract page (Tavily)",
+  tavily_crawl: "Crawl site (Tavily)",
+  tavily_map: "Site map (Tavily)",
+  tavily_research: "Research (Tavily)",
 };
 
 function formatToolName(name: string): string {

@@ -16,6 +16,8 @@ from sqlalchemy.orm import Session
 
 from claude_agent_sdk import create_sdk_mcp_server, tool, McpSdkServerConfig
 
+from .tavily_mcp import TAVILY_MCP_TOOL_NAMES, tavily_api_key_configured
+
 from .executor import (
     _execute_set_assignment,
     _execute_clear_assignment,
@@ -57,8 +59,7 @@ def is_read_only_tool(name: str) -> bool:
 
 # Tools that do not modify data — used by loop.py to decide whether to set data_changed=True.
 READ_ONLY_TOOLS: frozenset[str] = frozenset(
-    mcp_tool_id(n)
-    for n in (
+    [mcp_tool_id(n) for n in (
         "get_availability",
         "check_conflicts",
         "suggest_data_scientists",
@@ -73,7 +74,8 @@ READ_ONLY_TOOLS: frozenset[str] = frozenset(
         "check_dynamic_tool_status",
         "list_skills",
         "get_skill",
-    )
+    )]
+    + TAVILY_MCP_TOOL_NAMES
 )
 
 # All tool names — used to populate ClaudeAgentOptions.allowed_tools (required for dontAsk mode).
@@ -103,6 +105,15 @@ ALL_TOOL_NAMES: list[str] = [
         "get_skill",
     )
 ]
+
+
+def build_allowed_tool_names() -> list[str]:
+    """Staffing MCP tools plus Tavily web tools when TAVILY_API_KEY is set."""
+    names = list(ALL_TOOL_NAMES)
+    if tavily_api_key_configured():
+        names.extend(TAVILY_MCP_TOOL_NAMES)
+    return names
+
 
 # ---------------------------------------------------------------------------
 # Input schemas (JSON Schema format — same as before)
