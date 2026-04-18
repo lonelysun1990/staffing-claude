@@ -102,6 +102,9 @@ async def lifespan(app: FastAPI):
     with SessionLocal() as db:
         purge_expired_artifacts(db)
         purge_expired_plot_images(db)
+    from .agent.langfuse_tracing import log_langfuse_startup
+
+    log_langfuse_startup()
     yield
 
 
