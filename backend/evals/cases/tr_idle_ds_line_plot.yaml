@@ -1,0 +1,12 @@
+# Inspired by: idle DS % line plot conversation — per-person idle requires availability grain.
+id: tr_idle_ds_line_plot
+fixture: fixtures/full_store.json
+runs: 1
+user_message: >
+  Build a line chart of how many data scientists are completely unassigned each week
+  (idle = 100% available) over the planning horizon. Briefly name one week with high idle count if any.
+expect:
+  must_call_tools:
+    - "mcp__staffing__get_availability"
+  max_tool_calls: 35
+  min_tool_calls: 1

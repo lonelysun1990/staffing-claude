@@ -1,0 +1,12 @@
+# From: project x week staffing gap heatmap — needs project-level data + dynamic tool path.
+id: tr_project_gap_heatmap
+fixture: fixtures/full_store.json
+runs: 1
+user_message: >
+  Plot a heatmap of staffing gap (assigned FTE minus required FTE) per project per week
+  for the next 13 weeks. If you must generate code, use create_dynamic_tool and run it once.
+expect:
+  must_call_tools:
+    - "mcp__staffing__create_dynamic_tool"
+  max_tool_calls: 40
+  min_tool_calls: 2

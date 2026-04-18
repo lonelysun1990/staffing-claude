@@ -1,0 +1,15 @@
+# Mutate schedule then verify with conflicts tool.
+id: th_assign_then_conflict_check
+fixture: fixtures/full_store.json
+runs: 1
+turns:
+  - user_message: Set Nancy Ning to 80% on "Nucor NSBC + NSAR" for the first 8 weeks only if the tool allows week scoping; otherwise pick a valid partial update the tool supports.
+    expect:
+      must_call_tools:
+        - "mcp__staffing__set_assignment"
+      max_tool_calls: 25
+  - user_message: Now run check_conflicts and say if anything is invalid.
+    expect:
+      must_call_tools:
+        - "mcp__staffing__check_conflicts"
+      max_tool_calls: 25

@@ -1,0 +1,8 @@
+id: tr_check_conflicts
+fixture: fixtures/full_store.json
+runs: 1
+user_message: Run a conflict check on the current schedule and summarize whether any DS is over-allocated in any week.
+expect:
+  must_call_tools:
+    - "mcp__staffing__check_conflicts"
+  max_tool_calls: 25

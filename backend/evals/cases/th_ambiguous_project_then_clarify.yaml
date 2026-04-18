@@ -1,0 +1,16 @@
+# Thread: ambiguous acronym then correction (remove conversation flavor).
+id: th_ambiguous_project_then_clarify
+fixture: fixtures/full_store.json
+runs: 1
+turns:
+  - user_message: Allocate Shivarjun Sarkar at 25% on project NNN for the full horizon.
+    expect:
+      max_tool_calls: 25
+  - user_message: I meant the project named "Nucor NSBC + NSAR".
+    expect:
+      must_call_tools:
+        - "mcp__staffing__set_assignment"
+      max_tool_calls: 25
+expect:
+  response_contains:
+    - "Nucor"

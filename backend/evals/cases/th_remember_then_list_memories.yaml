@@ -1,0 +1,15 @@
+# Session memory across turns (same chat session).
+id: th_remember_then_list_memories
+fixture: fixtures/full_store.json
+runs: 1
+turns:
+  - user_message: Remember that our team uses 1-week granularity for this roster.
+    expect:
+      must_call_tools:
+        - "mcp__staffing__remember_fact"
+      max_tool_calls: 20
+  - user_message: What facts have you stored for me in agent memory?
+    expect:
+      must_call_tools:
+        - "mcp__staffing__list_memories"
+      max_tool_calls: 20

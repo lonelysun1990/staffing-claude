@@ -1,0 +1,11 @@
+# Flavor: aggregated staffing gap FTE vs capacity (export conversation).
+id: tr_aggregated_gap_fte
+fixture: fixtures/full_store.json
+runs: 1
+user_message: >
+  For the next 13 weeks, estimate total assigned team FTE from weekly average allocation and describe
+  how much capacity is unused (free FTE) each week in one short paragraph. Use get_ds_team_weekly_aggregates.
+expect:
+  must_call_tools:
+    - "mcp__staffing__get_ds_team_weekly_aggregates"
+  max_tool_calls: 25

@@ -14,6 +14,20 @@ def test_example_case_loads():
     assert "user_message" in case
 
 
+def test_thread_case_loads():
+    from pathlib import Path
+
+    case_path = (
+        Path(__file__).resolve().parent.parent
+        / "evals"
+        / "cases"
+        / "th_remember_then_list_memories.yaml"
+    )
+    case = load_case(case_path)
+    assert case["id"] == "th_remember_then_list_memories"
+    assert len(case["turns"]) == 2
+
+
 def test_check_expectations_tools():
     events = [
         {"type": "tool_call_start", "name": "mcp__staffing__list_projects", "trace_id": "x"},

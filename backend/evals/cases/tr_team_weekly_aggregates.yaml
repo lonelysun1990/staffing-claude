@@ -1,0 +1,12 @@
+# Team-level utilization series (from dynamic tools / aggregates conversation).
+id: tr_team_weekly_aggregates
+fixture: fixtures/full_store.json
+runs: 1
+user_message: >
+  What is the team's average allocation percentage for each week in the next 8 weeks?
+  Use the staffing aggregates tool and give two sentences max.
+expect:
+  must_call_tools:
+    - "mcp__staffing__get_ds_team_weekly_aggregates"
+  max_tool_calls: 25
+  min_tool_calls: 1

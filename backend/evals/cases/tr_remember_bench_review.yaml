@@ -1,0 +1,9 @@
+# Long-term memory tool path.
+id: tr_remember_bench_review
+fixture: fixtures/full_store.json
+runs: 1
+user_message: Remember this for future sessions in this chat product — we review bench risk every Monday morning.
+expect:
+  must_call_tools:
+    - "mcp__staffing__remember_fact"
+  max_tool_calls: 20

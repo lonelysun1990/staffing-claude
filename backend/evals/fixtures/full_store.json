@@ -1,0 +1,4975 @@
+{
+  "config": {
+    "granularity_weeks": 1,
+    "horizon_weeks": 26
+  },
+  "data_scientists": [
+    {
+      "name": "Anshuman Pradhan",
+      "level": "DS Manager",
+      "max_concurrent_projects": 5,
+      "efficiency": 2.0,
+      "notes": "",
+      "id": 1
+    },
+    {
+      "name": "Josh Zhang",
+      "level": "Lead DS",
+      "max_concurrent_projects": 2,
+      "efficiency": 1.0,
+      "notes": "",
+      "id": 2
+    },
+    {
+      "name": "Nancy Ning",
+      "level": "DS",
+      "max_concurrent_projects": 2,
+      "efficiency": 1.0,
+      "notes": null,
+      "id": 3
+    },
+    {
+      "name": "Shivarjun Sarkar",
+      "level": "DS",
+      "max_concurrent_projects": 2,
+      "efficiency": 1.0,
+      "notes": null,
+      "id": 4
+    },
+    {
+      "name": "Yunxuan Jiang",
+      "level": "DS",
+      "max_concurrent_projects": 2,
+      "efficiency": 1.0,
+      "notes": null,
+      "id": 6
+    },
+    {
+      "name": "Yifan Lin",
+      "level": "DS",
+      "max_concurrent_projects": 2,
+      "efficiency": 1.0,
+      "notes": null,
+      "id": 7
+    },
+    {
+      "name": "Yueqi Shen",
+      "level": "DS",
+      "max_concurrent_projects": 2,
+      "efficiency": 1.0,
+      "notes": null,
+      "id": 9
+    },
+    {
+      "name": "Anubhav Nehru",
+      "level": "DS",
+      "max_concurrent_projects": 2,
+      "efficiency": 1.0,
+      "notes": null,
+      "id": 10
+    },
+    {
+      "name": "Priyanka Rotte",
+      "level": "DS Contractor",
+      "max_concurrent_projects": 2,
+      "efficiency": 1.0,
+      "notes": "",
+      "id": 11
+    },
+    {
+      "name": "Margaret Redfield",
+      "level": "DS Contractor",
+      "max_concurrent_projects": 2,
+      "efficiency": 1.0,
+      "notes": "",
+      "id": 12
+    },
+    {
+      "name": "Jinbo Zhao",
+      "level": "Senior DS",
+      "max_concurrent_projects": 2,
+      "efficiency": 1.0,
+      "notes": "",
+      "id": 13
+    }
+  ],
+  "projects": [
+    {
+      "name": "Cargill PSO PES Feature",
+      "start_date": "2025-12-22",
+      "end_date": "2026-08-31",
+      "fte_requirements": [
+        {
+          "week_start": "2025-12-22",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2025-12-29",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-01-05",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-01-12",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-01-19",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-01-26",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-02-02",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-02-09",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-02-16",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-02-23",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-03-02",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-03-09",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-03-16",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-03-23",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-03-30",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-04-06",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-04-13",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-04-20",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-04-27",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-05-04",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-05-11",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-05-18",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-05-25",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-06-01",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-06-08",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-06-15",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-06-22",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-06-29",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-07-06",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-07-13",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-07-20",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-07-27",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-08-03",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-08-10",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-08-17",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-08-24",
+          "fte": 2.55
+        },
+        {
+          "week_start": "2026-08-31",
+          "fte": 2.55
+        }
+      ],
+      "id": 1
+    },
+    {
+      "name": "Cargill PSO CoE",
+      "start_date": "2025-12-22",
+      "end_date": "2026-08-31",
+      "fte_requirements": [
+        {
+          "week_start": "2025-12-22",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2025-12-29",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-01-05",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-01-12",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-01-19",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-01-26",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-02-02",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-02-09",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-02-16",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-02-23",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-03-02",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-03-09",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-03-16",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-03-23",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-03-30",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-04-06",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-04-13",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-04-20",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-04-27",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-05-04",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-05-11",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-05-18",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-05-25",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-06-01",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-06-08",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-06-15",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-06-22",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-06-29",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-07-06",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-07-13",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-07-20",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-07-27",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-08-03",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-08-10",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-08-17",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-08-24",
+          "fte": 1.7
+        },
+        {
+          "week_start": "2026-08-31",
+          "fte": 1.7
+        }
+      ],
+      "id": 2
+    },
+    {
+      "name": "Signature Aviation IPD",
+      "start_date": "2025-12-22",
+      "end_date": "2026-08-31",
+      "fte_requirements": [
+        {
+          "week_start": "2025-12-22",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2025-12-29",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-01-05",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-01-12",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-01-19",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-01-26",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-02-02",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-02-09",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-02-16",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-02-23",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-03-02",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-03-09",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-03-16",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-03-23",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-03-30",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-04-06",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-04-13",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-04-20",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-04-27",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-05-04",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-05-11",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-05-18",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-05-25",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-06-01",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-06-08",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-06-15",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-06-22",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-06-29",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-07-06",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-07-13",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-07-20",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-07-27",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-08-03",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-08-10",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-08-17",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-08-24",
+          "fte": 1.55
+        },
+        {
+          "week_start": "2026-08-31",
+          "fte": 1.55
+        }
+      ],
+      "id": 4
+    },
+    {
+      "name": "Base PSO App + optim maintainance",
+      "start_date": "2025-12-22",
+      "end_date": "2026-08-31",
+      "fte_requirements": [
+        {
+          "week_start": "2025-12-22",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2025-12-29",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-01-05",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-01-12",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-01-19",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-01-26",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-02-02",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-02-09",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-02-16",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-02-23",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-03-02",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-03-09",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-03-16",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-03-23",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-03-30",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-04-06",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-04-13",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-04-20",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-04-27",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-05-04",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-05-11",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-05-18",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-05-25",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-06-01",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-06-08",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-06-15",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-06-22",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-06-29",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-07-06",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-07-13",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-07-20",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-07-27",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-08-03",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-08-10",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-08-17",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-08-24",
+          "fte": 0.2
+        },
+        {
+          "week_start": "2026-08-31",
+          "fte": 0.2
+        }
+      ],
+      "id": 5
+    },
+    {
+      "name": "Nucor network optimization IPD",
+      "start_date": "2025-12-22",
+      "end_date": "2026-08-31",
+      "fte_requirements": [
+        {
+          "week_start": "2025-12-22",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2025-12-29",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-01-05",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-01-12",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-01-19",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-01-26",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-02-02",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-02-09",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-02-16",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-02-23",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-03-02",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-03-09",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-03-16",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-03-23",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-03-30",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-04-06",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-04-13",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-04-20",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-04-27",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-05-04",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-05-11",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-05-18",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-05-25",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-06-01",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-06-08",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-06-15",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-06-22",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-06-29",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-07-06",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-07-13",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-07-20",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-07-27",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-08-03",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-08-10",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-08-17",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-08-24",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-08-31",
+          "fte": 0.75
+        }
+      ],
+      "id": 6
+    },
+    {
+      "name": "Pantaleon PSO CoE",
+      "start_date": "2025-12-22",
+      "end_date": "2026-08-31",
+      "fte_requirements": [
+        {
+          "week_start": "2025-12-22",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2025-12-29",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-01-05",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-01-12",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-01-19",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-01-26",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-02-02",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-02-09",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-02-16",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-02-23",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-03-02",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-03-09",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-03-16",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-03-23",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-03-30",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-04-06",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-04-13",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-04-20",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-04-27",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-05-04",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-05-11",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-05-18",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-05-25",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-06-01",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-06-08",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-06-15",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-06-22",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-06-29",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-07-06",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-07-13",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-07-20",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-07-27",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-08-03",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-08-10",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-08-17",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-08-24",
+          "fte": 0.75
+        },
+        {
+          "week_start": "2026-08-31",
+          "fte": 0.75
+        }
+      ],
+      "id": 7
+    },
+    {
+      "name": "Nucor NSBC + NSAR",
+      "start_date": "2025-12-22",
+      "end_date": "2026-08-31",
+      "fte_requirements": [
+        {
+          "week_start": "2025-12-22",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2025-12-29",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-01-05",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-01-12",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-01-19",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-01-26",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-02-02",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-02-09",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-02-16",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-02-23",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-03-02",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-03-09",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-03-16",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-03-23",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-03-30",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-04-06",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-04-13",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-04-20",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-04-27",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-05-04",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-05-11",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-05-18",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-05-25",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-06-01",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-06-08",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-06-15",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-06-22",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-06-29",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-07-06",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-07-13",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-07-20",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-07-27",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-08-03",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-08-10",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-08-17",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-08-24",
+          "fte": 1.5
+        },
+        {
+          "week_start": "2026-08-31",
+          "fte": 1.5
+        }
+      ],
+      "id": 8
+    },
+    {
+      "name": "Nucor Bar mill + MO",
+      "start_date": "2025-12-22",
+      "end_date": "2026-08-31",
+      "fte_requirements": [
+        {
+          "week_start": "2025-12-22",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2025-12-29",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-01-05",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-01-12",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-01-19",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-01-26",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-02-02",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-02-09",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-02-16",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-02-23",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-03-02",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-03-09",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-03-16",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-03-23",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-03-30",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-04-06",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-04-13",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-04-20",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-04-27",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-05-04",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-05-11",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-05-18",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-05-25",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-06-01",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-06-08",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-06-15",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-06-22",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-06-29",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-07-06",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-07-13",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-07-20",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-07-27",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-08-03",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-08-10",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-08-17",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-08-24",
+          "fte": 0.7
+        },
+        {
+          "week_start": "2026-08-31",
+          "fte": 0.7
+        }
+      ],
+      "id": 9
+    },
+    {
+      "name": "Gategroup PSO IPD",
+      "start_date": "2025-12-22",
+      "end_date": "2026-08-31",
+      "fte_requirements": [
+        {
+          "week_start": "2025-12-22",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2025-12-29",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-01-05",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-01-12",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-01-19",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-01-26",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-02-02",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-02-09",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-02-16",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-02-23",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-03-02",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-03-09",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-03-16",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-03-23",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-03-30",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-04-06",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-04-13",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-04-20",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-04-27",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-05-04",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-05-11",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-05-18",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-05-25",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-06-01",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-06-08",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-06-15",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-06-22",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-06-29",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-07-06",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-07-13",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-07-20",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-07-27",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-08-03",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-08-10",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-08-17",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-08-24",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-08-31",
+          "fte": 1.0
+        }
+      ],
+      "id": 10
+    },
+    {
+      "name": "NNS PSO",
+      "start_date": "2025-12-22",
+      "end_date": "2026-08-31",
+      "fte_requirements": [
+        {
+          "week_start": "2025-12-22",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2025-12-29",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-01-05",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-01-12",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-01-19",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-01-26",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-02-02",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-02-09",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-02-16",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-02-23",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-03-02",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-03-09",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-03-16",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-03-23",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-03-30",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-04-06",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-04-13",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-04-20",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-04-27",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-05-04",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-05-11",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-05-18",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-05-25",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-06-01",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-06-08",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-06-15",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-06-22",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-06-29",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-07-06",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-07-13",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-07-20",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-07-27",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-08-03",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-08-10",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-08-17",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-08-24",
+          "fte": 0.9
+        },
+        {
+          "week_start": "2026-08-31",
+          "fte": 0.9
+        }
+      ],
+      "id": 11
+    },
+    {
+      "name": "Ingalls PSO",
+      "start_date": "2025-12-22",
+      "end_date": "2026-08-31",
+      "fte_requirements": [
+        {
+          "week_start": "2025-12-22",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2025-12-29",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-01-05",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-01-12",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-01-19",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-01-26",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-02-02",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-02-09",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-02-16",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-02-23",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-03-02",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-03-09",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-03-16",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-03-23",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-03-30",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-04-06",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-04-13",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-04-20",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-04-27",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-05-04",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-05-11",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-05-18",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-05-25",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-06-01",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-06-08",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-06-15",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-06-22",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-06-29",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-07-06",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-07-13",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-07-20",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-07-27",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-08-03",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-08-10",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-08-17",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-08-24",
+          "fte": 0.1
+        },
+        {
+          "week_start": "2026-08-31",
+          "fte": 0.1
+        }
+      ],
+      "id": 12
+    },
+    {
+      "name": "GSK PSO Demo",
+      "start_date": "2026-03-30",
+      "end_date": "2026-06-22",
+      "fte_requirements": [
+        {
+          "week_start": "2026-03-30",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-04-06",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-04-13",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-04-20",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-04-27",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-05-04",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-05-11",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-05-18",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-05-25",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-06-01",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-06-08",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-06-15",
+          "fte": 1.0
+        },
+        {
+          "week_start": "2026-06-22",
+          "fte": 1.0
+        }
+      ],
+      "id": 13
+    }
+  ],
+  "assignments": [
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2025-12-22",
+      "allocation": 0.5,
+      "id": 1
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2025-12-22",
+      "allocation": 0.2,
+      "id": 2
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2025-12-22",
+      "allocation": 0.55,
+      "id": 3
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2025-12-22",
+      "allocation": 0.2,
+      "id": 4
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2025-12-22",
+      "allocation": 0.25,
+      "id": 5
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2025-12-22",
+      "allocation": 0.75,
+      "id": 6
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2025-12-22",
+      "allocation": 0.25,
+      "id": 7
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2025-12-22",
+      "allocation": 1.0,
+      "id": 8
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2025-12-22",
+      "allocation": 0.3,
+      "id": 9
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2025-12-22",
+      "allocation": 0.7,
+      "id": 10
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2025-12-22",
+      "allocation": 1.0,
+      "id": 11
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2025-12-22",
+      "allocation": 1.0,
+      "id": 12
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2025-12-22",
+      "allocation": 0.5,
+      "id": 13
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2025-12-22",
+      "allocation": 0.5,
+      "id": 14
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2025-12-22",
+      "allocation": 1.0,
+      "id": 15
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2025-12-22",
+      "allocation": 0.9,
+      "id": 16
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2025-12-22",
+      "allocation": 0.1,
+      "id": 17
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2025-12-29",
+      "allocation": 0.5,
+      "id": 18
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2025-12-29",
+      "allocation": 0.2,
+      "id": 19
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2025-12-29",
+      "allocation": 0.55,
+      "id": 20
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2025-12-29",
+      "allocation": 0.2,
+      "id": 21
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2025-12-29",
+      "allocation": 0.25,
+      "id": 22
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2025-12-29",
+      "allocation": 0.75,
+      "id": 23
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2025-12-29",
+      "allocation": 0.25,
+      "id": 24
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2025-12-29",
+      "allocation": 1.0,
+      "id": 25
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2025-12-29",
+      "allocation": 0.3,
+      "id": 26
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2025-12-29",
+      "allocation": 0.7,
+      "id": 27
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2025-12-29",
+      "allocation": 1.0,
+      "id": 28
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2025-12-29",
+      "allocation": 1.0,
+      "id": 29
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2025-12-29",
+      "allocation": 0.5,
+      "id": 30
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2025-12-29",
+      "allocation": 0.5,
+      "id": 31
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2025-12-29",
+      "allocation": 1.0,
+      "id": 32
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2025-12-29",
+      "allocation": 0.9,
+      "id": 33
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2025-12-29",
+      "allocation": 0.1,
+      "id": 34
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-01-05",
+      "allocation": 0.5,
+      "id": 35
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-01-05",
+      "allocation": 0.2,
+      "id": 36
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-01-05",
+      "allocation": 0.55,
+      "id": 37
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-01-05",
+      "allocation": 0.2,
+      "id": 38
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-01-05",
+      "allocation": 0.25,
+      "id": 39
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-01-05",
+      "allocation": 0.75,
+      "id": 40
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-01-05",
+      "allocation": 0.25,
+      "id": 41
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-01-05",
+      "allocation": 1.0,
+      "id": 42
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-01-05",
+      "allocation": 0.3,
+      "id": 43
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-01-05",
+      "allocation": 0.7,
+      "id": 44
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-01-05",
+      "allocation": 1.0,
+      "id": 45
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-01-05",
+      "allocation": 1.0,
+      "id": 46
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-01-05",
+      "allocation": 0.5,
+      "id": 47
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-01-05",
+      "allocation": 0.5,
+      "id": 48
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-01-05",
+      "allocation": 1.0,
+      "id": 49
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-01-05",
+      "allocation": 0.9,
+      "id": 50
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-01-05",
+      "allocation": 0.1,
+      "id": 51
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-01-12",
+      "allocation": 0.5,
+      "id": 52
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-01-12",
+      "allocation": 0.2,
+      "id": 53
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-01-12",
+      "allocation": 0.55,
+      "id": 54
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-01-12",
+      "allocation": 0.2,
+      "id": 55
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-01-12",
+      "allocation": 0.25,
+      "id": 56
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-01-12",
+      "allocation": 0.75,
+      "id": 57
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-01-12",
+      "allocation": 0.25,
+      "id": 58
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-01-12",
+      "allocation": 1.0,
+      "id": 59
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-01-12",
+      "allocation": 0.3,
+      "id": 60
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-01-12",
+      "allocation": 0.7,
+      "id": 61
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-01-12",
+      "allocation": 1.0,
+      "id": 62
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-01-12",
+      "allocation": 1.0,
+      "id": 63
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-01-12",
+      "allocation": 0.5,
+      "id": 64
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-01-12",
+      "allocation": 0.5,
+      "id": 65
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-01-12",
+      "allocation": 1.0,
+      "id": 66
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-01-12",
+      "allocation": 0.9,
+      "id": 67
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-01-12",
+      "allocation": 0.1,
+      "id": 68
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-01-19",
+      "allocation": 0.5,
+      "id": 69
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-01-19",
+      "allocation": 0.2,
+      "id": 70
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-01-19",
+      "allocation": 0.55,
+      "id": 71
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-01-19",
+      "allocation": 0.2,
+      "id": 72
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-01-19",
+      "allocation": 0.25,
+      "id": 73
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-01-19",
+      "allocation": 0.75,
+      "id": 74
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-01-19",
+      "allocation": 0.25,
+      "id": 75
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-01-19",
+      "allocation": 1.0,
+      "id": 76
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-01-19",
+      "allocation": 0.3,
+      "id": 77
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-01-19",
+      "allocation": 0.7,
+      "id": 78
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-01-19",
+      "allocation": 1.0,
+      "id": 79
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-01-19",
+      "allocation": 1.0,
+      "id": 80
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-01-19",
+      "allocation": 0.5,
+      "id": 81
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-01-19",
+      "allocation": 0.5,
+      "id": 82
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-01-19",
+      "allocation": 1.0,
+      "id": 83
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-01-19",
+      "allocation": 0.9,
+      "id": 84
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-01-19",
+      "allocation": 0.1,
+      "id": 85
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-01-26",
+      "allocation": 0.5,
+      "id": 86
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-01-26",
+      "allocation": 0.2,
+      "id": 87
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-01-26",
+      "allocation": 0.55,
+      "id": 88
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-01-26",
+      "allocation": 0.2,
+      "id": 89
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-01-26",
+      "allocation": 0.25,
+      "id": 90
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-01-26",
+      "allocation": 0.75,
+      "id": 91
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-01-26",
+      "allocation": 0.25,
+      "id": 92
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-01-26",
+      "allocation": 1.0,
+      "id": 93
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-01-26",
+      "allocation": 0.3,
+      "id": 94
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-01-26",
+      "allocation": 0.7,
+      "id": 95
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-01-26",
+      "allocation": 1.0,
+      "id": 96
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-01-26",
+      "allocation": 1.0,
+      "id": 97
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-01-26",
+      "allocation": 0.5,
+      "id": 98
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-01-26",
+      "allocation": 0.5,
+      "id": 99
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-01-26",
+      "allocation": 1.0,
+      "id": 100
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-01-26",
+      "allocation": 0.9,
+      "id": 101
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-01-26",
+      "allocation": 0.1,
+      "id": 102
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-02-02",
+      "allocation": 0.5,
+      "id": 103
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-02-02",
+      "allocation": 0.2,
+      "id": 104
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-02-02",
+      "allocation": 0.55,
+      "id": 105
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-02-02",
+      "allocation": 0.2,
+      "id": 106
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-02-02",
+      "allocation": 0.25,
+      "id": 107
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-02-02",
+      "allocation": 0.75,
+      "id": 108
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-02-02",
+      "allocation": 0.25,
+      "id": 109
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-02-02",
+      "allocation": 1.0,
+      "id": 110
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-02-02",
+      "allocation": 0.3,
+      "id": 111
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-02-02",
+      "allocation": 0.7,
+      "id": 112
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-02-02",
+      "allocation": 1.0,
+      "id": 113
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-02-02",
+      "allocation": 1.0,
+      "id": 114
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-02-02",
+      "allocation": 0.5,
+      "id": 115
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-02-02",
+      "allocation": 0.5,
+      "id": 116
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-02-02",
+      "allocation": 1.0,
+      "id": 117
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-02-02",
+      "allocation": 0.9,
+      "id": 118
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-02-02",
+      "allocation": 0.1,
+      "id": 119
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-02-09",
+      "allocation": 0.5,
+      "id": 120
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-02-09",
+      "allocation": 0.2,
+      "id": 121
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-02-09",
+      "allocation": 0.55,
+      "id": 122
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-02-09",
+      "allocation": 0.2,
+      "id": 123
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-02-09",
+      "allocation": 0.25,
+      "id": 124
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-02-09",
+      "allocation": 0.75,
+      "id": 125
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-02-09",
+      "allocation": 0.25,
+      "id": 126
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-02-09",
+      "allocation": 1.0,
+      "id": 127
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-02-09",
+      "allocation": 0.3,
+      "id": 128
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-02-09",
+      "allocation": 0.7,
+      "id": 129
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-02-09",
+      "allocation": 1.0,
+      "id": 130
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-02-09",
+      "allocation": 1.0,
+      "id": 131
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-02-09",
+      "allocation": 0.5,
+      "id": 132
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-02-09",
+      "allocation": 0.5,
+      "id": 133
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-02-09",
+      "allocation": 1.0,
+      "id": 134
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-02-09",
+      "allocation": 0.9,
+      "id": 135
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-02-09",
+      "allocation": 0.1,
+      "id": 136
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-02-16",
+      "allocation": 0.5,
+      "id": 137
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-02-16",
+      "allocation": 0.2,
+      "id": 138
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-02-16",
+      "allocation": 0.55,
+      "id": 139
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-02-16",
+      "allocation": 0.2,
+      "id": 140
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-02-16",
+      "allocation": 0.25,
+      "id": 141
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-02-16",
+      "allocation": 0.75,
+      "id": 142
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-02-16",
+      "allocation": 0.25,
+      "id": 143
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-02-16",
+      "allocation": 1.0,
+      "id": 144
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-02-16",
+      "allocation": 0.3,
+      "id": 145
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-02-16",
+      "allocation": 0.7,
+      "id": 146
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-02-16",
+      "allocation": 1.0,
+      "id": 147
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-02-16",
+      "allocation": 1.0,
+      "id": 148
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-02-16",
+      "allocation": 0.5,
+      "id": 149
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-02-16",
+      "allocation": 0.5,
+      "id": 150
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-02-16",
+      "allocation": 1.0,
+      "id": 151
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-02-16",
+      "allocation": 0.9,
+      "id": 152
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-02-16",
+      "allocation": 0.1,
+      "id": 153
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-02-23",
+      "allocation": 0.5,
+      "id": 154
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-02-23",
+      "allocation": 0.2,
+      "id": 155
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-02-23",
+      "allocation": 0.55,
+      "id": 156
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-02-23",
+      "allocation": 0.2,
+      "id": 157
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-02-23",
+      "allocation": 0.25,
+      "id": 158
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-02-23",
+      "allocation": 0.75,
+      "id": 159
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-02-23",
+      "allocation": 0.25,
+      "id": 160
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-02-23",
+      "allocation": 1.0,
+      "id": 161
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-02-23",
+      "allocation": 0.3,
+      "id": 162
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-02-23",
+      "allocation": 0.7,
+      "id": 163
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-02-23",
+      "allocation": 1.0,
+      "id": 164
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-02-23",
+      "allocation": 1.0,
+      "id": 165
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-02-23",
+      "allocation": 0.5,
+      "id": 166
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-02-23",
+      "allocation": 0.5,
+      "id": 167
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-02-23",
+      "allocation": 1.0,
+      "id": 168
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-02-23",
+      "allocation": 0.9,
+      "id": 169
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-02-23",
+      "allocation": 0.1,
+      "id": 170
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-03-02",
+      "allocation": 0.5,
+      "id": 171
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-03-02",
+      "allocation": 0.2,
+      "id": 172
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-03-02",
+      "allocation": 0.55,
+      "id": 173
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-03-02",
+      "allocation": 0.2,
+      "id": 174
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-03-02",
+      "allocation": 0.25,
+      "id": 175
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-03-02",
+      "allocation": 0.75,
+      "id": 176
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-03-02",
+      "allocation": 0.25,
+      "id": 177
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-03-02",
+      "allocation": 1.0,
+      "id": 178
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-03-02",
+      "allocation": 0.3,
+      "id": 179
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-03-02",
+      "allocation": 0.7,
+      "id": 180
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-03-02",
+      "allocation": 1.0,
+      "id": 181
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-03-02",
+      "allocation": 1.0,
+      "id": 182
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-03-02",
+      "allocation": 0.5,
+      "id": 183
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-03-02",
+      "allocation": 0.5,
+      "id": 184
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-03-02",
+      "allocation": 1.0,
+      "id": 185
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-03-02",
+      "allocation": 0.9,
+      "id": 186
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-03-02",
+      "allocation": 0.1,
+      "id": 187
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-03-09",
+      "allocation": 0.5,
+      "id": 188
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-03-09",
+      "allocation": 0.2,
+      "id": 189
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-03-09",
+      "allocation": 0.55,
+      "id": 190
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-03-09",
+      "allocation": 0.2,
+      "id": 191
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-03-09",
+      "allocation": 0.25,
+      "id": 192
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-03-09",
+      "allocation": 0.75,
+      "id": 193
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-03-09",
+      "allocation": 0.25,
+      "id": 194
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-03-09",
+      "allocation": 1.0,
+      "id": 195
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-03-09",
+      "allocation": 0.3,
+      "id": 196
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-03-09",
+      "allocation": 0.7,
+      "id": 197
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-03-09",
+      "allocation": 1.0,
+      "id": 198
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-03-09",
+      "allocation": 1.0,
+      "id": 199
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-03-09",
+      "allocation": 0.5,
+      "id": 200
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-03-09",
+      "allocation": 0.5,
+      "id": 201
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-03-09",
+      "allocation": 1.0,
+      "id": 202
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-03-09",
+      "allocation": 0.9,
+      "id": 203
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-03-09",
+      "allocation": 0.1,
+      "id": 204
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-03-16",
+      "allocation": 0.5,
+      "id": 205
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-03-16",
+      "allocation": 0.2,
+      "id": 206
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-03-16",
+      "allocation": 0.55,
+      "id": 207
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-03-16",
+      "allocation": 0.2,
+      "id": 208
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-03-16",
+      "allocation": 0.25,
+      "id": 209
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-03-16",
+      "allocation": 0.75,
+      "id": 210
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-03-16",
+      "allocation": 0.25,
+      "id": 211
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-03-16",
+      "allocation": 1.0,
+      "id": 212
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-03-16",
+      "allocation": 0.3,
+      "id": 213
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-03-16",
+      "allocation": 0.7,
+      "id": 214
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-03-16",
+      "allocation": 1.0,
+      "id": 215
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-03-16",
+      "allocation": 1.0,
+      "id": 216
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-03-16",
+      "allocation": 0.5,
+      "id": 217
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-03-16",
+      "allocation": 0.5,
+      "id": 218
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-03-16",
+      "allocation": 1.0,
+      "id": 219
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-03-16",
+      "allocation": 0.9,
+      "id": 220
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-03-16",
+      "allocation": 0.1,
+      "id": 221
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-03-23",
+      "allocation": 0.5,
+      "id": 222
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-03-23",
+      "allocation": 0.2,
+      "id": 223
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-03-23",
+      "allocation": 0.55,
+      "id": 224
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-03-23",
+      "allocation": 0.2,
+      "id": 225
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-03-23",
+      "allocation": 0.25,
+      "id": 226
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-03-23",
+      "allocation": 0.75,
+      "id": 227
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-03-23",
+      "allocation": 0.25,
+      "id": 228
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-03-23",
+      "allocation": 1.0,
+      "id": 229
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-03-23",
+      "allocation": 0.3,
+      "id": 230
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-03-23",
+      "allocation": 0.7,
+      "id": 231
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-03-23",
+      "allocation": 1.0,
+      "id": 232
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-03-23",
+      "allocation": 1.0,
+      "id": 233
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-03-23",
+      "allocation": 0.5,
+      "id": 234
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-03-23",
+      "allocation": 0.5,
+      "id": 235
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-03-23",
+      "allocation": 1.0,
+      "id": 236
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-03-23",
+      "allocation": 0.9,
+      "id": 237
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-03-23",
+      "allocation": 0.1,
+      "id": 238
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-03-30",
+      "allocation": 0.5,
+      "id": 239
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-03-30",
+      "allocation": 0.2,
+      "id": 240
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-03-30",
+      "allocation": 0.55,
+      "id": 241
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-03-30",
+      "allocation": 0.2,
+      "id": 242
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-03-30",
+      "allocation": 0.25,
+      "id": 243
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-03-30",
+      "allocation": 0.75,
+      "id": 244
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-03-30",
+      "allocation": 0.25,
+      "id": 245
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-03-30",
+      "allocation": 1.0,
+      "id": 246
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-03-30",
+      "allocation": 0.3,
+      "id": 247
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-03-30",
+      "allocation": 0.7,
+      "id": 248
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-03-30",
+      "allocation": 1.0,
+      "id": 249
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-03-30",
+      "allocation": 1.0,
+      "id": 250
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-03-30",
+      "allocation": 0.5,
+      "id": 251
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-03-30",
+      "allocation": 0.5,
+      "id": 252
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-03-30",
+      "allocation": 1.0,
+      "id": 253
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-03-30",
+      "allocation": 0.9,
+      "id": 254
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-03-30",
+      "allocation": 0.1,
+      "id": 255
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-04-06",
+      "allocation": 0.5,
+      "id": 256
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-04-06",
+      "allocation": 0.2,
+      "id": 257
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-04-06",
+      "allocation": 0.55,
+      "id": 258
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-04-06",
+      "allocation": 0.2,
+      "id": 259
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-04-06",
+      "allocation": 0.25,
+      "id": 260
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-04-06",
+      "allocation": 0.75,
+      "id": 261
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-04-06",
+      "allocation": 0.25,
+      "id": 262
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-04-06",
+      "allocation": 1.0,
+      "id": 263
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-04-06",
+      "allocation": 0.3,
+      "id": 264
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-04-06",
+      "allocation": 0.7,
+      "id": 265
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-04-06",
+      "allocation": 1.0,
+      "id": 266
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-04-06",
+      "allocation": 1.0,
+      "id": 267
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-04-06",
+      "allocation": 0.5,
+      "id": 268
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-04-06",
+      "allocation": 0.5,
+      "id": 269
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-04-06",
+      "allocation": 1.0,
+      "id": 270
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-04-06",
+      "allocation": 0.9,
+      "id": 271
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-04-06",
+      "allocation": 0.1,
+      "id": 272
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-04-13",
+      "allocation": 0.5,
+      "id": 273
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-04-13",
+      "allocation": 0.2,
+      "id": 274
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-04-13",
+      "allocation": 0.55,
+      "id": 275
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-04-13",
+      "allocation": 0.2,
+      "id": 276
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-04-13",
+      "allocation": 0.25,
+      "id": 277
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-04-13",
+      "allocation": 0.75,
+      "id": 278
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-04-13",
+      "allocation": 0.25,
+      "id": 279
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-04-13",
+      "allocation": 1.0,
+      "id": 280
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-04-13",
+      "allocation": 0.3,
+      "id": 281
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-04-13",
+      "allocation": 0.7,
+      "id": 282
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-04-13",
+      "allocation": 1.0,
+      "id": 283
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-04-13",
+      "allocation": 1.0,
+      "id": 284
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-04-13",
+      "allocation": 0.5,
+      "id": 285
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-04-13",
+      "allocation": 0.5,
+      "id": 286
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-04-13",
+      "allocation": 1.0,
+      "id": 287
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-04-13",
+      "allocation": 0.9,
+      "id": 288
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-04-13",
+      "allocation": 0.1,
+      "id": 289
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-04-20",
+      "allocation": 0.5,
+      "id": 290
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-04-20",
+      "allocation": 0.2,
+      "id": 291
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-04-20",
+      "allocation": 0.55,
+      "id": 292
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-04-20",
+      "allocation": 0.2,
+      "id": 293
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-04-20",
+      "allocation": 0.25,
+      "id": 294
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-04-20",
+      "allocation": 0.75,
+      "id": 295
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-04-20",
+      "allocation": 0.25,
+      "id": 296
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-04-20",
+      "allocation": 1.0,
+      "id": 297
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-04-20",
+      "allocation": 0.3,
+      "id": 298
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-04-20",
+      "allocation": 0.7,
+      "id": 299
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-04-20",
+      "allocation": 1.0,
+      "id": 300
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-04-20",
+      "allocation": 1.0,
+      "id": 301
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-04-20",
+      "allocation": 0.5,
+      "id": 302
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-04-20",
+      "allocation": 0.5,
+      "id": 303
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-04-20",
+      "allocation": 1.0,
+      "id": 304
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-04-20",
+      "allocation": 0.9,
+      "id": 305
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-04-20",
+      "allocation": 0.1,
+      "id": 306
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-04-27",
+      "allocation": 0.5,
+      "id": 307
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-04-27",
+      "allocation": 0.2,
+      "id": 308
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-04-27",
+      "allocation": 0.55,
+      "id": 309
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-04-27",
+      "allocation": 0.2,
+      "id": 310
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-04-27",
+      "allocation": 0.25,
+      "id": 311
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-04-27",
+      "allocation": 0.75,
+      "id": 312
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-04-27",
+      "allocation": 0.25,
+      "id": 313
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-04-27",
+      "allocation": 1.0,
+      "id": 314
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-04-27",
+      "allocation": 0.3,
+      "id": 315
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-04-27",
+      "allocation": 0.7,
+      "id": 316
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-04-27",
+      "allocation": 1.0,
+      "id": 317
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-04-27",
+      "allocation": 1.0,
+      "id": 318
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-04-27",
+      "allocation": 0.5,
+      "id": 319
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-04-27",
+      "allocation": 0.5,
+      "id": 320
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-04-27",
+      "allocation": 1.0,
+      "id": 321
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-04-27",
+      "allocation": 0.9,
+      "id": 322
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-04-27",
+      "allocation": 0.1,
+      "id": 323
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-05-04",
+      "allocation": 0.5,
+      "id": 324
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-05-04",
+      "allocation": 0.2,
+      "id": 325
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-05-04",
+      "allocation": 0.55,
+      "id": 326
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-05-04",
+      "allocation": 0.2,
+      "id": 327
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-05-04",
+      "allocation": 0.25,
+      "id": 328
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-05-04",
+      "allocation": 0.75,
+      "id": 329
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-05-04",
+      "allocation": 0.25,
+      "id": 330
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-05-04",
+      "allocation": 1.0,
+      "id": 331
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-05-04",
+      "allocation": 0.3,
+      "id": 332
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-05-04",
+      "allocation": 0.7,
+      "id": 333
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-05-04",
+      "allocation": 1.0,
+      "id": 334
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-05-04",
+      "allocation": 1.0,
+      "id": 335
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-05-04",
+      "allocation": 0.5,
+      "id": 336
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-05-04",
+      "allocation": 0.5,
+      "id": 337
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-05-04",
+      "allocation": 1.0,
+      "id": 338
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-05-04",
+      "allocation": 0.9,
+      "id": 339
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-05-04",
+      "allocation": 0.1,
+      "id": 340
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-05-11",
+      "allocation": 0.5,
+      "id": 341
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-05-11",
+      "allocation": 0.2,
+      "id": 342
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-05-11",
+      "allocation": 0.55,
+      "id": 343
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-05-11",
+      "allocation": 0.2,
+      "id": 344
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-05-11",
+      "allocation": 0.25,
+      "id": 345
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-05-11",
+      "allocation": 0.75,
+      "id": 346
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-05-11",
+      "allocation": 0.25,
+      "id": 347
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-05-11",
+      "allocation": 1.0,
+      "id": 348
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-05-11",
+      "allocation": 0.3,
+      "id": 349
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-05-11",
+      "allocation": 0.7,
+      "id": 350
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-05-11",
+      "allocation": 1.0,
+      "id": 351
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-05-11",
+      "allocation": 1.0,
+      "id": 352
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-05-11",
+      "allocation": 0.5,
+      "id": 353
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-05-11",
+      "allocation": 0.5,
+      "id": 354
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-05-11",
+      "allocation": 1.0,
+      "id": 355
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-05-11",
+      "allocation": 0.9,
+      "id": 356
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-05-11",
+      "allocation": 0.1,
+      "id": 357
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-05-18",
+      "allocation": 0.5,
+      "id": 358
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-05-18",
+      "allocation": 0.2,
+      "id": 359
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-05-18",
+      "allocation": 0.55,
+      "id": 360
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-05-18",
+      "allocation": 0.2,
+      "id": 361
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-05-18",
+      "allocation": 0.25,
+      "id": 362
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-05-18",
+      "allocation": 0.75,
+      "id": 363
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-05-18",
+      "allocation": 0.25,
+      "id": 364
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-05-18",
+      "allocation": 1.0,
+      "id": 365
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-05-18",
+      "allocation": 0.3,
+      "id": 366
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-05-18",
+      "allocation": 0.7,
+      "id": 367
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-05-18",
+      "allocation": 1.0,
+      "id": 368
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-05-18",
+      "allocation": 1.0,
+      "id": 369
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-05-18",
+      "allocation": 0.5,
+      "id": 370
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-05-18",
+      "allocation": 0.5,
+      "id": 371
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-05-18",
+      "allocation": 1.0,
+      "id": 372
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-05-18",
+      "allocation": 0.9,
+      "id": 373
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-05-18",
+      "allocation": 0.1,
+      "id": 374
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-05-25",
+      "allocation": 0.5,
+      "id": 375
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-05-25",
+      "allocation": 0.2,
+      "id": 376
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-05-25",
+      "allocation": 0.55,
+      "id": 377
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-05-25",
+      "allocation": 0.2,
+      "id": 378
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-05-25",
+      "allocation": 0.25,
+      "id": 379
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-05-25",
+      "allocation": 0.75,
+      "id": 380
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-05-25",
+      "allocation": 0.25,
+      "id": 381
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-05-25",
+      "allocation": 1.0,
+      "id": 382
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-05-25",
+      "allocation": 0.3,
+      "id": 383
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-05-25",
+      "allocation": 0.7,
+      "id": 384
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-05-25",
+      "allocation": 1.0,
+      "id": 385
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-05-25",
+      "allocation": 1.0,
+      "id": 386
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-05-25",
+      "allocation": 0.5,
+      "id": 387
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-05-25",
+      "allocation": 0.5,
+      "id": 388
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-05-25",
+      "allocation": 1.0,
+      "id": 389
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-05-25",
+      "allocation": 0.9,
+      "id": 390
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-05-25",
+      "allocation": 0.1,
+      "id": 391
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-06-01",
+      "allocation": 0.5,
+      "id": 392
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-06-01",
+      "allocation": 0.2,
+      "id": 393
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-06-01",
+      "allocation": 0.55,
+      "id": 394
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-06-01",
+      "allocation": 0.2,
+      "id": 395
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-06-01",
+      "allocation": 0.25,
+      "id": 396
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-06-01",
+      "allocation": 0.75,
+      "id": 397
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-06-01",
+      "allocation": 0.25,
+      "id": 398
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-06-01",
+      "allocation": 1.0,
+      "id": 399
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-06-01",
+      "allocation": 0.3,
+      "id": 400
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-06-01",
+      "allocation": 0.7,
+      "id": 401
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-06-01",
+      "allocation": 1.0,
+      "id": 402
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-06-01",
+      "allocation": 1.0,
+      "id": 403
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-06-01",
+      "allocation": 0.5,
+      "id": 404
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-06-01",
+      "allocation": 0.5,
+      "id": 405
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-06-01",
+      "allocation": 1.0,
+      "id": 406
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-06-01",
+      "allocation": 0.9,
+      "id": 407
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-06-01",
+      "allocation": 0.1,
+      "id": 408
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-06-08",
+      "allocation": 0.5,
+      "id": 409
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-06-08",
+      "allocation": 0.2,
+      "id": 410
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-06-08",
+      "allocation": 0.55,
+      "id": 411
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-06-08",
+      "allocation": 0.2,
+      "id": 412
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-06-08",
+      "allocation": 0.25,
+      "id": 413
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-06-08",
+      "allocation": 0.75,
+      "id": 414
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-06-08",
+      "allocation": 0.25,
+      "id": 415
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-06-08",
+      "allocation": 1.0,
+      "id": 416
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-06-08",
+      "allocation": 0.3,
+      "id": 417
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-06-08",
+      "allocation": 0.7,
+      "id": 418
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-06-08",
+      "allocation": 1.0,
+      "id": 419
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-06-08",
+      "allocation": 1.0,
+      "id": 420
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-06-08",
+      "allocation": 0.5,
+      "id": 421
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-06-08",
+      "allocation": 0.5,
+      "id": 422
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-06-08",
+      "allocation": 1.0,
+      "id": 423
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-06-08",
+      "allocation": 0.9,
+      "id": 424
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-06-08",
+      "allocation": 0.1,
+      "id": 425
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 1,
+      "week_start": "2026-06-15",
+      "allocation": 0.5,
+      "id": 426
+    },
+    {
+      "data_scientist_id": 1,
+      "project_id": 2,
+      "week_start": "2026-06-15",
+      "allocation": 0.2,
+      "id": 427
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 4,
+      "week_start": "2026-06-15",
+      "allocation": 0.55,
+      "id": 428
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 5,
+      "week_start": "2026-06-15",
+      "allocation": 0.2,
+      "id": 429
+    },
+    {
+      "data_scientist_id": 2,
+      "project_id": 1,
+      "week_start": "2026-06-15",
+      "allocation": 0.25,
+      "id": 430
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 6,
+      "week_start": "2026-06-15",
+      "allocation": 0.75,
+      "id": 431
+    },
+    {
+      "data_scientist_id": 3,
+      "project_id": 7,
+      "week_start": "2026-06-15",
+      "allocation": 0.25,
+      "id": 432
+    },
+    {
+      "data_scientist_id": 4,
+      "project_id": 8,
+      "week_start": "2026-06-15",
+      "allocation": 1.0,
+      "id": 433
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 1,
+      "week_start": "2026-06-15",
+      "allocation": 0.3,
+      "id": 434
+    },
+    {
+      "data_scientist_id": 6,
+      "project_id": 9,
+      "week_start": "2026-06-15",
+      "allocation": 0.7,
+      "id": 435
+    },
+    {
+      "data_scientist_id": 7,
+      "project_id": 10,
+      "week_start": "2026-06-15",
+      "allocation": 1.0,
+      "id": 436
+    },
+    {
+      "data_scientist_id": 9,
+      "project_id": 4,
+      "week_start": "2026-06-15",
+      "allocation": 1.0,
+      "id": 437
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 2,
+      "week_start": "2026-06-15",
+      "allocation": 0.5,
+      "id": 438
+    },
+    {
+      "data_scientist_id": 10,
+      "project_id": 7,
+      "week_start": "2026-06-15",
+      "allocation": 0.5,
+      "id": 439
+    },
+    {
+      "data_scientist_id": 11,
+      "project_id": 2,
+      "week_start": "2026-06-15",
+      "allocation": 1.0,
+      "id": 440
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 11,
+      "week_start": "2026-06-15",
+      "allocation": 0.9,
+      "id": 441
+    },
+    {
+      "data_scientist_id": 12,
+      "project_id": 12,
+      "week_start": "2026-06-15",
+      "allocation": 0.1,
+      "id": 442
+    }
+  ],
+  "counters": {
+    "data_scientists": 13,
+    "projects": 13,
+    "assignments": 442
+  }
+}

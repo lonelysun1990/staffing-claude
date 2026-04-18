@@ -1,0 +1,9 @@
+# From: remove Shivarjun's allocation — destructive path.
+id: tr_clear_shivarjun_allocations
+fixture: fixtures/full_store.json
+runs: 1
+user_message: Remove all project allocations for Shivarjun Sarkar across the planning horizon.
+expect:
+  must_call_tools:
+    - "mcp__staffing__clear_assignment"
+  max_tool_calls: 25

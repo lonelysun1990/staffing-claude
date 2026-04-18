@@ -1,0 +1,24 @@
+# Full thread: first plot idle trend, second turn asks to redo using list_skills + get_skill playbook.
+id: th_idle_plot_then_skills_replay
+fixture: fixtures/full_store.json
+runs: 1
+turns:
+  - user_message: >
+      Give me a rough weekly count of fully idle data scientists (100% free) over the horizon.
+      Use get_availability; a text table is fine.
+    expect:
+      must_call_tools:
+        - "mcp__staffing__get_availability"
+      max_tool_calls: 30
+  - user_message: >
+      Do that analysis again but first call list_skills and load staffing-analytics-charts with get_skill,
+      then produce a matplotlib line chart via create_dynamic_tool.
+    expect:
+      must_call_tools:
+        - "mcp__staffing__list_skills"
+        - "mcp__staffing__get_skill"
+      max_tool_calls: 45
+expect:
+  must_call_tools:
+    - "mcp__staffing__create_dynamic_tool"
+  min_tool_calls: 1

@@ -1,0 +1,13 @@
+# Flavor: "average DS team allocation over 13 week period" from dynamic tools export.
+id: tr_team_allocation_bar_13w
+fixture: fixtures/full_store.json
+runs: 1
+user_message: >
+  Plot a simple bar chart of average DS team allocation % per week for the first 13 weeks of the horizon.
+  Use get_ds_team_weekly_aggregates for data, then create_dynamic_tool to render the chart once.
+expect:
+  must_call_tools:
+    - "mcp__staffing__get_ds_team_weekly_aggregates"
+    - "mcp__staffing__create_dynamic_tool"
+  max_tool_calls: 40
+  min_tool_calls: 2

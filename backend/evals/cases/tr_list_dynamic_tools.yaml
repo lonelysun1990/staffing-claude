@@ -1,0 +1,9 @@
+# From: list dynamic tools conversation.
+id: tr_list_dynamic_tools
+fixture: fixtures/full_store.json
+runs: 1
+user_message: What dynamic Python tools are currently registered? Reply with their names only in a bullet list.
+expect:
+  must_call_tools:
+    - "mcp__staffing__list_dynamic_tools"
+  max_tool_calls: 20

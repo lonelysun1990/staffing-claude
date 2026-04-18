@@ -1,0 +1,10 @@
+# Load staffing-analytics-charts skill (second half of idle plot thread).
+id: tr_get_skill_analytics
+fixture: fixtures/full_store.json
+runs: 1
+user_message: >
+  Fetch the full markdown body of the staffing-analytics-charts skill only (no other tools unless needed).
+expect:
+  must_call_tools:
+    - "mcp__staffing__get_skill"
+  max_tool_calls: 25

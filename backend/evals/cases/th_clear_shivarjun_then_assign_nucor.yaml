@@ -1,0 +1,19 @@
+# Thread: clear allocations then assign (Shivarjun narrative without ambiguous NNN — faster to pass).
+id: th_clear_shivarjun_then_assign_nucor
+fixture: fixtures/full_store.json
+runs: 1
+turns:
+  - user_message: Clear every assignment for Shivarjun Sarkar for the full planning horizon.
+    expect:
+      must_call_tools:
+        - "mcp__staffing__clear_assignment"
+      max_tool_calls: 20
+  - user_message: >
+      Now assign Shivarjun Sarkar at 50% on "Nucor NSBC + NSAR" for all weeks in the horizon.
+    expect:
+      must_call_tools:
+        - "mcp__staffing__set_assignment"
+      max_tool_calls: 25
+expect:
+  response_contains:
+    - "Nucor"

@@ -1,0 +1,8 @@
+id: tr_suggest_python_ds
+fixture: fixtures/full_store.json
+runs: 1
+user_message: Suggest data scientists who could fit a project that needs strong Python skills.
+expect:
+  must_call_tools:
+    - "mcp__staffing__suggest_data_scientists"
+  max_tool_calls: 25

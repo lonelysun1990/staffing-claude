@@ -1,0 +1,8 @@
+id: tr_list_skills
+fixture: fixtures/full_store.json
+runs: 1
+user_message: List the bundled playbook skills IDs and one-line descriptions from the staffing server.
+expect:
+  must_call_tools:
+    - "mcp__staffing__list_skills"
+  max_tool_calls: 20

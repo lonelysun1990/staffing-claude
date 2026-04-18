@@ -1,0 +1,9 @@
+id: tr_set_assignment_nucor
+fixture: fixtures/full_store.json
+runs: 1
+user_message: >
+  Set Shivarjun Sarkar to 50% allocation on the project "Nucor NSBC + NSAR" for all weeks in the horizon.
+expect:
+  must_call_tools:
+    - "mcp__staffing__set_assignment"
+  max_tool_calls: 25

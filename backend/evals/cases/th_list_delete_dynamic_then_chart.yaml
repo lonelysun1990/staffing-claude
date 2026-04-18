@@ -1,0 +1,22 @@
+# Thread: list dynamic tools, delete all, then plot team allocation (export flavor).
+id: th_list_delete_dynamic_then_chart
+fixture: fixtures/full_store.json
+runs: 1
+turns:
+  - user_message: List all registered dynamic tools by name.
+    expect:
+      must_call_tools:
+        - "mcp__staffing__list_dynamic_tools"
+      max_tool_calls: 15
+  - user_message: Delete every dynamic tool you just listed, by name.
+    expect:
+      must_call_tools:
+        - "mcp__staffing__delete_dynamic_tool"
+      max_tool_calls: 30
+  - user_message: >
+      Plot average DS team allocation % as a bar chart for the first 13 weeks using aggregates + create_dynamic_tool.
+    expect:
+      must_call_tools:
+        - "mcp__staffing__get_ds_team_weekly_aggregates"
+        - "mcp__staffing__create_dynamic_tool"
+      max_tool_calls: 40
