@@ -14,3 +14,4 @@ passlib[bcrypt]
 bcrypt
 python-jose[cryptography]
 pyyaml>=6.0
+langfuse>=3.0.0

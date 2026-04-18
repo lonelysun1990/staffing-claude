@@ -57,6 +57,7 @@ from .models import AgentRequest
 from .sse import sse
 from .tavily_mcp import tavily_mcp_server_config
 from .tools import build_allowed_tool_names, build_mcp_server, is_read_only_tool
+from .langfuse_tracing import StaffingAgentLangfuseRun
 from .trace_context import TraceContext, emit_agent_span, enrich_sse_payload, generate_trace_id
 
 MODEL = "claude-sonnet-4-6"
@@ -204,6 +205,20 @@ async def run_agent_stream(
         env={"ANTHROPIC_API_KEY": api_key},
     )
 
+    lf_run = StaffingAgentLangfuseRun.try_start(
+        user_message=new_user_msg.content,
+        user_id=user_id,
+        session_id=session.id,
+        model=MODEL,
+        sse_trace_id=trace_id,
+    )
+
+    def _emit(event_type: str, payload: dict[str, Any]) -> str:
+        pl = enrich_sse_payload(trace_id, payload)
+        if lf_run and lf_run.langfuse_trace_id:
+            pl["langfuse_trace_id"] = lf_run.langfuse_trace_id
+        return sse(event_type, pl)
+
     data_changed = False
     # Map tool_use_id → tool_name so we can label tool_result SSE events
     tool_id_to_name: dict[str, str] = {}
@@ -221,7 +236,9 @@ async def run_agent_stream(
                 ):
                     delta_text = event["delta"].get("text", "")
                     if delta_text:
-                        yield _sse_with_trace(trace_id, "text_delta", {"delta": delta_text})
+                        if lf_run:
+                            lf_run.append_text(delta_text)
+                        yield _emit("text_delta", {"delta": delta_text})
                 continue
 
             # ---- Skip system/init messages ----
@@ -239,7 +256,7 @@ async def run_agent_stream(
                     elif isinstance(block, ToolUseBlock):
                         tool_uses.append(block)
                         tool_id_to_name[block.id] = block.name
-                        yield _sse_with_trace(trace_id, "tool_call_start", {
+                        yield _emit("tool_call_start", {
                             "tool_call_id": block.id,
                             "name": block.name,
                             "args": block.input,
@@ -249,6 +266,8 @@ async def run_agent_stream(
                             "tool_call_start",
                             {"name": block.name, "tool_call_id": block.id},
                         )
+                        if lf_run:
+                            lf_run.on_tool_start(block.id, block.name, block.input)
                         if not is_read_only_tool(block.name):
                             data_changed = True
 
@@ -289,12 +308,14 @@ async def run_agent_stream(
                         }
                         if not is_read_only_tool(tool_name):
                             data_changed = True
-                        yield _sse_with_trace(trace_id, "tool_result", {
+                        yield _emit("tool_result", {
                             "tool_call_id": block.tool_use_id,
                             "name": tool_name,
                             "result": result_text,
                             "ok": not block.is_error,
                         })
+                        if lf_run:
+                            lf_run.on_tool_end(block.tool_use_id, result_text, not block.is_error)
                         save_message(
                             db, session, "tool", result_text,
                             metadata={"tool_use_id": block.tool_use_id, "name": tool_name},
@@ -315,7 +336,9 @@ async def run_agent_stream(
                             "(see diagnostics below)."
                         )
                     emit_agent_span(trace_ctx, "result_error", {"message_preview": human[:200]})
-                    yield _sse_with_trace(trace_id, 
+                    if lf_run:
+                        lf_run.finish_error(human)
+                    yield _emit(
                         "error",
                         {
                             "message": human,
@@ -333,7 +356,9 @@ async def run_agent_stream(
                     "run_done",
                     {"data_changed": data_changed, "session_id": session.id},
                 )
-                yield _sse_with_trace(trace_id, "done", {
+                if lf_run:
+                    lf_run.finish_ok(data_changed=data_changed)
+                yield _emit("done", {
                     "data_changed": data_changed,
                     "session_id": session.id,
                 })
@@ -344,10 +369,17 @@ async def run_agent_stream(
         msg = f"Agent error: {exc}"
         if stderr_blob.strip():
             msg = f"{msg}\n--- Claude Code stderr ---\n{stderr_blob.strip()}"
-        yield _sse_with_trace(trace_id, "error", {"message": msg, "traceback": traceback.format_exc()})
+        if lf_run:
+            lf_run.finish_error(msg)
+        yield _emit("error", {"message": msg, "traceback": traceback.format_exc()})
     except Exception as exc:
         stderr_blob = "\n".join(cli_stderr[-40:]) if cli_stderr else ""
         msg = f"Agent error: {exc}"
         if stderr_blob.strip():
             msg = f"{msg}\n--- Claude Code stderr ---\n{stderr_blob.strip()}"
-        yield _sse_with_trace(trace_id, "error", {"message": msg, "traceback": traceback.format_exc()})
+        if lf_run:
+            lf_run.finish_error(msg)
+        yield _emit("error", {"message": msg, "traceback": traceback.format_exc()})
+    finally:
+        if lf_run and not lf_run.is_complete():
+            lf_run.abort_incomplete()
